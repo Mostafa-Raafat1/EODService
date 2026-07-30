@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EODService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2c06c2deade99cfbc8ec1cb575593dda4ed43549")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+41ec26ab1a28f9d7c82feed32aaaedcda436621b")]
 [assembly: System.Reflection.AssemblyProductAttribute("EODService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EODService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
