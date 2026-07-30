@@ -1,37 +1,46 @@
 using EODService.DTOs.EOD;
 using EODService.DTOs.SymbolSettings;
+using EODService.DTOs.YahooEODResponse;
 using EODService.DTOs.YahooSettings;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace EODService.Services
 {
-    
+    /// <summary>
+    /// Implements IEODService using the Yahoo Finance Chart API as the data source.
+    /// Iterates over all configured symbols, fetches raw JSON, deserializes it,
+    /// and delegates the mapping to YahooEoadMapper.
+    /// </summary>
     public class YahooEODService : IEODService
     {
         private readonly YahooSettings _yahooSettings;
         private readonly SymbolSettings _symbolSettings;
         private readonly HttpClient _httpClient;
         private readonly ILogger<YahooEODService> _logger;
-        private readonly IYahooResponseMapper _mapper;
+
+        // Reusable deserialization options — case-insensitive so "chart" in JSON maps to "Chart" in C#
+        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
 
         public YahooEODService(
             YahooSettings yahooSettings,
             SymbolSettings symbolSettings,
             HttpClient httpClient,
-            ILogger<YahooEODService> logger,
-            IYahooResponseMapper mapper)
+            ILogger<YahooEODService> logger)
         {
             _yahooSettings = yahooSettings;
             _symbolSettings = symbolSettings;
             _httpClient = httpClient;
             _logger = logger;
-            _mapper = mapper;
         }
 
-       
-        public async Task<List<EodDataDto>> GetEodDataAsync()
+        /// <inheritdoc />
+        public async Task<List<EodData>> GetEodDataAsync()
         {
-            var results = new List<EodDataDto>();
+            var results = new List<EodData>();
 
             _logger.LogInformation(
                 "EOD import started. Processing {Count} symbol(s).",
@@ -49,12 +58,31 @@ namespace EODService.Services
 
                     var json = await response.Content.ReadAsStringAsync();
 
-                    var eodData = _mapper.Map(json, symbol);
-                    results.AddRange(eodData);
+                    // Deserialize raw JSON into YahooEodResponse DTO
+                    var yahooResponse = JsonSerializer.Deserialize<YahooEodResponse>(json, _jsonOptions);
 
-                    _logger.LogInformation(
-                        "Successfully downloaded {Count} record(s) for {Symbol}.",
-                        eodData.Count, symbol);
+                    if (yahooResponse == null)
+                    {
+                        _logger.LogWarning("Empty or unreadable response for {Symbol}. Skipping.", symbol);
+                        continue;
+                    }
+
+                    // Delegate mapping to Mustafa's static mapper
+                    var eodData = YahooEoadMapper.Map(yahooResponse, symbol);
+
+                    if (eodData != null)
+                    {
+                        results.Add(eodData);
+                        _logger.LogInformation(
+                            "Successfully downloaded 1 record for {Symbol}.",
+                            symbol);
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "No valid EOD data found in response for {Symbol}. Skipping.",
+                            symbol);
+                    }
                 }
                 catch (HttpRequestException ex)
                 {
@@ -83,9 +111,10 @@ namespace EODService.Services
             return results;
         }
 
-       
-        /// Build Yahoo Finance URL for our api 
-        
+        /// <summary>
+        /// Builds the Yahoo Finance Chart API URL for a given symbol
+        /// using the configured base URL, endpoint, interval, and range.
+        /// </summary>
         private string BuildUrl(string symbol)
         {
             return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{symbol}" +
