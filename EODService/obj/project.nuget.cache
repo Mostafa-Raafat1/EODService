@@ -1,9 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "n/jy4YpjT6k=",
+  "dgSpecHash": "6hbAYvYLPnc=",
   "success": true,
   "projectFilePath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\closedxml\\0.105.1\\closedxml.0.105.1.nupkg.sha512",
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\closedxml.parser\\2.0.0\\closedxml.parser.2.0.0.nupkg.sha512",
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\documentformat.openxml\\3.1.1\\documentformat.openxml.3.1.1.nupkg.sha512",
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\documentformat.openxml.framework\\3.1.1\\documentformat.openxml.framework.3.1.1.nupkg.sha512",
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\excelnumberformat\\1.1.0\\excelnumberformat.1.1.0.nupkg.sha512",
     "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.configuration\\10.0.10\\microsoft.extensions.configuration.10.0.10.nupkg.sha512",
     "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.10\\microsoft.extensions.configuration.abstractions.10.0.10.nupkg.sha512",
     "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.configuration.binder\\10.0.10\\microsoft.extensions.configuration.binder.10.0.10.nupkg.sha512",
@@ -14,7 +19,10 @@
     "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.fileproviders.physical\\10.0.10\\microsoft.extensions.fileproviders.physical.10.0.10.nupkg.sha512",
     "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\10.0.10\\microsoft.extensions.filesystemglobbing.10.0.10.nupkg.sha512",
     "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.10\\microsoft.extensions.logging.abstractions.10.0.10.nupkg.sha512",
-    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.10\\microsoft.extensions.primitives.10.0.10.nupkg.sha512"
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.10\\microsoft.extensions.primitives.10.0.10.nupkg.sha512",
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\rbush.signed\\4.0.0\\rbush.signed.4.0.0.nupkg.sha512",
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\sixlabors.fonts\\1.0.0\\sixlabors.fonts.1.0.0.nupkg.sha512",
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\system.io.packaging\\8.0.1\\system.io.packaging.8.0.1.nupkg.sha512"
   ],
   "logs": []
 }

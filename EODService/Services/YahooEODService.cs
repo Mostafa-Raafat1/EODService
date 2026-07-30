@@ -7,11 +7,7 @@ using System.Text.Json;
 
 namespace EODService.Services
 {
-    /// <summary>
-    /// Implements IEODService using the Yahoo Finance Chart API as the data source.
-    /// Iterates over all configured symbols, fetches raw JSON, deserializes it,
-    /// and delegates the mapping to YahooEoadMapper.
-    /// </summary>
+ 
     public class YahooEODService : IEODService
     {
         private readonly YahooSettings _yahooSettings;
@@ -111,10 +107,7 @@ namespace EODService.Services
             return results;
         }
 
-        /// <summary>
-        /// Builds the Yahoo Finance Chart API URL for a given symbol
-        /// using the configured base URL, endpoint, interval, and range.
-        /// </summary>
+        
         private string BuildUrl(string symbol)
         {
             return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{symbol}" +

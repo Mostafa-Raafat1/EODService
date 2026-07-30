@@ -26,3 +26,11 @@ C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\obj\Debug\net10.
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\obj\Debug\net10.0\EODService.pdb
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\obj\Debug\net10.0\EODService.genruntimeconfig.cache
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\obj\Debug\net10.0\ref\EODService.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\ClosedXML.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\ClosedXML.Parser.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\DocumentFormat.OpenXml.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\ExcelNumberFormat.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\RBush.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\SixLabors.Fonts.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODService\bin\Debug\net10.0\System.IO.Packaging.dll
