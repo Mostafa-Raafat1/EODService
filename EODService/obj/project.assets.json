@@ -464,23 +464,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\mostafa.raafat.inter\\.nuget\\packages\\": {},
+    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj",
+      "projectUniqueName": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj",
       "projectName": "EODService",
-      "projectPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj",
-      "packagesPath": "C:\\Users\\mostafa.raafat.inter\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\obj\\",
+      "projectPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj",
+      "packagesPath": "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\mostafa.raafat.inter\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\moneer.magdi.intern\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
