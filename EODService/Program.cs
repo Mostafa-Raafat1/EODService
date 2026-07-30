@@ -1,7 +1,7 @@
 using EODService.DTOs.SymbolSettings;
 using EODService.DTOs.YahooSettings;
 using EODService.Services;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 
 var yahooSettings = YahooSettingsMapper.MapToYahooSettings();
@@ -25,9 +25,18 @@ if (symbolSettings == null)
 
 
 // Step 3: Create dependencies
+using var loggerFactory = LoggerFactory.Create(builder =>
+    builder.AddConsole().SetMinimumLevel(LogLevel.Information));
 
 var httpClient = new HttpClient();
-var logger = NullLogger<YahooEODService>.Instance;
+httpClient.DefaultRequestHeaders.Add(
+    "User-Agent",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+httpClient.DefaultRequestHeaders.Add(
+    "Accept",
+    "application/json");
+
+var logger = loggerFactory.CreateLogger<YahooEODService>();
 
 
 // Step 4: Create the service
