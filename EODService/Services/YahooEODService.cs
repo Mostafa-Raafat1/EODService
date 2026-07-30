@@ -7,11 +7,7 @@ using System.Text.Json;
 
 namespace EODService.Services
 {
-    /// <summary>
-    /// Implements IEODService using the Yahoo Finance Chart API as the data source.
-    /// Iterates over all configured symbols, fetches raw JSON, deserializes it,
-    /// and delegates the mapping to YahooEoadMapper.
-    /// </summary>
+ 
     public class YahooEODService : IEODService
     {
         private readonly YahooSettings _yahooSettings;
@@ -84,6 +80,26 @@ namespace EODService.Services
                             symbol);
                     }
                 }
+                catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    // Symbol not found on LSE — not tradable on GDR market
+                    // Add a zero-value row to Excel to indicate non-tradable status
+                    _logger.LogWarning(
+                        "Symbol {Symbol} not found on LSE (404). Marking as non-tradable.",
+                        symbol);
+
+                    results.Add(new EodData
+                    {
+                        Symbol = symbol,
+                        Date   = DateTime.UtcNow.Date,
+                        Open          = 0,
+                        High          = 0,
+                        Low           = 0,
+                        Close         = 0,
+                        AdjustedClose = 0,
+                        Volume        = 0
+                    });
+                }
                 catch (HttpRequestException ex)
                 {
                     _logger.LogError(ex,
@@ -102,6 +118,9 @@ namespace EODService.Services
                         "Unexpected error while processing {Symbol}. Skipping.",
                         symbol);
                 }
+
+                // Respect Yahoo Finance rate limit — wait 1.5s between requests
+                await Task.Delay(1500);
             }
 
             _logger.LogInformation(
@@ -111,13 +130,10 @@ namespace EODService.Services
             return results;
         }
 
-        /// <summary>
-        /// Builds the Yahoo Finance Chart API URL for a given symbol
-        /// using the configured base URL, endpoint, interval, and range.
-        /// </summary>
+        
         private string BuildUrl(string symbol)
         {
-            return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{symbol}" +
+            return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{symbol}.L" +
                    $"?interval={_yahooSettings.Interval}&range={_yahooSettings.Range}";
         }
     }
