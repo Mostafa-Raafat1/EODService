@@ -133,7 +133,7 @@ namespace EODService.Services
         
         private string BuildUrl(string symbol)
         {
-            return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{symbol}.L" +
+            return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{symbol}" +
                    $"?interval={_yahooSettings.Interval}&range={_yahooSettings.Range}";
         }
     }
