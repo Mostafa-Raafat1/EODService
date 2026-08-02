@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj": {}
+    "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj": {
+    "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj",
+        "projectUniqueName": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj",
         "projectName": "EODService",
-        "projectPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj",
-        "packagesPath": "C:\\Users\\mostafa.raafat.inter\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\obj\\",
+        "projectPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj",
+        "packagesPath": "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\mostafa.raafat.inter\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\moneer.magdi.intern\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -56,6 +56,20 @@
               "target": "Package",
               "version": "[0.105.1, )"
             },
+            "Microsoft.AspNetCore.Razor.Design": {
+              "target": "Package",
+              "version": "[2.3.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[10.0.10, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational.Design": {
+              "target": "Package",
+              "version": "[1.1.6, )"
+            },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
               "version": "[10.0.10, )"
@@ -75,6 +89,26 @@
             "Microsoft.Extensions.Logging.Console": {
               "target": "Package",
               "version": "[10.0.10, )"
+            },
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
+              "target": "Package",
+              "version": "[10.0.2, )"
+            },
+            "Oracle.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[10.23.26300, )"
+            },
+            "Oracle.ManagedDataAccess": {
+              "target": "Package",
+              "version": "[23.26.300, )"
+            },
+            "Oracle.ManagedDataAccess.Core": {
+              "target": "Package",
+              "version": "[23.26.300, )"
+            },
+            "Oracle.ManagedDataAccess.EntityFramework": {
+              "target": "Package",
+              "version": "[23.26.300, )"
             }
           },
           "imports": [
@@ -371,20 +405,20 @@
         }
       }
     },
-    "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj": {
+    "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj",
         "projectName": "Infrastructure",
-        "projectPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\mostafa.raafat.inter\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\Infrastructure\\obj\\",
+        "projectPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\Infrastructure\\Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\mostafa.raafat.inter\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\moneer.magdi.intern\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -400,8 +434,8 @@
             "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj": {
-                "projectPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj"
+              "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj": {
+                "projectPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj"
               }
             }
           }
@@ -423,12 +457,6 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
-            "Microsoft.EntityFrameworkCore.Design": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[10.0.10, )"
-            },
             "Oracle.EntityFrameworkCore": {
               "target": "Package",
               "version": "[10.23.26300, )"
