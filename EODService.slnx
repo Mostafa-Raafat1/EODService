@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="EODService/EODService.csproj" />
+  <Project Path="Infrastructure/Infrastructure.csproj" Id="4c0aa667-fa3c-431e-867a-5fe0cb11bedf" />
 </Solution>
