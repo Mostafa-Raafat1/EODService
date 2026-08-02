@@ -12,7 +12,7 @@ namespace EODService.Persistance
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseOracle(ConnectionSettings)
-                .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+                .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Warning)
                 .Options;
 
             return new AppDbContext(options);
