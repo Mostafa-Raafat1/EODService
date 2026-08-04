@@ -53,17 +53,7 @@ Console.WriteLine("Starting EOD data import...\n");
 var results = await service.GetEodDataAsync();
 
 
-// Step 6: Export results to Excel
-
-Console.WriteLine($"Import complete. {results.Count} record(s) collected.\n");
-
-IExport exporter = new ExportToXlsv();
-exporter.Export(results, "Stocks.xlsx");
-
-Console.WriteLine("Results exported to Stocks.xlsx successfully.");
-
-
-// Step 7: Save to Oracle Database
+// Step 6: Save to Oracle Database
 var configuration = new ConfigurationBuilder()
     .SetBasePath(AppContext.BaseDirectory)
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
