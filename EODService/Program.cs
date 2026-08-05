@@ -77,8 +77,9 @@ else
 
         foreach (var result in results)
         {
+            var targetDate = result.Date.Date;
             var existingRecords = await dbContext.EodDaily
-                .Where(e => e.Symbol == result.Symbol && e.Date == result.Date)
+                .Where(e => e.Symbol == result.Symbol && e.Date.Date == targetDate)
                 .ToListAsync();
                 
             var existingRecord = existingRecords.FirstOrDefault();
