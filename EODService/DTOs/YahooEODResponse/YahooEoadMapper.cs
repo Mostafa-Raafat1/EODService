@@ -1,4 +1,4 @@
-﻿using EODService.DTOs.EOD;
+using EODService.DTOs.EOD;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
