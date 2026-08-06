@@ -66,6 +66,8 @@ namespace EODService.Services
                     // Delegate mapping to Mustafa's static mapper
                     var eodData = YahooEoadMapper.Map(yahooResponse, symbol);
 
+                    //If mapping returns null, it means the response didn't contain valid EOD data
+
                     if (eodData != null)
                     {
                         results.Add(eodData);

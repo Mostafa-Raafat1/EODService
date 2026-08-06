@@ -1362,6 +1362,18 @@
           }
         }
       },
+      "Microsoft.EntityFrameworkCore.Tools/10.0.10": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Design": "10.0.10"
+        },
+        "compile": {
+          "lib/net10.0/_._": {}
+        },
+        "runtime": {
+          "lib/net10.0/_._": {}
+        }
+      },
       "Microsoft.Extensions.Caching.Abstractions/10.0.10": {
         "type": "package",
         "dependencies": {
@@ -4924,6 +4936,34 @@
         "microsoft.entityframeworkcore.relational.design.nuspec"
       ]
     },
+    "Microsoft.EntityFrameworkCore.Tools/10.0.10": {
+      "sha512": "oFNTteHcfnftdV9a+4Psed+HV95YKnNrPF8F2+nHtvdOVDfdcbNqKE7xYutOquo1cuBAs84Lq5Boh49ANnF4zQ==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.tools/10.0.10",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "docs/PACKAGE.md",
+        "lib/net10.0/_._",
+        "lib/net8.0/_._",
+        "lib/net9.0/_._",
+        "microsoft.entityframeworkcore.tools.10.0.10.nupkg.sha512",
+        "microsoft.entityframeworkcore.tools.nuspec",
+        "tools/EntityFrameworkCore.PS2.psd1",
+        "tools/EntityFrameworkCore.PS2.psm1",
+        "tools/EntityFrameworkCore.psd1",
+        "tools/EntityFrameworkCore.psm1",
+        "tools/about_EntityFrameworkCore.help.txt",
+        "tools/init.ps1",
+        "tools/net472/any/ef.exe",
+        "tools/net472/win-arm64/ef.exe",
+        "tools/net472/win-x86/ef.exe",
+        "tools/net8.0/any/ef.dll",
+        "tools/net8.0/any/ef.runtimeconfig.json"
+      ]
+    },
     "Microsoft.Extensions.Caching.Abstractions/10.0.10": {
       "sha512": "4ZFBNE+jzR+CrWWlhOesnmywCW7pYKT0dxyAQRdL11yJwxe4jvcAu31eorFtEkoFeCDcUTeNssgPv2yaRRptaQ==",
       "type": "package",
@@ -7143,6 +7183,7 @@
       "Microsoft.AspNetCore.Razor.Design >= 2.3.0",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.10",
       "Microsoft.EntityFrameworkCore.Relational.Design >= 1.1.6",
+      "Microsoft.EntityFrameworkCore.Tools >= 10.0.10",
       "Microsoft.Extensions.Configuration >= 10.0.10",
       "Microsoft.Extensions.Configuration.Binder >= 10.0.10",
       "Microsoft.Extensions.Configuration.Json >= 10.0.10",
@@ -7156,23 +7197,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\": {},
+    "C:\\Users\\mostafa.raafat.inter\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj",
+      "projectUniqueName": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj",
       "projectName": "EODService",
-      "projectPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\EODService.csproj",
-      "packagesPath": "C:\\Users\\moneer.magdi.intern\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\moneer.magdi.intern\\source\\repos\\EODService\\EODService\\obj\\",
+      "projectPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\EODService.csproj",
+      "packagesPath": "C:\\Users\\mostafa.raafat.inter\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\moneer.magdi.intern\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\mostafa.raafat.inter\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -7220,6 +7261,12 @@
           "Microsoft.EntityFrameworkCore.Relational.Design": {
             "target": "Package",
             "version": "[1.1.6, )"
+          },
+          "Microsoft.EntityFrameworkCore.Tools": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[10.0.10, )"
           },
           "Microsoft.Extensions.Configuration": {
             "target": "Package",

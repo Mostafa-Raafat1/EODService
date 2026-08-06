@@ -6,6 +6,8 @@ using EODService.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using EODService.Persistance.Repo;
+using EODService.DTOs.EOD;
 
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
@@ -82,9 +84,12 @@ else
     {
         using var dbContext = EODService.Persistance.AppDbContextFactory.Create(connectionString);
 
-        // Automatically create the table if it doesn't exist
+        // Automatically create the table if it doesn't exist and update columns if altered
         await dbContext.Database.EnsureCreatedAsync();
+        // Adding Repo
+        var eodRepo = new EodDataRepo(dbContext);
 
+        // Add to daily table, or update if already exists (based on Symbol + Date)
         foreach (var result in results)
         {
             var targetDate    = result.Date.Date;          // e.g. 2026-08-04 00:00:00
@@ -96,16 +101,22 @@ else
             // (stores 00:00 UTC) both wrote to the same calendar day.
             // A range query (>= start of day AND < start of next day) works on any database.
             var existingRecords = await dbContext.EodDaily
-                .Where(e => e.Symbol == result.Symbol
-                         && e.Date >= targetDate
-                         && e.Date <  nextDay)
+                .Where(e => e.Symbol == result.Symbol)
                 .ToListAsync();
 
             var existingRecord = existingRecords.FirstOrDefault();
 
+            // if the data is old
+            if(existingRecord.Date > result.Date)
+            {
+                Console.WriteLine($"WARNING: Existing record for {result.Symbol} on {existingRecord.Date:yyyy-MM-dd} is newer than incoming data ({result.Date:yyyy-MM-dd}). Skipping update.");
+                continue;
+            }
+
+
             if (existingRecord == null)
             {
-                dbContext.EodDaily.Add(result);
+                dbContext.EodDaily.Add(result.ToDaily());
             }
             else
             {
@@ -118,6 +129,20 @@ else
                 existingRecord.Volume        = result.Volume;
             }
         }
+
+
+        // Add to history table
+        DateTime? lastHistoryDate = null;
+        foreach (var result in results)
+        {
+            lastHistoryDate = eodRepo.GetLastDateForSymbol(result.Symbol).Result;
+            if (lastHistoryDate == null || lastHistoryDate <= result.Date)
+            {
+                await dbContext.EodHistory.AddAsync(result.ToHistory());
+            }
+            continue;
+        }
+
 
         await dbContext.SaveChangesAsync();
         Console.WriteLine("Data saved to Oracle database successfully.");
