@@ -1,36 +1,35 @@
 using EODService.DTOs.EOD;
 using EODService.DTOs.SymbolSettings;
-using EODService.DTOs.YahooEODResponse;
-using EODService.DTOs.YahooSettings;
+using EODService.DTOs.TwelveDataResponse;
+using EODService.DTOs.TwelveDataSettings;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace EODService.Services
 {
- 
-    public class YahooEODService : IEODService
+    public class TwelveDataEODService : IEODService
     {
-        private readonly YahooSettings _yahooSettings;
+        private readonly TwelveDataSettings _twelveDataSettings;
         private readonly SymbolSettings _symbolSettings;
         private readonly HttpClient _httpClient;
-        private readonly ILogger<YahooEODService> _logger;
+        private readonly ILogger<TwelveDataEODService> _logger;
 
-        // Reusable deserialization options — case-insensitive so "chart" in JSON maps to "Chart" in C#
+        // Reusable deserialization options — case-insensitive to be safe
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        public YahooEODService(
-            YahooSettings yahooSettings,
+        public TwelveDataEODService(
+            TwelveDataSettings twelveDataSettings,
             SymbolSettings symbolSettings,
             HttpClient httpClient,
-            ILogger<YahooEODService> logger)
+            ILogger<TwelveDataEODService> logger)
         {
-            _yahooSettings = yahooSettings;
-            _symbolSettings = symbolSettings;
-            _httpClient = httpClient;
-            _logger = logger;
+            _twelveDataSettings = twelveDataSettings;
+            _symbolSettings     = symbolSettings;
+            _httpClient         = httpClient;
+            _logger             = logger;
         }
 
         /// <inheritdoc />
@@ -39,39 +38,37 @@ namespace EODService.Services
             var results = new List<EodData>();
 
             _logger.LogInformation(
-                "EOD import started. Processing {Count} symbol(s).",
+                "EOD import started via Twelve Data. Processing {Count} symbol(s).",
                 _symbolSettings.Symbols.Count);
 
             foreach (var symbol in _symbolSettings.Symbols)
             {
                 try
                 {
-                    _logger.LogInformation("Downloading EOD data for {Symbol}...", symbol);
+                    _logger.LogInformation("Downloading EOD data for {Symbol} via Twelve Data...", symbol);
 
-                    var url = BuildUrl(symbol);
+                    var url      = BuildUrl(symbol);
                     var response = await _httpClient.GetAsync(url);
                     response.EnsureSuccessStatusCode();
 
                     var json = await response.Content.ReadAsStringAsync();
 
-                    // Deserialize raw JSON into YahooEodResponse DTO
-                    var yahooResponse = JsonSerializer.Deserialize<YahooEodResponse>(json, _jsonOptions);
+                    // Deserialize raw JSON into TwelveDataResponse DTO
+                    var twelveDataResponse = JsonSerializer.Deserialize<TwelveDataResponse>(json, _jsonOptions);
 
-                    if (yahooResponse == null)
+                    if (twelveDataResponse == null)
                     {
                         _logger.LogWarning("Empty or unreadable response for {Symbol}. Skipping.", symbol);
                         continue;
                     }
 
-                    // Delegate mapping to Mustafa's static mapper
-                    var eodData = YahooEoadMapper.Map(yahooResponse, symbol);
+                    // Delegate mapping to the Twelve Data mapper
+                    var eodData = TwelveDataMapper.Map(twelveDataResponse, symbol);
 
                     if (eodData != null)
                     {
                         results.Add(eodData);
-                        _logger.LogInformation(
-                            "Successfully downloaded 1 record for {Symbol}.",
-                            symbol);
+                        _logger.LogInformation("Successfully downloaded 1 record for {Symbol}.", symbol);
                     }
                     else
                     {
@@ -82,51 +79,50 @@ namespace EODService.Services
                 }
                 catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    // Symbol not found on LSE — not tradable on GDR market
-                    // Log and skip adding to results
+                    // Symbol not found on Twelve Data — log and skip
                     _logger.LogWarning(
-                        "Symbol {Symbol} not found on LSE (404). Marking as non-tradable and skipping.",
+                        "Symbol {Symbol} not found on Twelve Data (404). Skipping.",
                         symbol);
                 }
                 catch (HttpRequestException ex)
                 {
                     _logger.LogError(ex,
-                        "HTTP error while downloading data for {Symbol}. Skipping.",
+                        "HTTP error while downloading data for {Symbol} via Twelve Data. Skipping.",
                         symbol);
                 }
                 catch (TaskCanceledException ex)
                 {
                     _logger.LogError(ex,
-                        "Request timed out for {Symbol}. Skipping.",
+                        "Request timed out for {Symbol} via Twelve Data. Skipping.",
                         symbol);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex,
-                        "Unexpected error while processing {Symbol}. Skipping.",
+                        "Unexpected error while processing {Symbol} via Twelve Data. Skipping.",
                         symbol);
                 }
 
-                // Respect Yahoo Finance rate limit — wait 1.5s between requests
+                // Respect Twelve Data rate limit — wait 1.5s between requests
                 await Task.Delay(1500);
             }
 
             _logger.LogInformation(
-                "EOD import complete. Total records collected: {Count}.",
+                "EOD import complete via Twelve Data. Total records collected: {Count}.",
                 results.Count);
 
             return results;
         }
 
-        
         private string BuildUrl(string symbol)
         {
-            // Yahoo Finance requires the LSE suffix ".L" for GDR symbols.
-            // Base symbols are stored without suffix in appsettings.json (e.g., "CBKD"),
-            // so we append it here to keep provider-specific formatting inside the provider.
-            var yahooSymbol = $"{symbol}.L";
-            return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{yahooSymbol}" +
-                   $"?interval={_yahooSettings.Interval}&range={_yahooSettings.Range}";
+            // Twelve Data uses the base symbol directly (no exchange suffix needed).
+            // The exchange is resolved by the API from the symbol itself.
+            return $"{_twelveDataSettings.BaseUrl}{_twelveDataSettings.Endpoint}" +
+                   $"?symbol={symbol}" +
+                   $"&interval={_twelveDataSettings.Interval}" +
+                   $"&outputsize={_twelveDataSettings.OutputSize}" +
+                   $"&apikey={_twelveDataSettings.ApiKey}";
         }
     }
 }
