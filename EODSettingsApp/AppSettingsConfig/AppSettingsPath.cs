@@ -4,11 +4,11 @@ using System.IO;
 namespace EODSettingsApp.AppSettingsConfig
 {
     /// <summary>
-    /// Single source of truth for the path to EODService's AppSettings.json.
+    /// Single source of truth for locating EODService's main AppSettings.json file.
     ///
-    /// Resolution order:
-    ///   1. Same folder as the running EODSettingsApp.exe (production / published layout).
-    ///   2. EODService project source folder inside the solution (development layout).
+    /// Dynamically traverses up the directory tree to find the main EODService
+    /// project folder containing Program.cs and AppSettings.json, ensuring edits
+    /// always modify the source file beside Program.cs instead of build-output copies.
     /// </summary>
     public static class AppSettingsPath
     {
@@ -16,32 +16,49 @@ namespace EODSettingsApp.AppSettingsConfig
         private const string EodServiceProject = "EODService";
 
         /// <summary>
-        /// Returns the full path to AppSettings.json.
+        /// Returns the absolute path to the main AppSettings.json beside Program.cs in the EODService project.
         /// </summary>
         /// <exception cref="FileNotFoundException">
-        /// Thrown when the file cannot be found at any known location.
+        /// Thrown when AppSettings.json cannot be located.
         /// </exception>
         public static string Resolve()
         {
-            // 1. Production: AppSettings.json published next to EODSettingsApp.exe.
-            var appDir           = AppContext.BaseDirectory;
-            var productionPath   = Path.Combine(appDir, FileName);
-            if (File.Exists(productionPath))
-                return productionPath;
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
 
-            // 2. Development: navigate from
-            //    …\EODSettingsApp\bin\Debug\net10.0-windows  (4 levels up)
-            //    to the solution root, then into the EODService project source folder.
-            var solutionRoot     = Path.GetFullPath(Path.Combine(appDir, "..", "..", "..", ".."));
-            var developmentPath  = Path.Combine(solutionRoot, EodServiceProject, FileName);
-            if (File.Exists(developmentPath))
-                return developmentPath;
+            while (current != null)
+            {
+                // Option A: We are inside the EODService project folder (or one of its subfolders like bin/Debug/net10.0)
+                var fileInCurrent = Path.Combine(current.FullName, FileName);
+                var programCsInCurrent = Path.Combine(current.FullName, "Program.cs");
+                var csprojInCurrent = Path.Combine(current.FullName, $"{EodServiceProject}.csproj");
+
+                if (File.Exists(fileInCurrent) && (File.Exists(programCsInCurrent) || File.Exists(csprojInCurrent)))
+                {
+                    return fileInCurrent;
+                }
+
+                // Option B: We are in a parent folder (e.g. solution root or EODSettingsApp folder) containing the EODService project subfolder
+                var projectFolder = Path.Combine(current.FullName, EodServiceProject);
+                var fileInSubFolder = Path.Combine(projectFolder, FileName);
+                var programCsInSubFolder = Path.Combine(projectFolder, "Program.cs");
+
+                if (File.Exists(fileInSubFolder) && File.Exists(programCsInSubFolder))
+                {
+                    return fileInSubFolder;
+                }
+
+                current = current.Parent;
+            }
+
+            // Standalone / production deployment fallback
+            var productionPath = Path.Combine(AppContext.BaseDirectory, FileName);
+            if (File.Exists(productionPath))
+            {
+                return productionPath;
+            }
 
             throw new FileNotFoundException(
-                $"Could not locate '{FileName}'.\n\n" +
-                $"Searched:\n" +
-                $"  {productionPath}\n" +
-                $"  {developmentPath}",
+                $"Could not locate main '{FileName}' beside Program.cs in the '{EodServiceProject}' project directory.",
                 FileName);
         }
     }

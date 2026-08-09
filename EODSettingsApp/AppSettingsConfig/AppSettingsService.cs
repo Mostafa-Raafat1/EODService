@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -41,23 +42,56 @@ namespace EODSettingsApp.AppSettingsConfig
         }
 
         /// <summary>
-        /// Saves the Yahoo and TwelveData sections back into AppSettings.json.
+        /// Saves the Yahoo and TwelveData sections back into the main EODService AppSettings.json
+        /// (beside Program.cs) and syncs changes to active bin output files.
         /// All other keys in the file are left untouched.
         /// </summary>
         public static void Save(AppSettingsModel model)
         {
-            var path     = AppSettingsPath.Resolve();
-            var existing = File.ReadAllText(path);
+            var mainPath = AppSettingsPath.Resolve();
+            var existing = File.ReadAllText(mainPath);
 
             var root = JsonNode.Parse(existing)!.AsObject();
 
             root["YahooSettings"]      = JsonNode.Parse(JsonSerializer.Serialize(model.YahooSettings));
             root["TwelveDataSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.TwelveDataSettings));
 
-            File.WriteAllText(path, root.ToJsonString(_writeOptions));
+            var updatedJson = root.ToJsonString(_writeOptions);
+
+            // 1. Primary write: main EODService AppSettings.json beside Program.cs
+            File.WriteAllText(mainPath, updatedJson);
+
+            // 2. Sync to current application bin directory if distinct
+            SyncToCopy(Path.Combine(AppContext.BaseDirectory, "AppSettings.json"), mainPath, updatedJson);
+
+            // 3. Sync to EODService bin/Debug output if distinct and exists
+            var mainDir = Path.GetDirectoryName(mainPath);
+            if (!string.IsNullOrEmpty(mainDir))
+            {
+                var devBinPath = Path.GetFullPath(Path.Combine(mainDir, "bin", "Debug", "net10.0", "AppSettings.json"));
+                SyncToCopy(devBinPath, mainPath, updatedJson);
+            }
         }
 
         // ── Private helpers ──────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Synchronizes updated JSON content to binary output copy if it exists and is distinct from mainPath.
+        /// </summary>
+        private static void SyncToCopy(string targetPath, string mainPath, string jsonContent)
+        {
+            try
+            {
+                if (File.Exists(targetPath) && !string.Equals(Path.GetFullPath(targetPath), Path.GetFullPath(mainPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    File.WriteAllText(targetPath, jsonContent);
+                }
+            }
+            catch
+            {
+                // Best effort sync to build output locations
+            }
+        }
 
         /// <summary>
         /// Deserialises a named section from a JSON root element.
