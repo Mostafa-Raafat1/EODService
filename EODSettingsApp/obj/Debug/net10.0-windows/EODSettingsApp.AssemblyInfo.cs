@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EODSettingsApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+39f8965771dfe7f4be6f39222bf44105a0e1972b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e678f78de22b13e5839e33633cf780cd50009696")]
 [assembly: System.Reflection.AssemblyProductAttribute("EODSettingsApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EODSettingsApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
