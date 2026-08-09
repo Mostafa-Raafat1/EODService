@@ -9,36 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using EODService.DTOs.EOD;
 using System.Diagnostics;
 
-// ─── Step 0: Open Settings Form ──────────────────────────────────────────────
-// EODSettingsApp.exe must be in the same folder as EODService.exe.
-// It is copied there automatically by EODSettingsApp's post-build event.
-var settingsExePath = Path.Combine(AppContext.BaseDirectory, "EODSettingsApp.exe");
-
-if (!File.Exists(settingsExePath))
-{
-    Console.WriteLine("[ERROR] EODSettingsApp.exe was not found next to EODService.exe.");
-    Console.WriteLine($"Expected at: {settingsExePath}");
-    Console.WriteLine("Please build the solution first so the post-build copy runs.");
-    return;
-}
-
-Console.WriteLine("Opening settings window...");
-var settingsProcess = Process.Start(new ProcessStartInfo
-{
-    FileName  = settingsExePath,
-    UseShellExecute = true
-})!;
-
-settingsProcess.WaitForExit(); // Block here — the rest of the service is paused until the form closes
-
-if (settingsProcess.ExitCode != 0)
-{
-    Console.WriteLine("Settings window was closed without running. Exiting.");
-    return;
-}
-
-Console.WriteLine("Settings confirmed. Starting data fetch...\n");
-
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
 

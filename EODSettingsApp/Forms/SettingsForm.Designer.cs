@@ -20,6 +20,10 @@ namespace EODSettingsApp.Forms
         private Panel        pnlGridHeader; // top strip inside pnlGrid
         private Label        lblGridTitle;
         private DataGridView dgvResults;    // fills the rest of pnlGrid
+        
+        private Panel        pnlLogs;
+        private RichTextBox  rtbLogs;
+
 
         // Menu bar
         private MenuStrip         mnuMain;
@@ -50,6 +54,9 @@ namespace EODSettingsApp.Forms
             pnlGrid = new Panel();
             dgvResults = new DataGridView();
             pnlGridHeader = new Panel();
+            lblGridTitle = new Label();
+            pnlLogs = new Panel();
+            rtbLogs = new RichTextBox();
             lblGridTitle            = new Label();
             mnuMain                 = new MenuStrip();
             mnuItemSettings         = new ToolStripMenuItem();
@@ -149,6 +156,7 @@ namespace EODSettingsApp.Forms
             btnGetData.FlatStyle = FlatStyle.Flat;
             btnGetData.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnGetData.ForeColor = Color.White;
+            btnGetData.Location = new Point(874, 24);
             btnGetData.Location = new Point(878, 24);
             btnGetData.Name = "btnGetData";
             btnGetData.Size = new Size(140, 40);
@@ -164,6 +172,7 @@ namespace EODSettingsApp.Forms
             lblStatus.ForeColor = Color.FromArgb(22, 163, 74);
             lblStatus.Location = new Point(400, 32);
             lblStatus.Name = "lblStatus";
+            lblStatus.Size = new Size(460, 22);
             lblStatus.Size = new Size(464, 22);
             lblStatus.TabIndex = 2;
             // 
@@ -186,7 +195,7 @@ namespace EODSettingsApp.Forms
             dgvResults.AllowUserToResizeRows = false;
             dataGridViewCellStyle4.BackColor = Color.FromArgb(241, 245, 249);
             dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
-            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvResults.BackgroundColor = Color.White;
             dgvResults.BorderStyle = BorderStyle.None;
             dgvResults.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
@@ -247,6 +256,34 @@ namespace EODSettingsApp.Forms
             lblGridTitle.Text = "EOD Results";
             lblGridTitle.TextAlign = ContentAlignment.MiddleLeft;
             lblGridTitle.Click += lblGridTitle_Click;
+            // 
+            // 
+            // pnlLogs
+            // 
+            pnlLogs.BackColor = Color.FromArgb(15, 23, 42);
+            pnlLogs.Controls.Add(rtbLogs);
+            pnlLogs.Dock = DockStyle.Bottom;
+            pnlLogs.Location = new Point(0, 641);
+            pnlLogs.Name = "pnlLogs";
+            pnlLogs.Padding = new Padding(12);
+            pnlLogs.Size = new Size(1034, 140);
+            pnlLogs.TabIndex = 3;
+            // 
+            // rtbLogs
+            // 
+            rtbLogs.BackColor = Color.FromArgb(15, 23, 42);
+            rtbLogs.BorderStyle = BorderStyle.None;
+            rtbLogs.Dock = DockStyle.Fill;
+            rtbLogs.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            rtbLogs.ForeColor = Color.FromArgb(200, 210, 220);
+            rtbLogs.Location = new Point(12, 12);
+            rtbLogs.Name = "rtbLogs";
+            rtbLogs.ReadOnly = true;
+            rtbLogs.ScrollBars = RichTextBoxScrollBars.Vertical;
+            rtbLogs.Size = new Size(1010, 116);
+            rtbLogs.TabIndex = 0;
+            rtbLogs.Text = "Ready.\n";
+            // 
             //
             // mnuMain
             //
@@ -274,12 +311,14 @@ namespace EODSettingsApp.Forms
             // SettingsForm
             // 
             BackColor = Color.FromArgb(245, 247, 250);
-            ClientSize = new Size(1034, 641);
+            ClientSize = new Size(1034, 781);
             Controls.Add(pnlGrid);
+            Controls.Add(pnlLogs);
             Controls.Add(pnlControls);
             Controls.Add(pnlHeader);
             Controls.Add(mnuMain);   // highest Z-order → docks to very top (24 px)
             Font = new Font("Segoe UI", 9.5F);
+            MinimumSize = new Size(800, 650);
             MainMenuStrip = mnuMain;
             MinimumSize = new Size(800, 550);
             Name = "SettingsForm";
@@ -290,6 +329,7 @@ namespace EODSettingsApp.Forms
             pnlGrid.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
             pnlGridHeader.ResumeLayout(false);
+            pnlLogs.ResumeLayout(false);
             mnuMain.ResumeLayout(false);
             mnuMain.PerformLayout();
             ResumeLayout(false);
