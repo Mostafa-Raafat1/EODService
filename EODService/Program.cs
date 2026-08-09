@@ -6,15 +6,14 @@ using EODService.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using EODService.Persistance.Repo;
 using EODService.DTOs.EOD;
 
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
 
-if (providerSettings == null)
+if (providerSettings == null || string.IsNullOrWhiteSpace(providerSettings.ActiveProvider))
 {
-    Console.WriteLine("ERROR: Could not load ProviderSettings from appsettings.json. Exiting.");
+    Console.WriteLine("ERROR: 'ProviderSettings:ActiveProvider' is missing or empty in appsettings.json. Exiting.");
     return;
 }
 
@@ -23,15 +22,35 @@ Console.WriteLine($"Active Provider: {providerSettings.ActiveProvider}");
 // ─── Step 2: Load SymbolSettings ─────────────────────────────────────────────
 var symbolSettings = SymbolSettingsMapper.MapToSymbolSettings();
 
-if (symbolSettings == null)
+if (symbolSettings == null || symbolSettings.Symbols == null || !symbolSettings.Symbols.Any())
 {
-    Console.WriteLine("ERROR: Could not load SymbolSettings from appsettings.json. Exiting.");
+    Console.WriteLine("ERROR: 'SymbolSettings:Symbols' is missing or empty in appsettings.json. Exiting.");
     return;
 }
 
 // ─── Step 3: Load Provider-Specific Settings ──────────────────────────────────
 var yahooSettings       = YahooSettingsMapper.MapToYahooSettings();
 var twelveDataSettings  = TwelveDataSettingsMapper.MapToTwelveDataSettings();
+
+// Validate Yahoo settings if it's the active provider
+if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgnoreCase))
+{
+    if (yahooSettings == null || string.IsNullOrWhiteSpace(yahooSettings.BaseUrl) || string.IsNullOrWhiteSpace(yahooSettings.Endpoint))
+    {
+        Console.WriteLine("ERROR: 'YahooSettings' (BaseUrl or Endpoint) is missing or empty in appsettings.json. Exiting.");
+        return;
+    }
+}
+
+// Validate TwelveData settings if it's the active provider
+if (providerSettings.ActiveProvider.Equals("TwelveData", StringComparison.OrdinalIgnoreCase))
+{
+    if (twelveDataSettings == null || string.IsNullOrWhiteSpace(twelveDataSettings.BaseUrl) || string.IsNullOrWhiteSpace(twelveDataSettings.ApiKey))
+    {
+        Console.WriteLine("ERROR: 'TwelveDataSettings' (BaseUrl or ApiKey) is missing or empty in appsettings.json. Exiting.");
+        return;
+    }
+}
 
 // ─── Step 4: Create Shared Dependencies ──────────────────────────────────────
 using var loggerFactory = LoggerFactory.Create(builder =>
@@ -84,35 +103,32 @@ else
     {
         using var dbContext = EODService.Persistance.AppDbContextFactory.Create(connectionString);
 
-        // Automatically create the table if it doesn't exist and update columns if altered
+        // Automatically create the table if it doesn't exist
         await dbContext.Database.EnsureCreatedAsync();
-        // Adding Repo
-        var eodRepo = new EodDataRepo(dbContext);
 
-        // Add to daily table, or update if already exists (based on Symbol + Date)
+        // ── Collect all symbols from the fetched results ──────────────────────
+        var symbols = results.Select(r => r.Symbol).ToList();
+
+        // ── FIX 1: Load ALL existing daily records in a SINGLE query ──────────
+        // Previously: one SELECT per symbol (N+1 round-trips to Oracle).
+        // Now: one SELECT ... WHERE symbol IN (...) for all symbols at once.
+        var existingDailyDict = await dbContext.EodDaily
+            .Where(e => symbols.Contains(e.Symbol))
+            .ToDictionaryAsync(e => e.Symbol);
+
+        // ── Upsert EodDaily ───────────────────────────────────────────────────
         foreach (var result in results)
         {
-            var targetDate    = result.Date.Date;          // e.g. 2026-08-04 00:00:00
-            var nextDay       = targetDate.AddDays(1);     // e.g. 2026-08-05 00:00:00
-
-            // Use a date range instead of .Date.Date equality:
-            // Oracle's EF Core provider does not reliably translate .Date in a WHERE clause,
-            // which caused duplicates when Yahoo (stores 07:00 UTC) and Twelve Data
-            // (stores 00:00 UTC) both wrote to the same calendar day.
-            // A range query (>= start of day AND < start of next day) works on any database.
-            var existingRecords = await dbContext.EodDaily
-                .Where(e => e.Symbol == result.Symbol)
-                .ToListAsync();
-
-            var existingRecord = existingRecords.FirstOrDefault();
+            existingDailyDict.TryGetValue(result.Symbol, out var existingRecord);
 
             if (existingRecord == null)
             {
+                // No record yet — insert
                 dbContext.EodDaily.Add(result.ToDaily());
                 continue;
             }
 
-            // if the data is old
+            // Existing record is newer — skip
             if (existingRecord.Date > result.Date)
             {
                 Console.WriteLine($"WARNING: Existing record for {result.Symbol} on {existingRecord.Date:yyyy-MM-dd} is newer than incoming data ({result.Date:yyyy-MM-dd}). Skipping update.");
@@ -134,19 +150,26 @@ else
             }
         }
 
+        // ── FIX 2: Load last history dates in a SINGLE query ─────────────────
+        // Previously: one blocking .Result DB call per symbol (N+1 + deadlock risk).
+        // Now: one GROUP BY query returning max date per symbol.
+        var lastHistoryDates = await dbContext.EodHistory
+            .Where(e => symbols.Contains(e.Symbol))
+            .GroupBy(e => e.Symbol)
+            .Select(g => new { Symbol = g.Key, LastDate = g.Max(x => x.Date) })
+            .ToDictionaryAsync(x => x.Symbol, x => (DateTime?)x.LastDate);
 
-        // Add to history table
-        DateTime? lastHistoryDate = null;
+        // ── Insert new EodHistory records ─────────────────────────────────────
         foreach (var result in results)
         {
-            lastHistoryDate = eodRepo.GetLastDateForSymbol(result.Symbol).Result;
-            if (lastHistoryDate == null || lastHistoryDate <= result.Date)
-            {
-                await dbContext.EodHistory.AddAsync(result.ToHistory());
-            }
-            continue;
-        }
+            lastHistoryDates.TryGetValue(result.Symbol, out var lastDate);
 
+            // FIX 3: use strict < (not <=) to avoid re-inserting same-day records
+            if (lastDate == null || lastDate < result.Date)
+            {
+                dbContext.EodHistory.Add(result.ToHistory());
+            }
+        }
 
         await dbContext.SaveChangesAsync();
         Console.WriteLine("Data saved to Oracle database successfully.");

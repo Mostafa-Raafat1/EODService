@@ -34,14 +34,25 @@ namespace EODService.DTOs.YahooEODResponse
             var timestamps = result.Timestamp;
 
             // Find the latest valid EOD record
+            // Find the latest valid EOD record
             for (int i = timestamps.Count - 1; i >= 0; i--)
             {
                 if (i >= quote.Close.Count || quote.Close[i] is null)
                     continue;
 
+                var c = GetValue(quote.Close, i);
+                var o = GetValue(quote.Open, i);
+                var h = GetValue(quote.High, i);
+                var l = GetValue(quote.Low, i);
+                var v = GetValue(quote.Volume, i);
 
+                // Financial Sanity Checks (allow nulls for some fields if Yahoo omits them, but validate if present)
+                if (c <= 0) continue;
+                if (h.HasValue && l.HasValue && h < l) continue;
+                if (o.HasValue && o < 0) continue;
+                if (v.HasValue && v < 0) continue;
 
-                // Mapp All the data to EodData object and return it
+                // Map All the data to EodData object and return it
                 return new EodData
                 {
                     Symbol = symbol,
@@ -50,11 +61,11 @@ namespace EODService.DTOs.YahooEODResponse
                    .FromUnixTimeSeconds(timestamps[i])
                    .UtcDateTime,
 
-                    Open = GetValue(quote.Open, i),
-                    High = GetValue(quote.High, i),
-                    Low = GetValue(quote.Low, i),
-                    Close = GetValue(quote.Close, i),
-                    Volume = GetValue(quote.Volume, i),
+                    Open = o,
+                    High = h,
+                    Low = l,
+                    Close = c,
+                    Volume = v,
 
                     AdjustedClose = GetValue(
                     result.Indicators.Adjclose?
