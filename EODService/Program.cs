@@ -6,15 +6,14 @@ using EODService.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using EODService.Persistance.Repo;
 using EODService.DTOs.EOD;
 
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
 
-if (providerSettings == null)
+if (providerSettings == null || string.IsNullOrWhiteSpace(providerSettings.ActiveProvider))
 {
-    Console.WriteLine("ERROR: Could not load ProviderSettings from appsettings.json. Exiting.");
+    Console.WriteLine("ERROR: 'ProviderSettings:ActiveProvider' is missing or empty in appsettings.json. Exiting.");
     return;
 }
 
@@ -23,15 +22,35 @@ Console.WriteLine($"Active Provider: {providerSettings.ActiveProvider}");
 // ─── Step 2: Load SymbolSettings ─────────────────────────────────────────────
 var symbolSettings = SymbolSettingsMapper.MapToSymbolSettings();
 
-if (symbolSettings == null)
+if (symbolSettings == null || symbolSettings.Symbols == null || !symbolSettings.Symbols.Any())
 {
-    Console.WriteLine("ERROR: Could not load SymbolSettings from appsettings.json. Exiting.");
+    Console.WriteLine("ERROR: 'SymbolSettings:Symbols' is missing or empty in appsettings.json. Exiting.");
     return;
 }
 
 // ─── Step 3: Load Provider-Specific Settings ──────────────────────────────────
 var yahooSettings       = YahooSettingsMapper.MapToYahooSettings();
 var twelveDataSettings  = TwelveDataSettingsMapper.MapToTwelveDataSettings();
+
+// Validate Yahoo settings if it's the active provider
+if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgnoreCase))
+{
+    if (yahooSettings == null || string.IsNullOrWhiteSpace(yahooSettings.BaseUrl) || string.IsNullOrWhiteSpace(yahooSettings.Endpoint))
+    {
+        Console.WriteLine("ERROR: 'YahooSettings' (BaseUrl or Endpoint) is missing or empty in appsettings.json. Exiting.");
+        return;
+    }
+}
+
+// Validate TwelveData settings if it's the active provider
+if (providerSettings.ActiveProvider.Equals("TwelveData", StringComparison.OrdinalIgnoreCase))
+{
+    if (twelveDataSettings == null || string.IsNullOrWhiteSpace(twelveDataSettings.BaseUrl) || string.IsNullOrWhiteSpace(twelveDataSettings.ApiKey))
+    {
+        Console.WriteLine("ERROR: 'TwelveDataSettings' (BaseUrl or ApiKey) is missing or empty in appsettings.json. Exiting.");
+        return;
+    }
+}
 
 // ─── Step 4: Create Shared Dependencies ──────────────────────────────────────
 using var loggerFactory = LoggerFactory.Create(builder =>

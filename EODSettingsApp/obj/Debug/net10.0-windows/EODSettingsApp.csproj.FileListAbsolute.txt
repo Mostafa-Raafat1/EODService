@@ -1,0 +1,17 @@
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODSettingsApp.exe
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODSettingsApp.deps.json
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODSettingsApp.runtimeconfig.json
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODSettingsApp.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODSettingsApp.pdb
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.AssemblyInfoInputs.cache
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.AssemblyInfo.cs
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.csproj.CoreCompileInputs.cache
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.sourcelink.json
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\refint\EODSettingsApp.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.pdb
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.genruntimeconfig.cache
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\ref\EODSettingsApp.dll
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.Forms.SettingsForm.resources
+C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.csproj.GenerateResource.cache
