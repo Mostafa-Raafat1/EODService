@@ -1,4 +1,6 @@
+using System;
 using Microsoft.Extensions.Configuration;
+using EODService.Config;
 
 namespace EODService.DTOs.TwelveDataSettings
 {
@@ -6,13 +8,17 @@ namespace EODService.DTOs.TwelveDataSettings
     {
         public static TwelveDataSettings? MapToTwelveDataSettings()
         {
-            var configuration = new ConfigurationBuilder()
+            var builder = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                // External file overrides the internal one if it exists.
-                // This is written by the EODSettingsApp WinForms tool.
-                .AddJsonFile(@"C:\EODConfig\settings.json", optional: true, reloadOnChange: true)
-                .Build();
+                .AddJsonFile(PathesConfig.AppSettingsFileName, optional: false, reloadOnChange: true);
+
+            var activeProviderPath = PathesConfig.ActiveProviderSettingsPath;
+            if (!string.IsNullOrWhiteSpace(activeProviderPath))
+            {
+                builder.AddJsonFile(activeProviderPath, optional: true, reloadOnChange: true);
+            }
+
+            var configuration = builder.Build();
 
             return configuration
                 .GetSection("TwelveDataSettings")

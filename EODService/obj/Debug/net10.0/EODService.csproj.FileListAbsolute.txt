@@ -524,3 +524,4 @@ C:\Users\mostafa.raafat.inter\source\repos\EODService\EODService\obj\Debug\net10
 C:\Users\mostafa.raafat.inter\source\repos\EODService\EODService\obj\Debug\net10.0\EODService.pdb
 C:\Users\mostafa.raafat.inter\source\repos\EODService\EODService\obj\Debug\net10.0\EODService.genruntimeconfig.cache
 C:\Users\mostafa.raafat.inter\source\repos\EODService\EODService\obj\Debug\net10.0\ref\EODService.dll
+C:\Users\mostafa.raafat.inter\source\repos\EODService\EODService\bin\Debug\net10.0\PathesConfig.json

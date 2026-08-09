@@ -62,13 +62,13 @@ namespace EODSettingsApp.AppSettingsConfig
             File.WriteAllText(mainPath, updatedJson);
 
             // 2. Sync to current application bin directory if distinct
-            SyncToCopy(Path.Combine(AppContext.BaseDirectory, "AppSettings.json"), mainPath, updatedJson);
+            SyncToCopy(Path.Combine(AppContext.BaseDirectory, AppSettingsPath.FileName), mainPath, updatedJson);
 
             // 3. Sync to EODService bin/Debug output if distinct and exists
             var mainDir = Path.GetDirectoryName(mainPath);
             if (!string.IsNullOrEmpty(mainDir))
             {
-                var devBinPath = Path.GetFullPath(Path.Combine(mainDir, "bin", "Debug", "net10.0", "AppSettings.json"));
+                var devBinPath = Path.GetFullPath(Path.Combine(mainDir, "bin", "Debug", "net10.0", AppSettingsPath.FileName));
                 SyncToCopy(devBinPath, mainPath, updatedJson);
             }
         }
