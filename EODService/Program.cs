@@ -106,18 +106,21 @@ else
 
             var existingRecord = existingRecords.FirstOrDefault();
 
+            if (existingRecord == null)
+            {
+                dbContext.EodDaily.Add(result.ToDaily());
+                continue;
+            }
+
             // if the data is old
-            if(existingRecord.Date > result.Date)
+            if (existingRecord.Date > result.Date)
             {
                 Console.WriteLine($"WARNING: Existing record for {result.Symbol} on {existingRecord.Date:yyyy-MM-dd} is newer than incoming data ({result.Date:yyyy-MM-dd}). Skipping update.");
                 continue;
             }
 
 
-            if (existingRecord == null)
-            {
-                dbContext.EodDaily.Add(result.ToDaily());
-            }
+
             else
             {
                 // Update existing record
