@@ -92,8 +92,26 @@ namespace EODSettingsApp.Forms
                 if (providerSettings == null || symbolSettings == null)
                     throw new Exception("Could not load settings from appsettings.json.");
 
-                // 4. Build the HTTP client and service
-                using var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+                // 4. Build the UI Logger
+                var uiLogger = new Logging.UiLoggerProvider();
+                uiLogger.OnLog = (msg) =>
+                {
+                    if (IsDisposed) return;
+                    // Safely update the RichTextBox from background threads
+                    Invoke(() =>
+                    {
+                        rtbLogs.AppendText(msg + Environment.NewLine);
+                        rtbLogs.SelectionStart = rtbLogs.Text.Length;
+                        rtbLogs.ScrollToCaret();
+                    });
+                };
+
+                // 5. Build the HTTP client and service
+                using var loggerFactory = LoggerFactory.Create(b => 
+                {
+                    b.AddProvider(uiLogger);
+                });
+                
                 using var httpClient = new System.Net.Http.HttpClient();
                 httpClient.DefaultRequestHeaders.Add("User-Agent",
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
@@ -107,28 +125,39 @@ namespace EODSettingsApp.Forms
                     yahooSettings: yahooSettings,
                     twelveDataSettings: twelveDataSettings);
 
-                // 5. Fetch data
+                // 6. Fetch data
+                uiLogger.OnLog("Starting EOD data import...");
                 SetUiBusy(true, "Calling API...");
                 var results = await service.GetEodDataAsync();
 
                 if (results == null || !results.Any())
                 {
+                    uiLogger.OnLog("No data returned from the API.");
                     SetStatus("No data returned from the API.", success: false);
                     return;
                 }
 
-                // 6. Display results in the grid
+                // 7. Display results in the grid
+                uiLogger.OnLog($"Successfully downloaded {results.Count()} records.");
                 PopulateGrid(results);
                 SetStatus($"{results.Count()} record(s) fetched. Saving to database...", success: true);
 
-                // 7. Save to Oracle DB
+                // 8. Save to Oracle DB
+                uiLogger.OnLog("Saving to Oracle Database...");
                 await SaveToDatabase(results);
 
+                uiLogger.OnLog("Data saved to Oracle database successfully.");
                 SetStatus($"✔  {results.Count()} record(s) fetched and saved to Oracle DB successfully.", success: true);
             }
             catch (Exception ex)
             {
                 SetStatus($"✘  Error: {ex.Message}", success: false);
+                Invoke(() =>
+                {
+                    rtbLogs.SelectionColor = Color.Red;
+                    rtbLogs.AppendText($"ERROR: {ex.Message}{Environment.NewLine}");
+                    rtbLogs.SelectionColor = rtbLogs.ForeColor;
+                });
                 MessageBox.Show($"An error occurred:\n\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -262,6 +291,11 @@ namespace EODSettingsApp.Forms
         }
 
         private void lblGridTitle_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblStatus_Click(object sender, EventArgs e)
         {
 
         }
