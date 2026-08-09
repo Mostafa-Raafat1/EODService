@@ -130,6 +130,7 @@ else
                 existingRecord.Close         = result.Close;
                 existingRecord.AdjustedClose = result.AdjustedClose;
                 existingRecord.Volume        = result.Volume;
+                existingRecord.Date = result.Date.Date;
             }
         }
 

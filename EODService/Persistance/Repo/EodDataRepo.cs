@@ -31,7 +31,7 @@ namespace EODService.Persistance.Repo
 
         public async Task<DateTime?> GetLastDateForSymbol(string symbol)
         {
-            return await appDb.EodDaily
+            return await appDb.EodHistory
                 .Where(x => x.Symbol == symbol)
                 .MaxAsync(x => (DateTime?)x.Date);
         }
