@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using EODSettingsApp.ExternalConfig;
+using EODSettingsApp.Services;
 
 namespace EODSettingsApp.Forms
 {
@@ -12,25 +13,23 @@ namespace EODSettingsApp.Forms
             LoadCurrentSettings();
         }
 
+        // ── Active-provider dropdown ─────────────────────────────────────────────
+
         /// <summary>
-        /// On startup: read the external config and set the dropdown
-        /// to reflect the currently active provider.
+        /// On startup: reads the external config and pre-selects the active provider.
         /// </summary>
         private void LoadCurrentSettings()
         {
             try
             {
                 var settings = ExternalSettingsService.Load();
-                var currentProvider = settings.ProviderSettings.ActiveProvider;
-
-                // Select the right item in the dropdown
-                var index = cmbProvider.Items.IndexOf(currentProvider);
+                var index    = cmbProvider.Items.IndexOf(settings.ProviderSettings.ActiveProvider);
                 cmbProvider.SelectedIndex = index >= 0 ? index : 0;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Could not load settings:\n{ex.Message}",
+                    $"Could not load active-provider setting:\n{ex.Message}",
                     "Load Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
@@ -40,68 +39,101 @@ namespace EODSettingsApp.Forms
         }
 
         /// <summary>
-        /// On Save: write the selected provider to C:\EODConfig\settings.json.
+        /// Validates selection → saves active provider → launches EODService.
         /// </summary>
         private void BtnSave_Click(object? sender, EventArgs e)
         {
+            if (!TryGetSelectedProvider(out var selectedProvider))
+                return;
+
+            if (!TrySaveActiveProvider(selectedProvider))
+                return;
+
+            TryLaunchEodService(selectedProvider);
+        }
+
+        private bool TryGetSelectedProvider(out string provider)
+        {
+            provider = string.Empty;
+
+            if (cmbProvider.SelectedItem == null)
+            {
+                MessageBox.Show(
+                    "Please select a provider before saving.",
+                    "Validation",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return false;
+            }
+
+            provider = cmbProvider.SelectedItem.ToString()!;
+            return true;
+        }
+
+        private bool TrySaveActiveProvider(string selectedProvider)
+        {
             try
             {
-                if (cmbProvider.SelectedItem == null)
-                {
-                    MessageBox.Show(
-                        "Please select a provider before saving.",
-                        "Validation",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    return;
-                }
-
-                var selectedProvider = cmbProvider.SelectedItem.ToString()!;
-
-                var settings = new ExternalSettings
+                ExternalSettingsService.Save(new ExternalSettings
                 {
                     ProviderSettings = new ProviderSettingsSection
                     {
                         ActiveProvider = selectedProvider
                     }
-                };
+                });
 
-                ExternalSettingsService.Save(settings);
-
-                // Show success feedback in the status label
-                lblStatus.ForeColor = System.Drawing.Color.FromArgb(22, 163, 74); // green
-                lblStatus.Text = $"✔  Saved! Active Provider set to '{selectedProvider}'.";
+                SetStatus(success: true,
+                    $"✔  Saved! Active Provider set to '{selectedProvider}'.");
+                return true;
             }
             catch (Exception ex)
             {
-                lblStatus.ForeColor = System.Drawing.Color.FromArgb(185, 28, 28); // red
-                lblStatus.Text = $"✘  Error: {ex.Message}";
+                SetStatus(success: false, $"✘  Save failed: {ex.Message}");
+                return false;
             }
         }
 
-        private void cmbProvider_SelectedIndexChanged(object sender, EventArgs e)
+        private void TryLaunchEodService(string selectedProvider)
         {
+            try
+            {
+                var exePath = EodServiceLauncher.ResolveExePath();
+                EodServiceLauncher.Launch(exePath);
 
+                SetStatus(success: true,
+                    $"✔  Saved & launched EODService (provider: {selectedProvider}).");
+            }
+            catch (Exception ex)
+            {
+                SetStatus(success: false, $"✘  Launch failed: {ex.Message}");
+            }
         }
 
-        private void SettingsForm_Load(object sender, EventArgs e)
+        private void SetStatus(bool success, string message)
         {
-
+            lblStatus.ForeColor = success
+                ? System.Drawing.Color.FromArgb(22, 163, 74)
+                : System.Drawing.Color.FromArgb(185, 28, 28);
+            lblStatus.Text = message;
         }
 
-        private void lblTitle_Click(object sender, EventArgs e)
-        {
+        // ── Menu handlers ────────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Settings → Provider Settings: opens the provider API settings dialog.
+        /// </summary>
+        private void MnuItemProviderSettings_Click(object? sender, EventArgs e)
+        {
+            using var form = new ProviderSettingsForm();
+            form.ShowDialog(this);
         }
 
-        private void pnlHeader_Paint(object sender, PaintEventArgs e)
-        {
+        // ── Unused designer event stubs ──────────────────────────────────────────
 
-        }
-
-        private void cmbProvider_SelectedIndexChanged_1(object sender, EventArgs e)
-        {
-
-        }
+        private void cmbProvider_SelectedIndexChanged(object sender, EventArgs e) { }
+        private void SettingsForm_Load(object sender, EventArgs e) { }
+        private void lblTitle_Click(object sender, EventArgs e) { }
+        private void pnlHeader_Paint(object sender, PaintEventArgs e) { }
+        private void cmbProvider_SelectedIndexChanged_1(object sender, EventArgs e) { }
     }
 }
