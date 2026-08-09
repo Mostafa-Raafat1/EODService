@@ -10,5 +10,38 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EODService\EODService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pin these to the same versions used by EODService to avoid assembly conflicts -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore"          Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration"     Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console"   Version="10.0.10" />
+  </ItemGroup>
+
+
+  <!-- After each build, copy EODSettingsApp.exe next to EODService.exe -->
+  <!-- Uses MSBuildThisFileDirectory (always defined) instead of SolutionDir (undefined in single-project builds) -->
+  <Target Name="CopyToEODServiceOutput" AfterTargets="Build">
+    <PropertyGroup>
+      <EODServiceOutputDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\EODService\bin\$(Configuration)\net10.0\'))</EODServiceOutputDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Only copy the main EXE and its direct support files — not sub-language folders -->
+      <FilesToCopy Include="$(OutputPath)EODSettingsApp.exe" />
+      <FilesToCopy Include="$(OutputPath)EODSettingsApp.dll" />
+      <FilesToCopy Include="$(OutputPath)EODSettingsApp.runtimeconfig.json" />
+      <FilesToCopy Include="$(OutputPath)EODSettingsApp.deps.json" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(FilesToCopy)"
+      DestinationFolder="$(EODServiceOutputDir)"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(EODServiceOutputDir)')" />
+  </Target>
 
 </Project>

@@ -7,16 +7,19 @@ namespace EODSettingsApp.Forms
     {
         private System.ComponentModel.IContainer components = null;
 
-        private Panel    pnlHeader;
-        private Label    lblTitle;
-        private Label    lblSubtitle;
-        private Panel    pnlBody;
-        private Label    lblProviderLabel;
-        private ComboBox cmbProvider;
-        private Label    lblProviderHint;
-        private Panel    pnlFooter;
-        private Button   btnSave;
-        private Label    lblStatus;
+        private Panel        pnlHeader;
+        private Label        lblTitle;
+        private Label        lblSubtitle;
+        private Panel        pnlControls;
+        private Label        lblProviderLabel;
+        private ComboBox     cmbProvider;
+        private Label        lblProviderHint;
+        private Button       btnGetData;
+        private Label        lblStatus;
+        private Panel        pnlGrid;       // outer wrapper (DockStyle.Fill)
+        private Panel        pnlGridHeader; // top strip inside pnlGrid
+        private Label        lblGridTitle;
+        private DataGridView dgvResults;    // fills the rest of pnlGrid
 
         protected override void Dispose(bool disposing)
         {
@@ -27,19 +30,27 @@ namespace EODSettingsApp.Forms
 
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             pnlHeader = new Panel();
             lblTitle = new Label();
             lblSubtitle = new Label();
-            pnlBody = new Panel();
+            pnlControls = new Panel();
             lblProviderLabel = new Label();
             cmbProvider = new ComboBox();
             lblProviderHint = new Label();
-            pnlFooter = new Panel();
-            btnSave = new Button();
+            btnGetData = new Button();
             lblStatus = new Label();
+            pnlGrid = new Panel();
+            dgvResults = new DataGridView();
+            pnlGridHeader = new Panel();
+            lblGridTitle = new Label();
             pnlHeader.SuspendLayout();
-            pnlBody.SuspendLayout();
-            pnlFooter.SuspendLayout();
+            pnlControls.SuspendLayout();
+            pnlGrid.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
+            pnlGridHeader.SuspendLayout();
             SuspendLayout();
             // 
             // pnlHeader
@@ -50,132 +61,201 @@ namespace EODSettingsApp.Forms
             pnlHeader.Dock = DockStyle.Top;
             pnlHeader.Location = new Point(0, 0);
             pnlHeader.Name = "pnlHeader";
-            pnlHeader.Size = new Size(460, 80);
-            pnlHeader.TabIndex = 0;
-            pnlHeader.Paint += pnlHeader_Paint;
+            pnlHeader.Size = new Size(1034, 80);
+            pnlHeader.TabIndex = 2;
             // 
             // lblTitle
             // 
-            lblTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblTitle.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Location = new Point(20, 12);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(380, 30);
+            lblTitle.Size = new Size(600, 32);
             lblTitle.TabIndex = 0;
-            lblTitle.Text = "EOD Service Settings";
-            lblTitle.Click += lblTitle_Click;
+            lblTitle.Text = "EOD Data Service";
             // 
             // lblSubtitle
             // 
             lblSubtitle.Font = new Font("Segoe UI", 9F);
             lblSubtitle.ForeColor = Color.FromArgb(180, 210, 255);
-            lblSubtitle.Location = new Point(22, 46);
+            lblSubtitle.Location = new Point(22, 48);
             lblSubtitle.Name = "lblSubtitle";
-            lblSubtitle.Size = new Size(380, 22);
+            lblSubtitle.Size = new Size(700, 22);
             lblSubtitle.TabIndex = 1;
-            lblSubtitle.Text = "Configure your active data provider";
+            lblSubtitle.Text = "Select a provider and click Get Data to fetch and save EOD prices";
             // 
-            // pnlBody
+            // pnlControls
             // 
-            pnlBody.BackColor = Color.FromArgb(245, 247, 250);
-            pnlBody.Controls.Add(lblProviderLabel);
-            pnlBody.Controls.Add(cmbProvider);
-            pnlBody.Controls.Add(lblProviderHint);
-            pnlBody.Dock = DockStyle.Fill;
-            pnlBody.Location = new Point(0, 80);
-            pnlBody.Name = "pnlBody";
-            pnlBody.Size = new Size(460, 170);
-            pnlBody.TabIndex = 1;
+            pnlControls.BackColor = Color.FromArgb(235, 238, 245);
+            pnlControls.Controls.Add(lblProviderLabel);
+            pnlControls.Controls.Add(cmbProvider);
+            pnlControls.Controls.Add(lblProviderHint);
+            pnlControls.Controls.Add(btnGetData);
+            pnlControls.Controls.Add(lblStatus);
+            pnlControls.Dock = DockStyle.Top;
+            pnlControls.Location = new Point(0, 80);
+            pnlControls.Name = "pnlControls";
+            pnlControls.Size = new Size(1034, 90);
+            pnlControls.TabIndex = 1;
             // 
             // lblProviderLabel
             // 
-            lblProviderLabel.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblProviderLabel.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             lblProviderLabel.ForeColor = Color.FromArgb(30, 41, 59);
-            lblProviderLabel.Location = new Point(28, 30);
+            lblProviderLabel.Location = new Point(20, 18);
             lblProviderLabel.Name = "lblProviderLabel";
-            lblProviderLabel.Size = new Size(200, 24);
+            lblProviderLabel.Size = new Size(160, 22);
             lblProviderLabel.TabIndex = 0;
-            lblProviderLabel.Text = "Active Data Provider";
+            lblProviderLabel.Text = "Active Data Provider:";
             // 
             // cmbProvider
             // 
             cmbProvider.BackColor = Color.White;
             cmbProvider.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbProvider.FlatStyle = FlatStyle.Flat;
-            cmbProvider.Font = new Font("Segoe UI", 11F);
+            cmbProvider.Font = new Font("Segoe UI", 10F);
             cmbProvider.ForeColor = Color.FromArgb(15, 23, 42);
             cmbProvider.Items.AddRange(new object[] { "TwelveData", "Yahoo" });
-            cmbProvider.Location = new Point(28, 60);
+            cmbProvider.Location = new Point(190, 14);
             cmbProvider.Name = "cmbProvider";
-            cmbProvider.Size = new Size(400, 28);
-            cmbProvider.TabIndex = 1;
-            cmbProvider.SelectedIndexChanged += cmbProvider_SelectedIndexChanged_1;
+            cmbProvider.Size = new Size(200, 25);
+            cmbProvider.TabIndex = 0;
             // 
             // lblProviderHint
             // 
-            lblProviderHint.Font = new Font("Segoe UI", 8.5F, FontStyle.Italic);
+            lblProviderHint.Font = new Font("Segoe UI", 8F, FontStyle.Italic);
             lblProviderHint.ForeColor = Color.FromArgb(100, 116, 139);
-            lblProviderHint.Location = new Point(28, 98);
+            lblProviderHint.Location = new Point(20, 52);
             lblProviderHint.Name = "lblProviderHint";
-            lblProviderHint.Size = new Size(400, 20);
-            lblProviderHint.TabIndex = 2;
-            lblProviderHint.Text = "The selected provider will be used the next time EODService runs.";
+            lblProviderHint.Size = new Size(500, 18);
+            lblProviderHint.TabIndex = 1;
+            lblProviderHint.Text = "Data will be fetched and saved to Oracle DB automatically.";
             // 
-            // pnlFooter
+            // btnGetData
             // 
-            pnlFooter.BackColor = Color.FromArgb(226, 232, 240);
-            pnlFooter.Controls.Add(btnSave);
-            pnlFooter.Controls.Add(lblStatus);
-            pnlFooter.Dock = DockStyle.Bottom;
-            pnlFooter.Location = new Point(0, 250);
-            pnlFooter.Name = "pnlFooter";
-            pnlFooter.Size = new Size(460, 70);
-            pnlFooter.TabIndex = 2;
-            // 
-            // btnSave
-            // 
-            btnSave.BackColor = Color.FromArgb(30, 58, 138);
-            btnSave.Cursor = Cursors.Hand;
-            btnSave.FlatAppearance.BorderSize = 0;
-            btnSave.FlatStyle = FlatStyle.Flat;
-            btnSave.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnSave.ForeColor = Color.White;
-            btnSave.Location = new Point(296, 15);
-            btnSave.Name = "btnSave";
-            btnSave.Size = new Size(150, 40);
-            btnSave.TabIndex = 0;
-            btnSave.Text = "Save Settings";
-            btnSave.UseVisualStyleBackColor = false;
-            btnSave.Click += BtnSave_Click;
+            btnGetData.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnGetData.BackColor = Color.FromArgb(30, 58, 138);
+            btnGetData.Cursor = Cursors.Hand;
+            btnGetData.FlatAppearance.BorderSize = 0;
+            btnGetData.FlatStyle = FlatStyle.Flat;
+            btnGetData.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnGetData.ForeColor = Color.White;
+            btnGetData.Location = new Point(1714, 24);
+            btnGetData.Name = "btnGetData";
+            btnGetData.Size = new Size(140, 40);
+            btnGetData.TabIndex = 1;
+            btnGetData.Text = "Get Data";
+            btnGetData.UseVisualStyleBackColor = false;
+            btnGetData.Click += BtnGetData_Click;
             // 
             // lblStatus
             // 
+            lblStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblStatus.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblStatus.ForeColor = Color.FromArgb(22, 163, 74);
-            lblStatus.Location = new Point(16, 24);
+            lblStatus.Location = new Point(400, 32);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(270, 22);
-            lblStatus.TabIndex = 1;
+            lblStatus.Size = new Size(1304, 22);
+            lblStatus.TabIndex = 2;
+            // 
+            // pnlGrid
+            // 
+            pnlGrid.BackColor = Color.FromArgb(245, 247, 250);
+            pnlGrid.Controls.Add(dgvResults);
+            pnlGrid.Controls.Add(pnlGridHeader);
+            pnlGrid.Dock = DockStyle.Fill;
+            pnlGrid.Location = new Point(0, 170);
+            pnlGrid.Name = "pnlGrid";
+            pnlGrid.Padding = new Padding(12, 0, 12, 12);
+            pnlGrid.Size = new Size(1034, 471);
+            pnlGrid.TabIndex = 0;
+            // 
+            // dgvResults
+            // 
+            dgvResults.AllowUserToAddRows = false;
+            dgvResults.AllowUserToDeleteRows = false;
+            dgvResults.AllowUserToResizeRows = false;
+            dataGridViewCellStyle4.BackColor = Color.FromArgb(241, 245, 249);
+            dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dgvResults.BackgroundColor = Color.White;
+            dgvResults.BorderStyle = BorderStyle.None;
+            dgvResults.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = Color.FromArgb(30, 58, 138);
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            dataGridViewCellStyle5.ForeColor = Color.White;
+            dataGridViewCellStyle5.Padding = new Padding(8, 0, 0, 0);
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+            dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dgvResults.ColumnHeadersHeight = 38;
+            dgvResults.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = SystemColors.Window;
+            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9.5F);
+            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle6.Padding = new Padding(8, 2, 4, 2);
+            dataGridViewCellStyle6.SelectionBackColor = Color.FromArgb(191, 219, 254);
+            dataGridViewCellStyle6.SelectionForeColor = Color.FromArgb(15, 23, 42);
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            dgvResults.DefaultCellStyle = dataGridViewCellStyle6;
+            dgvResults.Dock = DockStyle.Fill;
+            dgvResults.EnableHeadersVisualStyles = false;
+            dgvResults.Font = new Font("Segoe UI", 9.5F);
+            dgvResults.GridColor = Color.FromArgb(226, 232, 240);
+            dgvResults.Location = new Point(12, 36);
+            dgvResults.MultiSelect = false;
+            dgvResults.Name = "dgvResults";
+            dgvResults.ReadOnly = true;
+            dgvResults.RowHeadersVisible = false;
+            dgvResults.RowTemplate.Height = 30;
+            dgvResults.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvResults.Size = new Size(1010, 423);
+            dgvResults.TabIndex = 0;
+            dgvResults.CellContentClick += dgvResults_CellContentClick_1;
+            // 
+            // pnlGridHeader
+            // 
+            pnlGridHeader.BackColor = Color.FromArgb(245, 247, 250);
+            pnlGridHeader.Controls.Add(lblGridTitle);
+            pnlGridHeader.Dock = DockStyle.Top;
+            pnlGridHeader.Location = new Point(12, 0);
+            pnlGridHeader.Name = "pnlGridHeader";
+            pnlGridHeader.Size = new Size(1010, 36);
+            pnlGridHeader.TabIndex = 1;
+            // 
+            // lblGridTitle
+            // 
+            lblGridTitle.Dock = DockStyle.Fill;
+            lblGridTitle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblGridTitle.ForeColor = Color.FromArgb(30, 58, 138);
+            lblGridTitle.Location = new Point(0, 0);
+            lblGridTitle.Name = "lblGridTitle";
+            lblGridTitle.Size = new Size(1010, 36);
+            lblGridTitle.TabIndex = 0;
+            lblGridTitle.Text = "EOD Results";
+            lblGridTitle.TextAlign = ContentAlignment.MiddleLeft;
+            lblGridTitle.Click += lblGridTitle_Click;
             // 
             // SettingsForm
             // 
             BackColor = Color.FromArgb(245, 247, 250);
-            ClientSize = new Size(460, 320);
-            Controls.Add(pnlBody);
+            ClientSize = new Size(1034, 641);
+            Controls.Add(pnlGrid);
+            Controls.Add(pnlControls);
             Controls.Add(pnlHeader);
-            Controls.Add(pnlFooter);
             Font = new Font("Segoe UI", 9.5F);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
-            MaximumSize = new Size(476, 359);
-            MinimumSize = new Size(476, 359);
+            MinimumSize = new Size(800, 550);
             Name = "SettingsForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "EOD Service — Settings";
-            Load += SettingsForm_Load;
+            Text = "EOD Data Service — Settings & Results";
             pnlHeader.ResumeLayout(false);
-            pnlBody.ResumeLayout(false);
-            pnlFooter.ResumeLayout(false);
+            pnlControls.ResumeLayout(false);
+            pnlGrid.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
+            pnlGridHeader.ResumeLayout(false);
             ResumeLayout(false);
         }
     }
