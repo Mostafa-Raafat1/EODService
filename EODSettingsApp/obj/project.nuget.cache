@@ -141,15 +141,6 @@
   ],
   "logs": [
     {
-      "code": "Undefined",
-      "level": "Warning",
-      "message": "Problem reading the cache file C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODSettingsApp\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0.",
-      "projectPath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODSettingsApp\\EODSettingsApp.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODSettingsApp\\EODSettingsApp.csproj",
-      "targetGraphs": []
-    },
-    {
       "code": "NU1901",
       "level": "Warning",
       "message": "Package 'NuGet.Packaging' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",

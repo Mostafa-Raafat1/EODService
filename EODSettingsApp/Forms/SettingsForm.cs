@@ -252,24 +252,21 @@ namespace EODSettingsApp.Forms
 
         }
 
-        private void pnlGrid_Paint_1(object sender, PaintEventArgs e)
-        {
-            lblStatus.ForeColor = success
-                ? System.Drawing.Color.FromArgb(22, 163, 74)
-                : System.Drawing.Color.FromArgb(185, 28, 28);
-            lblStatus.Text = message;
-        }
-
         // ── Menu handlers ────────────────────────────────────────────────────────
 
-        private void dgvResults_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
+        /// <summary>
+        /// Settings → Provider Settings: opens the provider API settings dialog.
+        /// </summary>
+        private void MnuItemProviderSettings_Click(object? sender, EventArgs e)
         {
             using var form = new ProviderSettingsForm();
             form.ShowDialog(this);
         }
 
+        private void dgvResults_CellContentClick_1(object sender, DataGridViewCellEventArgs e) { }
+
         private void lblGridTitle_Click(object sender, EventArgs e)
-        {
+        { }
 
         private void cmbProvider_SelectedIndexChanged(object sender, EventArgs e) { }
         private void SettingsForm_Load(object sender, EventArgs e) { }

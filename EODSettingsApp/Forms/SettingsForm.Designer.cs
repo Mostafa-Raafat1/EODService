@@ -21,6 +21,11 @@ namespace EODSettingsApp.Forms
         private Label        lblGridTitle;
         private DataGridView dgvResults;    // fills the rest of pnlGrid
 
+        // Menu bar
+        private MenuStrip         mnuMain;
+        private ToolStripMenuItem mnuItemSettings;
+        private ToolStripMenuItem mnuItemProviderSettings;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -45,38 +50,17 @@ namespace EODSettingsApp.Forms
             pnlGrid = new Panel();
             dgvResults = new DataGridView();
             pnlGridHeader = new Panel();
-            lblGridTitle = new Label();
+            lblGridTitle            = new Label();
+            mnuMain                 = new MenuStrip();
+            mnuItemSettings         = new ToolStripMenuItem();
+            mnuItemProviderSettings = new ToolStripMenuItem();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             pnlGrid.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
             pnlGridHeader.SuspendLayout();
+            mnuMain.SuspendLayout();
             SuspendLayout();
-            // 
-            // mnuMain
-            // 
-            mnuMain.BackColor = Color.FromArgb(23, 48, 107);
-            mnuMain.ForeColor = Color.White;
-            mnuMain.Items.AddRange(new ToolStripItem[] { mnuItemSettings });
-            mnuMain.Location = new Point(0, 0);
-            mnuMain.Name = "mnuMain";
-            mnuMain.Size = new Size(460, 24);
-            mnuMain.TabIndex = 0;
-            // 
-            // mnuItemSettings
-            // 
-            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings });
-            mnuItemSettings.ForeColor = Color.White;
-            mnuItemSettings.Name = "mnuItemSettings";
-            mnuItemSettings.Size = new Size(61, 20);
-            mnuItemSettings.Text = "Settings";
-            // 
-            // mnuItemProviderSettings
-            // 
-            mnuItemProviderSettings.Name = "mnuItemProviderSettings";
-            mnuItemProviderSettings.Size = new Size(163, 22);
-            mnuItemProviderSettings.Text = "Provider Settings";
-            mnuItemProviderSettings.Click += MnuItemProviderSettings_Click;
             // 
             // pnlHeader
             // 
@@ -165,7 +149,7 @@ namespace EODSettingsApp.Forms
             btnGetData.FlatStyle = FlatStyle.Flat;
             btnGetData.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnGetData.ForeColor = Color.White;
-            btnGetData.Location = new Point(1714, 24);
+            btnGetData.Location = new Point(878, 24);
             btnGetData.Name = "btnGetData";
             btnGetData.Size = new Size(140, 40);
             btnGetData.TabIndex = 1;
@@ -180,7 +164,7 @@ namespace EODSettingsApp.Forms
             lblStatus.ForeColor = Color.FromArgb(22, 163, 74);
             lblStatus.Location = new Point(400, 32);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(1304, 22);
+            lblStatus.Size = new Size(464, 22);
             lblStatus.TabIndex = 2;
             // 
             // pnlGrid
@@ -263,6 +247,29 @@ namespace EODSettingsApp.Forms
             lblGridTitle.Text = "EOD Results";
             lblGridTitle.TextAlign = ContentAlignment.MiddleLeft;
             lblGridTitle.Click += lblGridTitle_Click;
+            //
+            // mnuMain
+            //
+            mnuMain.BackColor = Color.FromArgb(23, 48, 107);
+            mnuMain.ForeColor = Color.White;
+            mnuMain.Items.Add(mnuItemSettings);
+            mnuMain.Location  = new Point(0, 0);
+            mnuMain.Name      = "mnuMain";
+            mnuMain.Size      = new Size(1034, 24);
+            mnuMain.TabIndex  = 4;
+            //
+            // mnuItemSettings
+            //
+            mnuItemSettings.ForeColor = Color.White;
+            mnuItemSettings.Name      = "mnuItemSettings";
+            mnuItemSettings.Text      = "Settings";
+            mnuItemSettings.DropDownItems.Add(mnuItemProviderSettings);
+            //
+            // mnuItemProviderSettings
+            //
+            mnuItemProviderSettings.Name   = "mnuItemProviderSettings";
+            mnuItemProviderSettings.Text   = "Provider Settings";
+            mnuItemProviderSettings.Click += MnuItemProviderSettings_Click;
             // 
             // SettingsForm
             // 
@@ -271,7 +278,9 @@ namespace EODSettingsApp.Forms
             Controls.Add(pnlGrid);
             Controls.Add(pnlControls);
             Controls.Add(pnlHeader);
+            Controls.Add(mnuMain);   // highest Z-order → docks to very top (24 px)
             Font = new Font("Segoe UI", 9.5F);
+            MainMenuStrip = mnuMain;
             MinimumSize = new Size(800, 550);
             Name = "SettingsForm";
             StartPosition = FormStartPosition.CenterScreen;
@@ -281,6 +290,8 @@ namespace EODSettingsApp.Forms
             pnlGrid.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
             pnlGridHeader.ResumeLayout(false);
+            mnuMain.ResumeLayout(false);
+            mnuMain.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }

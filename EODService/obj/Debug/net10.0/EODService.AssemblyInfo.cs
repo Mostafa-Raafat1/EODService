@@ -13,11 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EODService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-<<<<<<< HEAD
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1a07185178e123d84828825f29c6e3e83663a875")]
-=======
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+39f8965771dfe7f4be6f39222bf44105a0e1972b")]
->>>>>>> origin/moneerr
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+979650166baf5474029d338ad0fb0ae8a07d18c9")]
 [assembly: System.Reflection.AssemblyProductAttribute("EODService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EODService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

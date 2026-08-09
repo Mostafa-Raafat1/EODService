@@ -7181,12 +7181,6 @@
   },
   "logs": [
     {
-      "code": "Undefined",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Problem reading the cache file C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODSettingsApp\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0."
-    },
-    {
       "code": "NU1901",
       "level": "Warning",
       "warningLevel": 1,
