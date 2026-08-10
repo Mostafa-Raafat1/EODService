@@ -109,8 +109,8 @@ namespace EODService.Services
                         symbol);
                 }
 
-                // Respect Yahoo Finance rate limit — wait 1.5s between requests
-                await Task.Delay(1500);
+                // Respect Yahoo Finance rate limit — wait 0.2s between requests
+                await Task.Delay(200);
             }
 
             _logger.LogInformation(

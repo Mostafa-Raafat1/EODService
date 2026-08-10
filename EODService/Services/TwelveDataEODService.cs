@@ -53,7 +53,7 @@ namespace EODService.Services
 
                     using var stream = await response.Content.ReadAsStreamAsync();
 
-                    // Stream raw JSON directly into TwelveDataResponse DTO without intermediate string allocation
+                    // Stream JSON directly to the deserializer to avoid loading the entire response into memory
                     var twelveDataResponse = await JsonSerializer.DeserializeAsync<TwelveDataResponse>(stream, _jsonOptions);
 
                     if (twelveDataResponse == null)
@@ -103,8 +103,8 @@ namespace EODService.Services
                         symbol);
                 }
 
-                // Respect Twelve Data rate limit — wait 1.5s between requests
-                await Task.Delay(1500);
+                // Respect Twelve Data rate limit — wait 0.2s between requests
+                await Task.Delay(200);
             }
 
             _logger.LogInformation(
