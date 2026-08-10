@@ -26,8 +26,12 @@ namespace EODSettingsApp.Forms
         {
             InitializeComponent();
             SetupGridColumns();
+
+            // 1. Asynchronously load UI settings and database container records immediately on startup
+            _ = LoadCurrentSettingsAsync();
+
+            // 2. Start background log monitoring and run initial poll immediately (no 2-sec delay)
             InitializeBackgroundLogAndGridMonitoring();
-            Shown += async (s, e) => await LoadCurrentSettingsAsync();
         }
 
         // ── Startup: read settings and populate UI + DataGridView Container ───────
@@ -45,7 +49,7 @@ namespace EODSettingsApp.Forms
                 var appSettings = AppSettingsService.Load();
                 PopulateScheduleUI(appSettings.ScheduleSettings);
 
-                // 3. Retrieve and populate existing database records into DataGridView container on startup
+                // 3. Retrieve and populate existing database records into DataGridView container asynchronously
                 await RefreshGridFromDatabaseAsync();
             }
             catch (Exception ex)
@@ -137,7 +141,7 @@ namespace EODSettingsApp.Forms
                 var exePath = EodServiceLauncher.ResolveExePath();
                 WindowsTaskSchedulerService.RegisterOrUpdateTask(scheduleSection, exePath);
 
-                // 5. Update UI status & Next Run indicator (only updated on Save and Schedule Run)
+                // 5. Update UI status & Next Run indicator
                 UpdateNextRunIndicator(scheduleSection);
                 SetStatus($"✔ Schedule saved & Windows Task updated (Provider: {selectedProvider}).", success: true);
                 AppendLog($"[Schedule] Settings saved successfully. Windows Task '{ (chkEnableSchedule.Checked ? "Updated" : "Disabled") }'.");
@@ -216,6 +220,9 @@ namespace EODSettingsApp.Forms
             _logPollTimer.Interval = 2000; // Poll every 2 seconds
             _logPollTimer.Tick += async (s, e) => await PollLogFileAndRefreshGridAsync();
             _logPollTimer.Start();
+
+            // Run initial log poll immediately on launch without waiting 2000ms
+            _ = PollLogFileAndRefreshGridAsync();
         }
 
         private async Task PollLogFileAndRefreshGridAsync()
@@ -275,27 +282,27 @@ namespace EODSettingsApp.Forms
                 using var dbContext = AppDbContextFactory.Create(connectionString);
                 var dailyRecords = await dbContext.EodDaily.AsNoTracking().ToListAsync();
 
-                dgvResults.Rows.Clear();
                 if (dailyRecords != null && dailyRecords.Any())
                 {
-                    foreach (var r in dailyRecords)
+                    // Thread-safe update onto WinForms UI thread
+                    Invoke(() =>
                     {
-                        dgvResults.Rows.Add(
-                            r.Symbol,
-                            r.Date.ToString("yyyy-MM-dd"),
-                            r.Open?.ToString("F4") ?? "-",
-                            r.High?.ToString("F4") ?? "-",
-                            r.Low?.ToString("F4") ?? "-",
-                            r.Close?.ToString("F4") ?? "-",
-                            r.AdjustedClose?.ToString("F4") ?? "-",
-                            r.Volume?.ToString("N0") ?? "-"
-                        );
-                    }
-                    lblGridTitle.Text = $"EOD Results (Automated Service Operations) — {dailyRecords.Count} record(s)";
-                }
-                else
-                {
-                    lblGridTitle.Text = "EOD Results (0 records in database)";
+                        dgvResults.Rows.Clear();
+                        foreach (var r in dailyRecords)
+                        {
+                            dgvResults.Rows.Add(
+                                r.Symbol,
+                                r.Date.ToString("yyyy-MM-dd"),
+                                r.Open?.ToString("F4") ?? "-",
+                                r.High?.ToString("F4") ?? "-",
+                                r.Low?.ToString("F4") ?? "-",
+                                r.Close?.ToString("F4") ?? "-",
+                                r.AdjustedClose?.ToString("F4") ?? "-",
+                                r.Volume?.ToString("N0") ?? "-"
+                            );
+                        }
+                        lblGridTitle.Text = $"EOD Results (Automated Service Operations) — {dailyRecords.Count} record(s)";
+                    });
                 }
             }
             catch (Exception ex)
@@ -327,19 +334,25 @@ namespace EODSettingsApp.Forms
         private void AppendLog(string message)
         {
             if (rtbLogs.IsDisposed) return;
-            rtbLogs.AppendText($"{message}{Environment.NewLine}");
-            rtbLogs.SelectionStart = rtbLogs.Text.Length;
-            rtbLogs.ScrollToCaret();
+            Invoke(() =>
+            {
+                rtbLogs.AppendText($"{message}{Environment.NewLine}");
+                rtbLogs.SelectionStart = rtbLogs.Text.Length;
+                rtbLogs.ScrollToCaret();
+            });
         }
 
         private void AppendLogError(string message)
         {
             if (rtbLogs.IsDisposed) return;
-            rtbLogs.SelectionColor = Color.Red;
-            rtbLogs.AppendText($"ERROR: {message}{Environment.NewLine}");
-            rtbLogs.SelectionColor = rtbLogs.ForeColor;
-            rtbLogs.SelectionStart = rtbLogs.Text.Length;
-            rtbLogs.ScrollToCaret();
+            Invoke(() =>
+            {
+                rtbLogs.SelectionColor = Color.Red;
+                rtbLogs.AppendText($"ERROR: {message}{Environment.NewLine}");
+                rtbLogs.SelectionColor = rtbLogs.ForeColor;
+                rtbLogs.SelectionStart = rtbLogs.Text.Length;
+                rtbLogs.ScrollToCaret();
+            });
         }
 
         private void SetStatus(string message, bool success)
