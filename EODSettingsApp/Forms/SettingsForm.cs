@@ -25,13 +25,13 @@ namespace EODSettingsApp.Forms
         public SettingsForm()
         {
             InitializeComponent();
-            LoadCurrentSettings();
             SetupGridColumns();
             InitializeBackgroundLogAndGridMonitoring();
+            Shown += async (s, e) => await LoadCurrentSettingsAsync();
         }
 
-        // ── Startup: read settings and populate UI ────────────────────────────────
-        private async void LoadCurrentSettings()
+        // ── Startup: read settings and populate UI + DataGridView Container ───────
+        private async Task LoadCurrentSettingsAsync()
         {
             try
             {
@@ -45,7 +45,7 @@ namespace EODSettingsApp.Forms
                 var appSettings = AppSettingsService.Load();
                 PopulateScheduleUI(appSettings.ScheduleSettings);
 
-                // 3. Load current database records into DataGridView container
+                // 3. Retrieve and populate existing database records into DataGridView container on startup
                 await RefreshGridFromDatabaseAsync();
             }
             catch (Exception ex)
@@ -137,7 +137,7 @@ namespace EODSettingsApp.Forms
                 var exePath = EodServiceLauncher.ResolveExePath();
                 WindowsTaskSchedulerService.RegisterOrUpdateTask(scheduleSection, exePath);
 
-                // 5. Update UI status & Next Run indicator
+                // 5. Update UI status & Next Run indicator (only updated on Save and Schedule Run)
                 UpdateNextRunIndicator(scheduleSection);
                 SetStatus($"✔ Schedule saved & Windows Task updated (Provider: {selectedProvider}).", success: true);
                 AppendLog($"[Schedule] Settings saved successfully. Windows Task '{ (chkEnableSchedule.Checked ? "Updated" : "Disabled") }'.");
@@ -242,10 +242,12 @@ namespace EODSettingsApp.Forms
                     {
                         AppendLog(newContent.TrimEnd());
 
-                        // If background service completed a save, auto-update the DataGridView table
+                        // If background service completed execution, auto-update grid and advance Next Run Indicator
                         if (newContent.Contains("completed successfully") || newContent.Contains("EOD import complete"))
                         {
                             await RefreshGridFromDatabaseAsync();
+                            var updatedSettings = AppSettingsService.Load();
+                            UpdateNextRunIndicator(updatedSettings.ScheduleSettings);
                         }
                     }
                 }
@@ -260,9 +262,10 @@ namespace EODSettingsApp.Forms
         {
             try
             {
+                var appSettingsPath = AppSettingsPath.Resolve();
                 var configuration = new ConfigurationBuilder()
-                    .SetBasePath(AppContext.BaseDirectory)
-                    .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
+                    .SetBasePath(Path.GetDirectoryName(appSettingsPath)!)
+                    .AddJsonFile(Path.GetFileName(appSettingsPath), optional: true, reloadOnChange: false)
                     .Build();
 
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -272,9 +275,9 @@ namespace EODSettingsApp.Forms
                 using var dbContext = AppDbContextFactory.Create(connectionString);
                 var dailyRecords = await dbContext.EodDaily.AsNoTracking().ToListAsync();
 
+                dgvResults.Rows.Clear();
                 if (dailyRecords != null && dailyRecords.Any())
                 {
-                    dgvResults.Rows.Clear();
                     foreach (var r in dailyRecords)
                     {
                         dgvResults.Rows.Add(
@@ -290,10 +293,14 @@ namespace EODSettingsApp.Forms
                     }
                     lblGridTitle.Text = $"EOD Results (Automated Service Operations) — {dailyRecords.Count} record(s)";
                 }
+                else
+                {
+                    lblGridTitle.Text = "EOD Results (0 records in database)";
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // Soft fail if DB is unconfigured or unreachable during startup
+                System.Diagnostics.Trace.WriteLine($"[SettingsForm] RefreshGridFromDatabaseAsync error: {ex.Message}");
             }
         }
 
@@ -350,9 +357,6 @@ namespace EODSettingsApp.Forms
             form.ShowDialog(this);
         }
 
-        /// <summary>
-        /// Settings → Symbol Settings: opens the stock symbol configuration dialog.
-        /// </summary>
         private void MnuItemSymbolSettings_Click(object? sender, EventArgs e)
         {
             using var form = new SymbolSettingsForm();

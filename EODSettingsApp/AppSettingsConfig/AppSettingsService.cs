@@ -6,9 +6,8 @@ using System.Text.Json.Nodes;
 namespace EODSettingsApp.AppSettingsConfig
 {
     /// <summary>
-    /// Reads and writes the Yahoo, TwelveData, and SymbolSettings sections of EODService's AppSettings.json.
-    /// Every other section (ProviderSettings, ConnectionStrings, …) is preserved
-    /// exactly as-is during a save operation.
+    /// Reads and writes Yahoo, TwelveData, Symbol, and Schedule sections of EODService's AppSettings.json.
+    /// Every other section (ProviderSettings, ConnectionStrings, …) is preserved exactly as-is during a save operation.
     /// </summary>
     public static class AppSettingsService
     {
@@ -23,8 +22,8 @@ namespace EODSettingsApp.AppSettingsConfig
         };
 
         /// <summary>
-        /// Loads the Yahoo, TwelveData, and SymbolSettings sections from AppSettings.json.
-        /// Returns default (empty) sections if a section key is missing from the file.
+        /// Loads Yahoo, TwelveData, Symbol, and Schedule settings from AppSettings.json.
+        /// Returns default sections if a section key is missing from the file.
         /// </summary>
         public static AppSettingsModel Load()
         {
@@ -38,13 +37,14 @@ namespace EODSettingsApp.AppSettingsConfig
             {
                 YahooSettings      = ReadSection<YahooSettingsSection>(root, "YahooSettings"),
                 TwelveDataSettings = ReadSection<TwelveDataSettingsSection>(root, "TwelveDataSettings"),
-                SymbolSettings     = ReadSection<SymbolSettingsSection>(root, "SymbolSettings")
+                SymbolSettings     = ReadSection<SymbolSettingsSection>(root, "SymbolSettings"),
+                ScheduleSettings   = ReadSection<ScheduleSettingsSection>(root, "ScheduleSettings")
             };
         }
 
         /// <summary>
-        /// Saves the Yahoo, TwelveData, and SymbolSettings sections back into AppSettings.json
-        /// and syncs changes to active bin output files.
+        /// Saves Yahoo, TwelveData, Symbol, and Schedule sections back into the main EODService AppSettings.json
+        /// (beside Program.cs) and syncs changes to active bin output files.
         /// All other keys in the file are left untouched.
         /// </summary>
         public static void Save(AppSettingsModel model)
@@ -54,48 +54,33 @@ namespace EODSettingsApp.AppSettingsConfig
 
             var root = JsonNode.Parse(existing)!.AsObject();
 
-            if (model.YahooSettings != null)
-                root["YahooSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.YahooSettings));
-                
-            if (model.TwelveDataSettings != null)
-                root["TwelveDataSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.TwelveDataSettings));
-                
-            if (model.SymbolSettings != null)
-                root["SymbolSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.SymbolSettings));
+            root["YahooSettings"]      = JsonNode.Parse(JsonSerializer.Serialize(model.YahooSettings));
+            root["TwelveDataSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.TwelveDataSettings));
+            root["SymbolSettings"]     = JsonNode.Parse(JsonSerializer.Serialize(model.SymbolSettings));
+            root["ScheduleSettings"]   = JsonNode.Parse(JsonSerializer.Serialize(model.ScheduleSettings));
 
             var updatedJson = root.ToJsonString(_writeOptions);
 
-            // 1. Primary write to resolved path
+            // 1. Primary write: main EODService AppSettings.json beside Program.cs
             File.WriteAllText(mainPath, updatedJson);
 
             // 2. Sync to current application bin directory if distinct
             SyncToCopy(Path.Combine(AppContext.BaseDirectory, AppSettingsPath.FileName), mainPath, updatedJson);
 
-            // 3. Sync to EODService source project file beside Program.cs if distinct
-            try
+            // 3. Sync to EODService bin/Debug output if distinct and exists
+            var mainDir = Path.GetDirectoryName(mainPath);
+            if (!string.IsNullOrEmpty(mainDir))
             {
-                var currentDir = new DirectoryInfo(AppContext.BaseDirectory);
-                while (currentDir != null)
-                {
-                    var sourceProjectFile = Path.Combine(currentDir.FullName, "EODService", AppSettingsPath.FileName);
-                    var programCs = Path.Combine(currentDir.FullName, "EODService", "Program.cs");
-
-                    if (File.Exists(sourceProjectFile) && File.Exists(programCs))
-                    {
-                        SyncToCopy(sourceProjectFile, mainPath, updatedJson);
-                        break;
-                    }
-                    currentDir = currentDir.Parent;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine($"[AppSettingsService] Best effort sync to source project file failed: {ex.Message}");
+                var devBinPath = Path.GetFullPath(Path.Combine(mainDir, "bin", "Debug", "net10.0", AppSettingsPath.FileName));
+                SyncToCopy(devBinPath, mainPath, updatedJson);
             }
         }
 
         // ── Private helpers ──────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Synchronizes updated JSON content to binary output copy if it exists and is distinct from mainPath.
+        /// </summary>
         private static void SyncToCopy(string targetPath, string mainPath, string jsonContent)
         {
             try
@@ -111,6 +96,10 @@ namespace EODSettingsApp.AppSettingsConfig
             }
         }
 
+        /// <summary>
+        /// Deserialises a named section from a JSON root element.
+        /// Returns a new default instance when the section is absent or malformed.
+        /// </summary>
         private static T ReadSection<T>(JsonElement root, string sectionName) where T : new()
         {
             if (!root.TryGetProperty(sectionName, out var section))
