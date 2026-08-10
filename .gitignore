@@ -10,6 +10,7 @@
 [lL]og/
 [lL]ogs/
 EODServiceApp/
+EODServiceApp*.zip
 
 # Visual Studio files
 .vs/
@@ -24,6 +25,7 @@ appsettings.Development.json
 appsettings.Local.json
 *.user.json
 cookies.txt
+Stocks.xlsx
 
 # Archives & Packages
 *.zip

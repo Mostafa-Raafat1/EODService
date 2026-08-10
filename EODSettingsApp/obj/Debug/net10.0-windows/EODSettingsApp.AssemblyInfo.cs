@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("EODSettingsApp")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("EODServiceManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2caec8163adadd88217e2270d015a4c932ba8f90")]
-[assembly: System.Reflection.AssemblyProductAttribute("EODSettingsApp")]
-[assembly: System.Reflection.AssemblyTitleAttribute("EODSettingsApp")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+05674b6a8af1ec9687d404684b00824ea9ea8304")]
+[assembly: System.Reflection.AssemblyProductAttribute("EODServiceManager")]
+[assembly: System.Reflection.AssemblyTitleAttribute("EODServiceManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]

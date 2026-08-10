@@ -1,13 +1,11 @@
 using EODService.DTOs.EOD;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using System.Linq;
 
 namespace EODService.DTOs.YahooEODResponse
 {
-    public static class YahooEoadMapper
+    public static class YahooEodMapper
     {
         public static EodData? Map(YahooEodResponse response, string symbol)
         {
@@ -18,22 +16,19 @@ namespace EODService.DTOs.YahooEODResponse
             if (result == null) { return null; }
 
             // Check if timestamps and indicators are null
-            if (result.Timestamp == null || result.Indicators?.Quote == null || result.Indicators.Quote.Count == 0)
+            if (result.Timestamp == null || result.Indicators?.Quote == null || !result.Indicators.Quote.Any())
             {
                 return null;
             }
 
-
-            // get Qoute
+            // get Quote
             var quote = result.Indicators.Quote.First();
 
-            //Check if Close is null or empty
-            if (quote == null) { return null; };
-
+            // Check if Quote or Close list is null
+            if (quote == null || quote.Close == null) { return null; }
 
             var timestamps = result.Timestamp;
 
-            // Find the latest valid EOD record
             // Find the latest valid EOD record
             for (int i = timestamps.Count - 1; i >= 0; i--)
             {
@@ -56,34 +51,26 @@ namespace EODService.DTOs.YahooEODResponse
                 return new EodData
                 {
                     Symbol = symbol,
-
                     Date = DateTimeOffset
-                   .FromUnixTimeSeconds(timestamps[i])
-                   .UtcDateTime,
-
+                        .FromUnixTimeSeconds(timestamps[i])
+                        .UtcDateTime,
                     Open = o,
                     High = h,
                     Low = l,
                     Close = c,
                     Volume = v,
-
                     AdjustedClose = GetValue(
-                    result.Indicators.Adjclose?
-                       .FirstOrDefault()?
-                       .Adjclose,
-                   i)
+                        result.Indicators.Adjclose?
+                            .FirstOrDefault()?
+                            .Adjclose,
+                        i)
                 };
-
             }
 
             return null;
-
         }
 
-        private static T? GetValue<T>(
-                        List<T?>? values,
-                        int index)
-        where T : struct
+        private static T? GetValue<T>(List<T?>? values, int index) where T : struct
         {
             if (values is null || index >= values.Count)
                 return null;

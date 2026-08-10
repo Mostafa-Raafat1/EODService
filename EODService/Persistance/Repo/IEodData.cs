@@ -1,13 +1,14 @@
-﻿using EODService.DTOs.EOD;
+using EODService.DTOs.EOD;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace EODService.Persistance.Repo
 {
     public interface IEodData
     {
-        public Task<DateTime?> GetLastDateForSymbol(string symbol);
-        public Task AddToHistoryAsync(EodDataHistory data);
+        Task<DateTime?> GetLastDateForSymbolAsync(string symbol);
+        Task AddToHistoryAsync(EodDataHistory data);
+        Task SaveBatchAsync(IEnumerable<EodData> data);
     }
 }

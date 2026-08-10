@@ -21,7 +21,11 @@ namespace EODSettingsApp.ExternalConfig
         public static ExternalSettings Load()
         {
             if (!File.Exists(ExternalConfigPath.FilePath))
-                return new ExternalSettings();
+            {
+                var defaults = new ExternalSettings();
+                Save(defaults);
+                return defaults;
+            }
 
             try
             {
@@ -29,9 +33,9 @@ namespace EODSettingsApp.ExternalConfig
                 return JsonSerializer.Deserialize<ExternalSettings>(json)
                        ?? new ExternalSettings();
             }
-            catch
+            catch (Exception ex)
             {
-                // If the file is corrupted or unreadable, return safe defaults
+                System.Diagnostics.Trace.WriteLine($"[ExternalSettingsService] Warning: Failed to load external config from {ExternalConfigPath.FilePath}, using defaults. Error: {ex.Message}");
                 return new ExternalSettings();
             }
         }

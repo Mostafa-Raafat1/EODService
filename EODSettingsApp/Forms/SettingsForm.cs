@@ -187,7 +187,7 @@ namespace EODSettingsApp.Forms
             lblGridTitle.Text = $"EOD Results  ({results.Count()} symbols)";
         }
 
-        // ── Save the fetched data to Oracle (same logic as EODService/Program.cs) ─
+        // ── Save the fetched data to Oracle ──────────────────────────────────────
         private async Task SaveToDatabase(IEnumerable<EodData> results)
         {
             var configuration = new ConfigurationBuilder()
@@ -202,47 +202,7 @@ namespace EODSettingsApp.Forms
             using var dbContext = AppDbContextFactory.Create(connectionString);
             await dbContext.Database.EnsureCreatedAsync();
 
-            var symbols = results.Select(r => r.Symbol).ToList();
-
-            // Batch load existing daily records
-            var existingDailyDict = await dbContext.EodDaily
-                .Where(e => symbols.Contains(e.Symbol))
-                .ToDictionaryAsync(e => e.Symbol);
-
-            foreach (var result in results)
-            {
-                existingDailyDict.TryGetValue(result.Symbol, out var existing);
-                if (existing == null)
-                {
-                    dbContext.EodDaily.Add(result.ToDaily());
-                }
-                else if (existing.Date <= result.Date)
-                {
-                    existing.Date = result.Date;
-                    existing.Open = result.Open;
-                    existing.High = result.High;
-                    existing.Low = result.Low;
-                    existing.Close = result.Close;
-                    existing.AdjustedClose = result.AdjustedClose;
-                    existing.Volume = result.Volume;
-                }
-            }
-
-            // Batch load last history dates
-            var lastHistoryDates = await dbContext.EodHistory
-                .Where(e => symbols.Contains(e.Symbol))
-                .GroupBy(e => e.Symbol)
-                .Select(g => new { Symbol = g.Key, LastDate = g.Max(x => x.Date) })
-                .ToDictionaryAsync(x => x.Symbol, x => (DateTime?)x.LastDate);
-
-            foreach (var result in results)
-            {
-                lastHistoryDates.TryGetValue(result.Symbol, out var lastDate);
-                if (lastDate == null || lastDate < result.Date)
-                    dbContext.EodHistory.Add(result.ToHistory());
-            }
-
-            await dbContext.SaveChangesAsync();
+            await EodPersistenceService.SaveEodDataAsync(results, dbContext);
         }
 
         // ── UI helpers ───────────────────────────────────────────────────────────
@@ -264,23 +224,6 @@ namespace EODSettingsApp.Forms
             lblStatus.Text = message;
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            // Normal close — no process signalling needed anymore
-            // since the form now handles everything itself
-            base.OnFormClosing(e);
-        }
-
-        private void pnlGrid_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void dgvResults_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         // ── Menu handlers ────────────────────────────────────────────────────────
 
         /// <summary>
@@ -291,16 +234,5 @@ namespace EODSettingsApp.Forms
             using var form = new ProviderSettingsForm();
             form.ShowDialog(this);
         }
-
-        private void dgvResults_CellContentClick_1(object sender, DataGridViewCellEventArgs e) { }
-
-        private void lblGridTitle_Click(object sender, EventArgs e)
-        { }
-
-        private void cmbProvider_SelectedIndexChanged(object sender, EventArgs e) { }
-        private void SettingsForm_Load(object sender, EventArgs e) { }
-        private void lblTitle_Click(object sender, EventArgs e) { }
-        private void pnlHeader_Paint(object sender, PaintEventArgs e) { }
-        private void cmbProvider_SelectedIndexChanged_1(object sender, EventArgs e) { }
     }
 }

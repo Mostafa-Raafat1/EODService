@@ -44,9 +44,9 @@ namespace EODService.Config
                     });
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fallback to defaults if file cannot be read
+                System.Diagnostics.Trace.WriteLine($"[PathesConfig] Warning: Failed to load {ConfigFileName}, falling back to defaults. Error: {ex.Message}");
             }
 
             _cachedData ??= new PathesConfigData();
