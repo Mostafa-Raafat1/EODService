@@ -24,6 +24,12 @@
   </ItemGroup>
 
 
+  <ItemGroup>
+    <None Update="PathesConfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <!-- After each build, copy EODSettingsApp.exe next to EODService.exe -->
   <!-- Uses MSBuildThisFileDirectory (always defined) instead of SolutionDir (undefined in single-project builds) -->
   <Target Name="CopyToEODServiceOutput" AfterTargets="Build">
@@ -36,6 +42,7 @@
       <FilesToCopy Include="$(OutputPath)EODSettingsApp.dll" />
       <FilesToCopy Include="$(OutputPath)EODSettingsApp.runtimeconfig.json" />
       <FilesToCopy Include="$(OutputPath)EODSettingsApp.deps.json" />
+      <FilesToCopy Include="$(OutputPath)PathesConfig.json" />
     </ItemGroup>
     <Copy
       SourceFiles="@(FilesToCopy)"

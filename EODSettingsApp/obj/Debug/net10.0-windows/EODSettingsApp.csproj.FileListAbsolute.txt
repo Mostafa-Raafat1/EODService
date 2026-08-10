@@ -258,6 +258,7 @@ C:\Users\mostafa.raafat.inter\source\repos\EODService\EODSettingsApp\obj\Debug\n
 C:\Users\mostafa.raafat.inter\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.pdb
 C:\Users\mostafa.raafat.inter\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.genruntimeconfig.cache
 C:\Users\mostafa.raafat.inter\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\ref\EODSettingsApp.dll
+<<<<<<< HEAD
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODService.deps.json
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODService.runtimeconfig.json
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\EODService.exe
@@ -518,3 +519,6 @@ C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\ne
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.pdb
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\EODSettingsApp.genruntimeconfig.cache
 C:\Users\moneer.magdi.intern\source\repos\EODService\EODSettingsApp\obj\Debug\net10.0-windows\ref\EODSettingsApp.dll
+=======
+C:\Users\mostafa.raafat.inter\source\repos\EODService\EODSettingsApp\bin\Debug\net10.0-windows\PathesConfig.json
+>>>>>>> origin/Mostafa-2

@@ -192,12 +192,12 @@ namespace EODSettingsApp.Forms
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: false, reloadOnChange: false)
                 .Build();
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             if (string.IsNullOrWhiteSpace(connectionString))
-                throw new Exception("Connection string 'DefaultConnection' is missing in appsettings.json.");
+                throw new Exception($"Connection string 'DefaultConnection' is missing in {EODService.Config.PathesConfig.AppSettingsFileName}.");
 
             using var dbContext = AppDbContextFactory.Create(connectionString);
             await dbContext.Database.EnsureCreatedAsync();
