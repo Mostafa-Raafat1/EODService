@@ -1,7 +1,21 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+## Visual Studio / C# standard ignore
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-/.vs
-/EODService/bin/Debug/net10.0
-/EODService/obj/Debug/net10.0
+## Output packages & archives
+*.zip
+*.7z
+*.rar
+*.exe
+!src/**/*.exe
+
+## Project-specific build outputs & temporary files
+EODServiceApp/
+EODServiceApp*.zip
+cookies.txt
+Stocks.xlsx

@@ -5,10 +5,11 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyName>EODSettingsApp</AssemblyName>
+    <AssemblyName>EODServiceManager</AssemblyName>
     <RootNamespace>EODSettingsApp</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\EODService\EODService.csproj" />
@@ -30,7 +31,7 @@
     </None>
   </ItemGroup>
 
-  <!-- After each build, copy EODSettingsApp.exe next to EODService.exe -->
+  <!-- After each build, copy EODServiceManager.exe next to EODService.exe -->
   <!-- Uses MSBuildThisFileDirectory (always defined) instead of SolutionDir (undefined in single-project builds) -->
   <Target Name="CopyToEODServiceOutput" AfterTargets="Build">
     <PropertyGroup>
@@ -38,10 +39,10 @@
     </PropertyGroup>
     <ItemGroup>
       <!-- Only copy the main EXE and its direct support files — not sub-language folders -->
-      <FilesToCopy Include="$(OutputPath)EODSettingsApp.exe" />
-      <FilesToCopy Include="$(OutputPath)EODSettingsApp.dll" />
-      <FilesToCopy Include="$(OutputPath)EODSettingsApp.runtimeconfig.json" />
-      <FilesToCopy Include="$(OutputPath)EODSettingsApp.deps.json" />
+      <FilesToCopy Include="$(OutputPath)EODServiceManager.exe" />
+      <FilesToCopy Include="$(OutputPath)EODServiceManager.dll" />
+      <FilesToCopy Include="$(OutputPath)EODServiceManager.runtimeconfig.json" />
+      <FilesToCopy Include="$(OutputPath)EODServiceManager.deps.json" />
       <FilesToCopy Include="$(OutputPath)PathesConfig.json" />
     </ItemGroup>
     <Copy

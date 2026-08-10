@@ -156,7 +156,6 @@ namespace EODSettingsApp.Forms
             btnGetData.FlatStyle = FlatStyle.Flat;
             btnGetData.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnGetData.ForeColor = Color.White;
-            btnGetData.Location = new Point(874, 24);
             btnGetData.Location = new Point(878, 24);
             btnGetData.Name = "btnGetData";
             btnGetData.Size = new Size(140, 40);
@@ -172,7 +171,6 @@ namespace EODSettingsApp.Forms
             lblStatus.ForeColor = Color.FromArgb(22, 163, 74);
             lblStatus.Location = new Point(400, 32);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(460, 22);
             lblStatus.Size = new Size(464, 22);
             lblStatus.TabIndex = 2;
             // 
@@ -232,7 +230,6 @@ namespace EODSettingsApp.Forms
             dgvResults.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvResults.Size = new Size(1010, 423);
             dgvResults.TabIndex = 0;
-            dgvResults.CellContentClick += dgvResults_CellContentClick_1;
             // 
             // pnlGridHeader
             // 
@@ -255,7 +252,6 @@ namespace EODSettingsApp.Forms
             lblGridTitle.TabIndex = 0;
             lblGridTitle.Text = "EOD Results";
             lblGridTitle.TextAlign = ContentAlignment.MiddleLeft;
-            lblGridTitle.Click += lblGridTitle_Click;
             // 
             // 
             // pnlLogs
@@ -320,7 +316,6 @@ namespace EODSettingsApp.Forms
             Font = new Font("Segoe UI", 9.5F);
             MinimumSize = new Size(800, 650);
             MainMenuStrip = mnuMain;
-            MinimumSize = new Size(800, 550);
             Name = "SettingsForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "EOD Data Service — Settings & Results";

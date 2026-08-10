@@ -87,9 +87,9 @@ namespace EODSettingsApp.AppSettingsConfig
                     File.WriteAllText(targetPath, jsonContent);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Best effort sync to build output locations
+                System.Diagnostics.Trace.WriteLine($"[AppSettingsService] Best effort sync to '{targetPath}' failed: {ex.Message}");
             }
         }
 
