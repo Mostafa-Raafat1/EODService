@@ -42,6 +42,7 @@ namespace EODSettingsApp.Forms
         private MenuStrip         mnuMain;
         private ToolStripMenuItem mnuItemSettings;
         private ToolStripMenuItem mnuItemProviderSettings;
+        private ToolStripMenuItem mnuItemSymbolSettings;
 
         protected override void Dispose(bool disposing)
         {
@@ -89,6 +90,7 @@ namespace EODSettingsApp.Forms
             mnuMain                 = new MenuStrip();
             mnuItemSettings         = new ToolStripMenuItem();
             mnuItemProviderSettings = new ToolStripMenuItem();
+            mnuItemSymbolSettings   = new ToolStripMenuItem();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             pnlGrid.SuspendLayout();
@@ -464,12 +466,20 @@ namespace EODSettingsApp.Forms
             mnuItemSettings.Name = "mnuItemSettings";
             mnuItemSettings.Text = "Settings";
             mnuItemSettings.DropDownItems.Add(mnuItemProviderSettings);
+            mnuItemSettings.DropDownItems.Add(mnuItemSymbolSettings);
+            //
             // 
             // mnuItemProviderSettings
             // 
             mnuItemProviderSettings.Name = "mnuItemProviderSettings";
             mnuItemProviderSettings.Text = "Provider Settings";
             mnuItemProviderSettings.Click += MnuItemProviderSettings_Click;
+            //
+            // mnuItemSymbolSettings
+            //
+            mnuItemSymbolSettings.Name   = "mnuItemSymbolSettings";
+            mnuItemSymbolSettings.Text   = "Symbol Settings";
+            mnuItemSymbolSettings.Click += MnuItemSymbolSettings_Click;
             // 
             // SettingsForm
             // 

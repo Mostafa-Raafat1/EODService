@@ -26,6 +26,15 @@ namespace EODSettingsApp.AppSettingsConfig
     }
 
     /// <summary>
+    /// Symbol settings section from AppSettings.json.
+    /// </summary>
+    public class SymbolSettingsSection
+    {
+        public List<string> Symbols { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents the editable configuration sections of EODService's AppSettings.json.
     /// Automated schedule settings section from AppSettings.json.
     /// </summary>
     public class ScheduleSettingsSection
@@ -43,6 +52,7 @@ namespace EODSettingsApp.AppSettingsConfig
     {
         public YahooSettingsSection      YahooSettings      { get; set; } = new();
         public TwelveDataSettingsSection TwelveDataSettings { get; set; } = new();
+        public SymbolSettingsSection     SymbolSettings     { get; set; } = new();
         public ScheduleSettingsSection   ScheduleSettings   { get; set; } = new();
     }
 }
