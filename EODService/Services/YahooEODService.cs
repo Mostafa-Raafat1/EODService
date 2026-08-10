@@ -52,10 +52,10 @@ namespace EODService.Services
                     var response = await _httpClient.GetAsync(url);
                     response.EnsureSuccessStatusCode();
 
-                    var json = await response.Content.ReadAsStringAsync();
+                    using var stream = await response.Content.ReadAsStreamAsync();
 
-                    // Deserialize raw JSON into YahooEodResponse DTO
-                    var yahooResponse = JsonSerializer.Deserialize<YahooEodResponse>(json, _jsonOptions);
+                    // Stream raw JSON directly into YahooEodResponse DTO without intermediate string allocation
+                    var yahooResponse = await JsonSerializer.DeserializeAsync<YahooEodResponse>(stream, _jsonOptions);
 
                     if (yahooResponse == null)
                     {
@@ -109,8 +109,8 @@ namespace EODService.Services
                         symbol);
                 }
 
-                // Respect Yahoo Finance rate limit — wait 1.5s between requests
-                await Task.Delay(1500);
+                // Respect Yahoo Finance rate limit — wait 0.2s between requests
+                await Task.Delay(200);
             }
 
             _logger.LogInformation(

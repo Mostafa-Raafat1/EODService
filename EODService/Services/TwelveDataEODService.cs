@@ -51,10 +51,10 @@ namespace EODService.Services
                     var response = await _httpClient.GetAsync(url);
                     response.EnsureSuccessStatusCode();
 
-                    var json = await response.Content.ReadAsStringAsync();
+                    using var stream = await response.Content.ReadAsStreamAsync();
 
-                    // Deserialize raw JSON into TwelveDataResponse DTO
-                    var twelveDataResponse = JsonSerializer.Deserialize<TwelveDataResponse>(json, _jsonOptions);
+                    // Stream JSON directly to the deserializer to avoid loading the entire response into memory
+                    var twelveDataResponse = await JsonSerializer.DeserializeAsync<TwelveDataResponse>(stream, _jsonOptions);
 
                     if (twelveDataResponse == null)
                     {
@@ -103,8 +103,8 @@ namespace EODService.Services
                         symbol);
                 }
 
-                // Respect Twelve Data rate limit — wait 1.5s between requests
-                await Task.Delay(1500);
+                // Respect Twelve Data rate limit — wait 0.2s between requests
+                await Task.Delay(200);
             }
 
             _logger.LogInformation(

@@ -1,21 +1,46 @@
-## Visual Studio / C# standard ignore
-.vs/
-[Bb]in/
-[Oo]bj/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
+################################################################################
+# Visual Studio & .NET Standard .gitignore
+################################################################################
 
-## Output packages & archives
-*.zip
-*.7z
-*.rar
-*.exe
-!src/**/*.exe
-
-## Project-specific build outputs & temporary files
+# Build & Output Directories
+[bB]in/
+[oO]bj/
+[pP]ublish/
+[oO]ut/
+[lL]og/
+[lL]ogs/
 EODServiceApp/
 EODServiceApp*.zip
+
+# Visual Studio files
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+
+# User Secrets & Local Configs
+appsettings.Development.json
+appsettings.Local.json
+*.user.json
 cookies.txt
 Stocks.xlsx
+
+# Archives & Packages
+*.zip
+*.tar.gz
+*.7z
+*.rar
+*.nupkg
+*.snupkg
+
+# IDE & Editor folders
+.vscode/
+.idea/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+[dD]s_[sS]tore
