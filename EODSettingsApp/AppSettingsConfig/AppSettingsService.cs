@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 namespace EODSettingsApp.AppSettingsConfig
 {
     /// <summary>
-    /// Reads and writes only the Yahoo and TwelveData sections of EODService's AppSettings.json.
+    /// Reads and writes Yahoo, TwelveData, and Schedule sections of EODService's AppSettings.json.
     /// Every other section (ProviderSettings, SymbolSettings, ConnectionStrings, …) is preserved
     /// exactly as-is during a save operation.
     /// </summary>
@@ -23,8 +23,8 @@ namespace EODSettingsApp.AppSettingsConfig
         };
 
         /// <summary>
-        /// Loads the Yahoo and TwelveData settings from AppSettings.json.
-        /// Returns default (empty) sections if a section key is missing from the file.
+        /// Loads Yahoo, TwelveData, and Schedule settings from AppSettings.json.
+        /// Returns default sections if a section key is missing from the file.
         /// </summary>
         public static AppSettingsModel Load()
         {
@@ -37,12 +37,13 @@ namespace EODSettingsApp.AppSettingsConfig
             return new AppSettingsModel
             {
                 YahooSettings      = ReadSection<YahooSettingsSection>(root, "YahooSettings"),
-                TwelveDataSettings = ReadSection<TwelveDataSettingsSection>(root, "TwelveDataSettings")
+                TwelveDataSettings = ReadSection<TwelveDataSettingsSection>(root, "TwelveDataSettings"),
+                ScheduleSettings   = ReadSection<ScheduleSettingsSection>(root, "ScheduleSettings")
             };
         }
 
         /// <summary>
-        /// Saves the Yahoo and TwelveData sections back into the main EODService AppSettings.json
+        /// Saves Yahoo, TwelveData, and Schedule sections back into the main EODService AppSettings.json
         /// (beside Program.cs) and syncs changes to active bin output files.
         /// All other keys in the file are left untouched.
         /// </summary>
@@ -55,6 +56,7 @@ namespace EODSettingsApp.AppSettingsConfig
 
             root["YahooSettings"]      = JsonNode.Parse(JsonSerializer.Serialize(model.YahooSettings));
             root["TwelveDataSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.TwelveDataSettings));
+            root["ScheduleSettings"]   = JsonNode.Parse(JsonSerializer.Serialize(model.ScheduleSettings));
 
             var updatedJson = root.ToJsonString(_writeOptions);
 

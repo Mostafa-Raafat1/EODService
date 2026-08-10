@@ -62,8 +62,8 @@ namespace EODSettingsApp.Services
             var startInfo = new ProcessStartInfo
             {
                 FileName        = exePath,
-                UseShellExecute = false,   // allows capturing I/O if needed later
-                CreateNoWindow  = false,   // keep the console window visible so the user sees progress
+                UseShellExecute = false,
+                CreateNoWindow  = true,    // Run silently in background without pop-up console window
                 WorkingDirectory = Path.GetDirectoryName(exePath)!
             };
 

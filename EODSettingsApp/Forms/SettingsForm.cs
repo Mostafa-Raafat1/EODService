@@ -1,22 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-
-using EODService.DTOs.ProviderSettings;
-using EODService.DTOs.SymbolSettings;
-using EODService.DTOs.TwelveDataSettings;
-using EODService.DTOs.YahooSettings;
+using Microsoft.Extensions.Configuration;
 using EODService.DTOs.EOD;
-using EODService.Services;
+using EODService.Logging;
 using EODService.Persistance;
-
+using EODService.Services;
+using EODSettingsApp.AppSettingsConfig;
 using EODSettingsApp.ExternalConfig;
 using EODSettingsApp.Services;
 
@@ -24,30 +19,68 @@ namespace EODSettingsApp.Forms
 {
     public partial class SettingsForm : Form
     {
+        private System.Windows.Forms.Timer _logPollTimer = new();
+        private long _lastLogFilePosition = 0;
+
         public SettingsForm()
         {
             InitializeComponent();
             LoadCurrentSettings();
             SetupGridColumns();
+            InitializeBackgroundLogAndGridMonitoring();
         }
 
-        // ── Startup: read external config and pre-select the last used provider ──
-        private void LoadCurrentSettings()
+        // ── Startup: read settings and populate UI ────────────────────────────────
+        private async void LoadCurrentSettings()
         {
             try
             {
-                var settings = ExternalSettingsService.Load();
-                var currentProvider = settings.ProviderSettings.ActiveProvider;
+                // 1. Active provider
+                var extSettings = ExternalSettingsService.Load();
+                var currentProvider = extSettings.ProviderSettings.ActiveProvider;
                 var index = cmbProvider.Items.IndexOf(currentProvider);
                 cmbProvider.SelectedIndex = index >= 0 ? index : 0;
+
+                // 2. Schedule settings
+                var appSettings = AppSettingsService.Load();
+                PopulateScheduleUI(appSettings.ScheduleSettings);
+
+                // 3. Load current database records into DataGridView container
+                await RefreshGridFromDatabaseAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 cmbProvider.SelectedIndex = 0;
+                SetStatus($"Warning: Could not load full settings ({ex.Message})", success: false);
             }
         }
 
-        // ── Define the DataGridView columns once ─────────────────────────────────
+        private void PopulateScheduleUI(ScheduleSettingsSection schedule)
+        {
+            chkEnableSchedule.Checked = schedule.Enabled;
+
+            var days = schedule.WorkingDays ?? new List<string>();
+            chkMon.Checked = days.Contains("Monday", StringComparer.OrdinalIgnoreCase);
+            chkTue.Checked = days.Contains("Tuesday", StringComparer.OrdinalIgnoreCase);
+            chkWed.Checked = days.Contains("Wednesday", StringComparer.OrdinalIgnoreCase);
+            chkThu.Checked = days.Contains("Thursday", StringComparer.OrdinalIgnoreCase);
+            chkFri.Checked = days.Contains("Friday", StringComparer.OrdinalIgnoreCase);
+            chkSat.Checked = days.Contains("Saturday", StringComparer.OrdinalIgnoreCase);
+            chkSun.Checked = days.Contains("Sunday", StringComparer.OrdinalIgnoreCase);
+
+            if (TimeSpan.TryParse(schedule.RunTime, out var runTime))
+            {
+                dtpRunTime.Value = DateTime.Today.Add(runTime);
+            }
+            else
+            {
+                dtpRunTime.Value = DateTime.Today.AddHours(18); // default 18:00
+            }
+
+            UpdateNextRunIndicator(schedule);
+        }
+
+        // ── Define the DataGridView columns ──────────────────────────────────────
         private void SetupGridColumns()
         {
             dgvResults.Columns.Clear();
@@ -61,114 +94,211 @@ namespace EODSettingsApp.Forms
             dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Volume", HeaderText = "Volume", DataPropertyName = "Volume" });
         }
 
-        // ── "Get Data" button ────────────────────────────────────────────────────
-        private async void BtnGetData_Click(object? sender, EventArgs e)
+        // ── "Save Schedule" Button Click ──────────────────────────────────────────
+        private void BtnSaveSchedule_Click(object? sender, EventArgs e)
         {
             if (cmbProvider.SelectedItem == null)
             {
-                MessageBox.Show("Please select a provider.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select an active provider.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             var selectedProvider = cmbProvider.SelectedItem.ToString()!;
+            var selectedDays = CollectSelectedWorkingDays();
 
-            // 1. Save the chosen provider to the external config
-            ExternalSettingsService.Save(new ExternalSettings
+            if (chkEnableSchedule.Checked && selectedDays.Count == 0)
             {
-                ProviderSettings = new ProviderSettingsSection { ActiveProvider = selectedProvider }
-            });
-
-            // 2. Lock the UI while running
-            SetUiBusy(true, $"Fetching data from {selectedProvider}...");
-            dgvResults.Rows.Clear();
+                MessageBox.Show("Please select at least one working day for the automated schedule.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             try
             {
-                // 3. Load all settings (external file overrides appsettings.json for ActiveProvider)
-                var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
-                var symbolSettings = SymbolSettingsMapper.MapToSymbolSettings();
-                var yahooSettings = YahooSettingsMapper.MapToYahooSettings();
-                var twelveDataSettings = TwelveDataSettingsMapper.MapToTwelveDataSettings();
-
-                if (providerSettings == null || symbolSettings == null)
-                    throw new Exception("Could not load settings from appsettings.json.");
-
-                // 4. Build the UI Logger
-                var uiLogger = new Logging.UiLoggerProvider();
-                uiLogger.OnLog = (msg) =>
+                // 1. Save active provider to external config
+                ExternalSettingsService.Save(new ExternalSettings
                 {
-                    if (IsDisposed) return;
-                    // Safely update the RichTextBox from background threads
-                    Invoke(() =>
-                    {
-                        rtbLogs.AppendText(msg + Environment.NewLine);
-                        rtbLogs.SelectionStart = rtbLogs.Text.Length;
-                        rtbLogs.ScrollToCaret();
-                    });
+                    ProviderSettings = new ProviderSettingsSection { ActiveProvider = selectedProvider }
+                });
+
+                // 2. Build schedule settings model
+                var scheduleSection = new ScheduleSettingsSection
+                {
+                    Enabled = chkEnableSchedule.Checked,
+                    WorkingDays = selectedDays,
+                    RunTime = dtpRunTime.Value.ToString("HH:mm:ss")
                 };
 
-                // 5. Build the HTTP client and service
-                using var loggerFactory = LoggerFactory.Create(b => 
-                {
-                    b.AddProvider(uiLogger);
-                });
-                
-                using var httpClient = new System.Net.Http.HttpClient();
-                httpClient.DefaultRequestHeaders.Add("User-Agent",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-                httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+                // 3. Save to AppSettings.json
+                var appSettings = AppSettingsService.Load();
+                appSettings.ScheduleSettings = scheduleSection;
+                AppSettingsService.Save(appSettings);
 
-                var service = EODServiceFactory.CreateProvider(
-                    providerName: providerSettings.ActiveProvider,
-                    symbolSettings: symbolSettings,
-                    httpClient: httpClient,
-                    loggerFactory: loggerFactory,
-                    yahooSettings: yahooSettings,
-                    twelveDataSettings: twelveDataSettings);
+                // 4. Register or update Windows Task Scheduler
+                var exePath = EodServiceLauncher.ResolveExePath();
+                WindowsTaskSchedulerService.RegisterOrUpdateTask(scheduleSection, exePath);
 
-                // 6. Fetch data
-                uiLogger.OnLog("Starting EOD data import...");
-                SetUiBusy(true, "Calling API...");
-                var results = await service.GetEodDataAsync();
-
-                if (results == null || !results.Any())
-                {
-                    uiLogger.OnLog("No data returned from the API.");
-                    SetStatus("No data returned from the API.", success: false);
-                    return;
-                }
-
-                // 7. Display results in the grid
-                uiLogger.OnLog($"Successfully downloaded {results.Count()} records.");
-                PopulateGrid(results);
-                SetStatus($"{results.Count()} record(s) fetched. Saving to database...", success: true);
-
-                // 8. Save to Oracle DB
-                uiLogger.OnLog("Saving to Oracle Database...");
-                await SaveToDatabase(results);
-
-                uiLogger.OnLog("Data saved to Oracle database successfully.");
-                SetStatus($"✔  {results.Count()} record(s) fetched and saved to Oracle DB successfully.", success: true);
+                // 5. Update UI status & Next Run indicator
+                UpdateNextRunIndicator(scheduleSection);
+                SetStatus($"✔ Schedule saved & Windows Task updated (Provider: {selectedProvider}).", success: true);
+                AppendLog($"[Schedule] Settings saved successfully. Windows Task '{ (chkEnableSchedule.Checked ? "Updated" : "Disabled") }'.");
             }
             catch (Exception ex)
             {
-                SetStatus($"✘  Error: {ex.Message}", success: false);
-                Invoke(() =>
-                {
-                    rtbLogs.SelectionColor = Color.Red;
-                    rtbLogs.AppendText($"ERROR: {ex.Message}{Environment.NewLine}");
-                    rtbLogs.SelectionColor = rtbLogs.ForeColor;
-                });
-                MessageBox.Show($"An error occurred:\n\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                SetUiBusy(false, "");
+                SetStatus($"✘ Save schedule failed: {ex.Message}", success: false);
+                AppendLogError($"Save schedule error: {ex.Message}");
+                MessageBox.Show($"Failed to save schedule settings:\n\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // ── Populate the DataGridView with fetched EodData ───────────────────────
-        private void PopulateGrid(IEnumerable<EodData> results)
+        // ── Dynamic Next Run Calculation ──────────────────────────────────────────
+        private void UpdateNextRunIndicator(ScheduleSettingsSection schedule)
+        {
+            var nextRun = CalculateNextRunTime(schedule);
+            if (nextRun.HasValue)
+            {
+                lblNextRunStatus.ForeColor = Color.FromArgb(30, 58, 138);
+                lblNextRunStatus.Text = $"🕒 Next Scheduled Run: {nextRun.Value:dddd, MMM d, yyyy 'at' HH:mm}";
+            }
+            else
+            {
+                lblNextRunStatus.ForeColor = Color.FromArgb(185, 28, 28);
+                lblNextRunStatus.Text = "🕒 Next Scheduled Run: Automated schedule is disabled or has no working days selected.";
+            }
+        }
+
+        private DateTime? CalculateNextRunTime(ScheduleSettingsSection settings)
+        {
+            if (!settings.Enabled || settings.WorkingDays == null || !settings.WorkingDays.Any())
+                return null;
+
+            if (!TimeSpan.TryParse(settings.RunTime, out var runTime))
+                return null;
+
+            var now = DateTime.Now;
+            for (int i = 0; i < 7; i++)
+            {
+                var candidateDate = now.Date.AddDays(i);
+                var candidateDateTime = candidateDate.Add(runTime);
+
+                if (settings.WorkingDays.Contains(candidateDate.DayOfWeek.ToString(), StringComparer.OrdinalIgnoreCase))
+                {
+                    if (candidateDateTime > now)
+                    {
+                        return candidateDateTime;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private List<string> CollectSelectedWorkingDays()
+        {
+            var days = new List<string>();
+            if (chkMon.Checked) days.Add("Monday");
+            if (chkTue.Checked) days.Add("Tuesday");
+            if (chkWed.Checked) days.Add("Wednesday");
+            if (chkThu.Checked) days.Add("Thursday");
+            if (chkFri.Checked) days.Add("Friday");
+            if (chkSat.Checked) days.Add("Saturday");
+            if (chkSun.Checked) days.Add("Sunday");
+            return days;
+        }
+
+        // ── Background Log Monitoring & Grid Auto Refresh ────────────────────────
+        private void InitializeBackgroundLogAndGridMonitoring()
+        {
+            var logPath = FileLoggerProvider.LogFilePath;
+            if (File.Exists(logPath))
+            {
+                _lastLogFilePosition = new FileInfo(logPath).Length;
+            }
+
+            _logPollTimer.Interval = 2000; // Poll every 2 seconds
+            _logPollTimer.Tick += async (s, e) => await PollLogFileAndRefreshGridAsync();
+            _logPollTimer.Start();
+        }
+
+        private async Task PollLogFileAndRefreshGridAsync()
+        {
+            var logPath = FileLoggerProvider.LogFilePath;
+            if (!File.Exists(logPath)) return;
+
+            try
+            {
+                using var fs = new FileStream(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                if (fs.Length < _lastLogFilePosition)
+                {
+                    _lastLogFilePosition = 0; // File was truncated/re-created
+                }
+
+                if (fs.Length > _lastLogFilePosition)
+                {
+                    fs.Seek(_lastLogFilePosition, SeekOrigin.Begin);
+                    using var reader = new StreamReader(fs);
+                    string? newContent = await reader.ReadToEndAsync();
+                    _lastLogFilePosition = fs.Position;
+
+                    if (!string.IsNullOrWhiteSpace(newContent))
+                    {
+                        AppendLog(newContent.TrimEnd());
+
+                        // If background service completed a save, auto-update the DataGridView table
+                        if (newContent.Contains("completed successfully") || newContent.Contains("EOD import complete"))
+                        {
+                            await RefreshGridFromDatabaseAsync();
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Best effort log reading
+            }
+        }
+
+        private async Task RefreshGridFromDatabaseAsync()
+        {
+            try
+            {
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
+                    .Build();
+
+                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
+                    return;
+
+                using var dbContext = AppDbContextFactory.Create(connectionString);
+                var dailyRecords = await dbContext.EodDaily.AsNoTracking().ToListAsync();
+
+                if (dailyRecords != null && dailyRecords.Any())
+                {
+                    dgvResults.Rows.Clear();
+                    foreach (var r in dailyRecords)
+                    {
+                        dgvResults.Rows.Add(
+                            r.Symbol,
+                            r.Date.ToString("yyyy-MM-dd"),
+                            r.Open?.ToString("F4") ?? "-",
+                            r.High?.ToString("F4") ?? "-",
+                            r.Low?.ToString("F4") ?? "-",
+                            r.Close?.ToString("F4") ?? "-",
+                            r.AdjustedClose?.ToString("F4") ?? "-",
+                            r.Volume?.ToString("N0") ?? "-"
+                        );
+                    }
+                    lblGridTitle.Text = $"EOD Results (Automated Service Operations) — {dailyRecords.Count} record(s)";
+                }
+            }
+            catch
+            {
+                // Soft fail if DB is unconfigured or unreachable during startup
+            }
+        }
+
+        // ── DataGrid & Logging Helpers ───────────────────────────────────────────
+        public void PopulateGrid(IEnumerable<EodData> results)
         {
             dgvResults.Rows.Clear();
             foreach (var r in results)
@@ -187,33 +317,22 @@ namespace EODSettingsApp.Forms
             lblGridTitle.Text = $"EOD Results  ({results.Count()} symbols)";
         }
 
-        // ── Save the fetched data to Oracle ──────────────────────────────────────
-        private async Task SaveToDatabase(IEnumerable<EodData> results)
+        private void AppendLog(string message)
         {
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: false, reloadOnChange: false)
-                .Build();
-
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new Exception($"Connection string 'DefaultConnection' is missing in {EODService.Config.PathesConfig.AppSettingsFileName}.");
-
-            using var dbContext = AppDbContextFactory.Create(connectionString);
-            await dbContext.Database.EnsureCreatedAsync();
-
-            await EodPersistenceService.SaveEodDataAsync(results, dbContext);
+            if (rtbLogs.IsDisposed) return;
+            rtbLogs.AppendText($"{message}{Environment.NewLine}");
+            rtbLogs.SelectionStart = rtbLogs.Text.Length;
+            rtbLogs.ScrollToCaret();
         }
 
-        // ── UI helpers ───────────────────────────────────────────────────────────
-        private void SetUiBusy(bool busy, string message)
+        private void AppendLogError(string message)
         {
-            btnGetData.Enabled = !busy;
-            cmbProvider.Enabled = !busy;
-            btnGetData.Text = busy ? "Running..." : "Get Data";
-            Cursor = busy ? Cursors.WaitCursor : Cursors.Default;
-            if (!string.IsNullOrEmpty(message))
-                SetStatus(message, success: true);
+            if (rtbLogs.IsDisposed) return;
+            rtbLogs.SelectionColor = Color.Red;
+            rtbLogs.AppendText($"ERROR: {message}{Environment.NewLine}");
+            rtbLogs.SelectionColor = rtbLogs.ForeColor;
+            rtbLogs.SelectionStart = rtbLogs.Text.Length;
+            rtbLogs.ScrollToCaret();
         }
 
         private void SetStatus(string message, bool success)
@@ -225,10 +344,6 @@ namespace EODSettingsApp.Forms
         }
 
         // ── Menu handlers ────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Settings → Provider Settings: opens the provider API settings dialog.
-        /// </summary>
         private void MnuItemProviderSettings_Click(object? sender, EventArgs e)
         {
             using var form = new ProviderSettingsForm();

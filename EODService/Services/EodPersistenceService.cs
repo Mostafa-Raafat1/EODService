@@ -1,125 +1,105 @@
-using EODService.DTOs.EOD;
-using EODService.Persistance;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using EODService.DTOs.EOD;
+using EODService.Persistance;
 
 namespace EODService.Services
 {
     /// <summary>
-    /// Centralized persistence service responsible for saving EOD data into the Oracle database.
-    /// Manages explicit database transactions, handles dictionary duplicate key safety,
-    /// and performs atomic upserts across EodDaily and EodHistory tables.
+    /// Shared service responsible for atomic, transaction-wrapped database persistence
+    /// of EOD market data to Oracle DB. Used by both EODService (console) and EODSettingsApp.
     /// </summary>
     public static class EodPersistenceService
     {
-        public static async Task SaveEodDataAsync(
-            IEnumerable<EodData> results,
-            AppDbContext dbContext,
-            ILogger? logger = null)
+        /// <summary>
+        /// Saves fetched EodData records into EodDaily (upsert) and EodHistory (insert new)
+        /// within a single atomic database transaction.
+        /// </summary>
+        public static async Task SaveAsync(AppDbContext dbContext, IEnumerable<EodData> results, CancellationToken ct = default)
         {
             if (results == null || !results.Any())
-            {
-                logger?.LogWarning("No EOD data provided for database save.");
                 return;
-            }
 
-            var resultList = results.Where(r => !string.IsNullOrWhiteSpace(r.Symbol)).ToList();
-            if (!resultList.Any())
-            {
-                logger?.LogWarning("All provided EOD records have empty symbols. Aborting save.");
-                return;
-            }
+            await dbContext.Database.EnsureCreatedAsync(ct);
 
-            var symbols = resultList.Select(r => r.Symbol).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-
-            // Wrap entire load + upsert + save in an explicit database transaction
-            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+            // Wrap entire read-upsert-insert pipeline in an explicit database transaction
+            await using var tx = await dbContext.Database.BeginTransactionAsync(ct);
 
             try
             {
-                // ── 1. Upsert EodDaily ──────────────────────────────────────────────
-                // FIX for ToDictionaryAsync duplicate key exception: Group by Symbol first to prevent duplicate key crashes
-                var existingDailyList = await dbContext.EodDaily
+                var symbols = results.Select(r => r.Symbol).Distinct().ToList();
+
+                // 1. Fetch matching EodDaily rows first (100% compatible SQL translation for Oracle EF Core)
+                var dailyRows = await dbContext.EodDaily
                     .Where(e => symbols.Contains(e.Symbol))
-                    .ToListAsync();
+                    .ToListAsync(ct);
 
-                var existingDailyDict = existingDailyList
-                    .GroupBy(e => e.Symbol, StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+                // Group in memory to avoid Oracle EF Core LINQ provider GroupBy translation bugs
+                var existingDailyDict = dailyRows
+                    .GroupBy(e => e.Symbol)
+                    .ToDictionary(g => g.Key, g => g.First());
 
-                foreach (var result in resultList)
+                foreach (var result in results)
                 {
-                    if (existingDailyDict.TryGetValue(result.Symbol, out var existingRecord))
+                    if (!existingDailyDict.TryGetValue(result.Symbol, out var existing))
                     {
-                        if (existingRecord.Date > result.Date)
-                        {
-                            logger?.LogWarning(
-                                "Existing record for {Symbol} on {ExistingDate:yyyy-MM-dd} is newer than incoming data ({IncomingDate:yyyy-MM-dd}). Skipping daily update.",
-                                result.Symbol, existingRecord.Date, result.Date);
-                            continue;
-                        }
-
-                        // Update existing daily record
-                        existingRecord.Open          = result.Open;
-                        existingRecord.High          = result.High;
-                        existingRecord.Low           = result.Low;
-                        existingRecord.Close         = result.Close;
-                        existingRecord.AdjustedClose = result.AdjustedClose;
-                        existingRecord.Volume        = result.Volume;
-                        existingRecord.Date          = result.Date.Date;
+                        dbContext.EodDaily.Add(result.ToDaily());
                     }
-                    else
+                    else if (existing.Date <= result.Date)
                     {
-                        var newDaily = result.ToDaily();
-                        dbContext.EodDaily.Add(newDaily);
-                        existingDailyDict[result.Symbol] = newDaily; // Track inserted record in dictionary to handle duplicate incoming results
+                        existing.Date          = result.Date;
+                        existing.Open          = result.Open;
+                        existing.High          = result.High;
+                        existing.Low           = result.Low;
+                        existing.Close         = result.Close;
+                        existing.AdjustedClose = result.AdjustedClose;
+                        existing.Volume        = result.Volume;
                     }
                 }
 
-                // ── 2. Insert EodHistory ─────────────────────────────────────────────
-                // FIX for ToDictionaryAsync duplicate key exception: Group by Symbol safely
-                var historyGroupList = await dbContext.EodHistory
+                // 2. Fetch history dates safely
+                var historyRows = await dbContext.EodHistory
                     .Where(e => symbols.Contains(e.Symbol))
+                    .Select(e => new { e.Symbol, e.Date })
+                    .ToListAsync(ct);
+
+                var lastHistoryDates = historyRows
                     .GroupBy(e => e.Symbol)
-                    .Select(g => new { Symbol = g.Key, LastDate = g.Max(x => x.Date) })
-                    .ToListAsync();
+                    .ToDictionary(g => g.Key, g => (DateTime?)g.Max(x => x.Date));
 
-                var lastHistoryDates = historyGroupList
-                    .GroupBy(x => x.Symbol, StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(g => g.Key, g => (DateTime?)g.Max(x => x.LastDate), StringComparer.OrdinalIgnoreCase);
-
-                int historyInsertedCount = 0;
-                foreach (var result in resultList)
+                foreach (var result in results)
                 {
                     lastHistoryDates.TryGetValue(result.Symbol, out var lastDate);
-
                     if (lastDate == null || lastDate < result.Date)
                     {
                         dbContext.EodHistory.Add(result.ToHistory());
-                        lastHistoryDates[result.Symbol] = result.Date; // Track updated max date
-                        historyInsertedCount++;
                     }
                 }
 
-                // ── 3. Save & Commit ──────────────────────────────────────────────────
-                await dbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                logger?.LogInformation(
-                    "Successfully saved EOD data to Oracle DB. Processed {DailyCount} symbol(s), inserted {HistoryCount} new history record(s).",
-                    resultList.Count, historyInsertedCount);
+                // 3. Commit changes and transaction atomically
+                await dbContext.SaveChangesAsync(ct);
+                await tx.CommitAsync(ct);
             }
-            catch (Exception ex)
+            catch
             {
-                await transaction.RollbackAsync();
-                logger?.LogError(ex, "Failed to save EOD data to database. Transaction rolled back.");
+                await tx.RollbackAsync(ct);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Compatibility overload for logging support.
+        /// </summary>
+        public static async Task SaveEodDataAsync(IEnumerable<EodData> results, AppDbContext dbContext, ILogger? logger = null, CancellationToken ct = default)
+        {
+            logger?.LogInformation("Executing atomic database transaction for {Count} record(s)...", results.Count());
+            await SaveAsync(dbContext, results, ct);
+            logger?.LogInformation("✔ Database save completed successfully.");
         }
     }
 }

@@ -14,7 +14,9 @@ using System.Threading.Tasks;
 
 // ─── Setup Logging ───────────────────────────────────────────────────────────
 using var loggerFactory = LoggerFactory.Create(builder =>
-    builder.AddConsole().SetMinimumLevel(LogLevel.Information));
+    builder.AddConsole()
+           .AddProvider(new EODService.Logging.FileLoggerProvider())
+           .SetMinimumLevel(LogLevel.Information));
 
 var logger = loggerFactory.CreateLogger("Program");
 

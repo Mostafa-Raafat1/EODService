@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace EODSettingsApp.AppSettingsConfig
 {
     /// <summary>
@@ -24,12 +26,23 @@ namespace EODSettingsApp.AppSettingsConfig
     }
 
     /// <summary>
-    /// Represents the provider-specific sections of EODService's AppSettings.json
-    /// that are editable via the Settings UI. All other sections are ignored here.
+    /// Automated schedule settings section from AppSettings.json.
+    /// </summary>
+    public class ScheduleSettingsSection
+    {
+        public bool Enabled { get; set; } = true;
+        public List<string> WorkingDays { get; set; } = new() { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+        public string RunTime { get; set; } = "18:00:00";
+    }
+
+    /// <summary>
+    /// Represents the provider-specific and schedule sections of EODService's AppSettings.json
+    /// that are editable via the Settings UI. All other sections are preserved.
     /// </summary>
     public class AppSettingsModel
     {
         public YahooSettingsSection      YahooSettings      { get; set; } = new();
         public TwelveDataSettingsSection TwelveDataSettings { get; set; } = new();
+        public ScheduleSettingsSection   ScheduleSettings   { get; set; } = new();
     }
 }
