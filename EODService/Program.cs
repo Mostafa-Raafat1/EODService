@@ -1,12 +1,13 @@
+using EODService.DTOs.OracleSettings;
 using EODService.DTOs.ProviderSettings;
 using EODService.DTOs.SymbolSettings;
 using EODService.DTOs.TwelveDataSettings;
 using EODService.DTOs.YahooSettings;
-using EODService.Services;
 using EODService.Persistance;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
+using EODService.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -100,12 +101,8 @@ if (!results.Any())
 }
 
 // ─── Step 7: Save to Oracle Database via Centralized Persistence Service ────
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(AppContext.BaseDirectory)
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .Build();
 
-var connectionString = configuration.GetConnectionString("DefaultConnection");
+var connectionString = OracleSettingsMapper.GetConnectionString();
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
