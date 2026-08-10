@@ -234,5 +234,14 @@ namespace EODSettingsApp.Forms
             using var form = new ProviderSettingsForm();
             form.ShowDialog(this);
         }
+
+        /// <summary>
+        /// Settings → Symbol Settings: opens the stock symbol configuration dialog.
+        /// </summary>
+        private void MnuItemSymbolSettings_Click(object? sender, EventArgs e)
+        {
+            using var form = new SymbolSettingsForm();
+            form.ShowDialog(this);
+        }
     }
 }

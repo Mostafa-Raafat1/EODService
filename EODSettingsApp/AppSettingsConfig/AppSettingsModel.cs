@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace EODSettingsApp.AppSettingsConfig
 {
     /// <summary>
@@ -24,12 +26,20 @@ namespace EODSettingsApp.AppSettingsConfig
     }
 
     /// <summary>
-    /// Represents the provider-specific sections of EODService's AppSettings.json
-    /// that are editable via the Settings UI. All other sections are ignored here.
+    /// Symbol settings section from AppSettings.json.
+    /// </summary>
+    public class SymbolSettingsSection
+    {
+        public List<string> Symbols { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents the editable configuration sections of EODService's AppSettings.json.
     /// </summary>
     public class AppSettingsModel
     {
         public YahooSettingsSection      YahooSettings      { get; set; } = new();
         public TwelveDataSettingsSection TwelveDataSettings { get; set; } = new();
+        public SymbolSettingsSection     SymbolSettings     { get; set; } = new();
     }
 }
