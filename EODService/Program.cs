@@ -114,6 +114,7 @@ else
         // Previously: one SELECT per symbol (N+1 round-trips to Oracle).
         // Now: one SELECT ... WHERE symbol IN (...) for all symbols at once.
         var existingDailyDict = await dbContext.EodDaily
+            .AsNoTracking() // Saves memory and avoids tracking overhead
             .Where(e => symbols.Contains(e.Symbol))
             .ToDictionaryAsync(e => e.Symbol);
 

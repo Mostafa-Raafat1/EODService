@@ -51,10 +51,10 @@ namespace EODService.Services
                     var response = await _httpClient.GetAsync(url);
                     response.EnsureSuccessStatusCode();
 
-                    var json = await response.Content.ReadAsStringAsync();
+                    using var stream = await response.Content.ReadAsStreamAsync();
 
-                    // Deserialize raw JSON into TwelveDataResponse DTO
-                    var twelveDataResponse = JsonSerializer.Deserialize<TwelveDataResponse>(json, _jsonOptions);
+                    // Stream raw JSON directly into TwelveDataResponse DTO without intermediate string allocation
+                    var twelveDataResponse = await JsonSerializer.DeserializeAsync<TwelveDataResponse>(stream, _jsonOptions);
 
                     if (twelveDataResponse == null)
                     {
