@@ -116,7 +116,7 @@ namespace EODService.Services
         public static async Task<SymbolSettings?> GetSymbolsForTwelveData(AppDbContext dbContext)
         {
             IStock repo = new StockRepo(dbContext);
-            var stocks = await repo.GetSymbolAndTickerIDForYahooFinance();
+            var stocks = await repo.GetSymbolAndTickerIDForTwelveData();
             return stocks;
         }
     }
