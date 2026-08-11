@@ -41,8 +41,10 @@ namespace EODService.Services
                 "EOD import started via Twelve Data. Processing {Count} symbol(s).",
                 _symbolSettings.Symbols.Count);
 
-            foreach (var symbol in _symbolSettings.Symbols)
+            for (int i = 0; i < _symbolSettings.Symbols.Count; i++)
             {
+                var symbol = _symbolSettings.Symbols[i];
+                var TickerID = _symbolSettings.TickerID[i]; // Assuming the symbol itself is the TickerID; adjust if needed
                 try
                 {
                     _logger.LogInformation("Downloading EOD data for {Symbol} via Twelve Data...", symbol);
@@ -63,7 +65,7 @@ namespace EODService.Services
                     }
 
                     // Delegate mapping to the Twelve Data mapper
-                    var eodData = TwelveDataMapper.Map(twelveDataResponse, symbol);
+                    var eodData = TwelveDataMapper.Map(twelveDataResponse, TickerID);
 
                     if (eodData != null)
                     {
