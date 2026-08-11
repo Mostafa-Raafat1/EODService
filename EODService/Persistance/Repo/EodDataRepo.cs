@@ -30,7 +30,7 @@ namespace EODService.Persistance.Repo
             if (string.IsNullOrWhiteSpace(symbol)) return null;
 
             return await _appDb.EodHistory
-                .Where(x => x.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.TickerID.Equals(symbol, StringComparison.OrdinalIgnoreCase))
                 .MaxAsync(x => (DateTime?)x.Date);
         }
 

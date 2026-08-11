@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using EODService.DTOs.EOD;
 using EODService.Persistance;
+using EODService.DTOs.SymbolSettings;
+using EODService.Persistance.Repo;
 
 namespace EODService.Services
 {
@@ -32,21 +34,21 @@ namespace EODService.Services
 
             try
             {
-                var symbols = results.Select(r => r.Symbol).Distinct().ToList();
+                var symbols = results.Select(r => r.TickerID).Distinct().ToList();
 
                 // 1. Fetch matching EodDaily rows first (100% compatible SQL translation for Oracle EF Core)
                 var dailyRows = await dbContext.EodDaily
-                    .Where(e => symbols.Contains(e.Symbol))
+                    .Where(e => symbols.Contains(e.TickerID))
                     .ToListAsync(ct);
 
                 // Group in memory to avoid Oracle EF Core LINQ provider GroupBy translation bugs
                 var existingDailyDict = dailyRows
-                    .GroupBy(e => e.Symbol)
+                    .GroupBy(e => e.TickerID)
                     .ToDictionary(g => g.Key, g => g.First());
 
                 foreach (var result in results)
                 {
-                    if (!existingDailyDict.TryGetValue(result.Symbol, out var existing))
+                    if (!existingDailyDict.TryGetValue(result.TickerID, out var existing))
                     {
                         dbContext.EodDaily.Add(result.ToDaily());
                     }
@@ -64,17 +66,17 @@ namespace EODService.Services
 
                 // 2. Fetch history dates safely
                 var historyRows = await dbContext.EodHistory
-                    .Where(e => symbols.Contains(e.Symbol))
-                    .Select(e => new { e.Symbol, e.Date })
+                    .Where(e => symbols.Contains(e.TickerID))
+                    .Select(e => new { e.TickerID, e.Date })
                     .ToListAsync(ct);
 
                 var lastHistoryDates = historyRows
-                    .GroupBy(e => e.Symbol)
+                    .GroupBy(e => e.TickerID)
                     .ToDictionary(g => g.Key, g => (DateTime?)g.Max(x => x.Date));
 
                 foreach (var result in results)
                 {
-                    lastHistoryDates.TryGetValue(result.Symbol, out var lastDate);
+                    lastHistoryDates.TryGetValue(result.TickerID, out var lastDate);
                     if (lastDate == null || lastDate < result.Date)
                     {
                         dbContext.EodHistory.Add(result.ToHistory());
@@ -100,6 +102,22 @@ namespace EODService.Services
             logger?.LogInformation("Executing atomic database transaction for {Count} record(s)...", results.Count());
             await SaveAsync(dbContext, results, ct);
             logger?.LogInformation("✔ Database save completed successfully.");
+        }
+
+
+        // Later will be enhanced using delegates to be more flexible
+        public static async Task<SymbolSettings?> GetSymbolsForYahooFinance(AppDbContext dbContext)
+        {
+            IStock repo = new StockRepo(dbContext);
+            var stocks = await repo.GetSymbolAndTickerIDForYahooFinance();
+            return stocks;
+        }
+
+        public static async Task<SymbolSettings?> GetSymbolsForTwelveData(AppDbContext dbContext)
+        {
+            IStock repo = new StockRepo(dbContext);
+            var stocks = await repo.GetSymbolAndTickerIDForYahooFinance();
+            return stocks;
         }
     }
 }

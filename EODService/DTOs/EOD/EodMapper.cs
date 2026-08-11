@@ -12,7 +12,7 @@ namespace EODService.DTOs.EOD
         {
             return new EodDataDaily
             {
-                Symbol = dto.Symbol,
+                TickerID = dto.TickerID,
                 Date = dto.Date,
                 Open = dto.Open,
                 High = dto.High,
@@ -27,7 +27,7 @@ namespace EODService.DTOs.EOD
         {
             return new EodDataHistory
             {
-                Symbol = dto.Symbol,
+                TickerID = dto.TickerID,
                 Date = dto.Date,
                 Open = dto.Open,
                 High = dto.High,
@@ -41,7 +41,7 @@ namespace EODService.DTOs.EOD
         {
             return data.Select(x => new EodDataDaily
             {
-                Symbol = x.Symbol,
+                TickerID = x.TickerID,
                 Date = x.Date,
                 Open = x.Open,
                 High = x.High,
@@ -56,7 +56,7 @@ namespace EODService.DTOs.EOD
         {
             return data.Select(x => new EodDataHistory
             {
-                Symbol = x.Symbol,
+                TickerID = x.TickerID,
                 Date = x.Date,
                 Open = x.Open,
                 High = x.High,

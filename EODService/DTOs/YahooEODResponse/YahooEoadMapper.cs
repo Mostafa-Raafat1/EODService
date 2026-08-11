@@ -7,7 +7,7 @@ namespace EODService.DTOs.YahooEODResponse
 {
     public static class YahooEodMapper
     {
-        public static EodData? Map(YahooEodResponse response, string symbol)
+        public static EodData? Map(YahooEodResponse response, string TickerID)
         {
             // get Result Object
             var result = response.Chart?.Result?.FirstOrDefault();
@@ -50,7 +50,7 @@ namespace EODService.DTOs.YahooEODResponse
                 // Map All the data to EodData object and return it
                 return new EodData
                 {
-                    Symbol = symbol,
+                    TickerID = TickerID,
                     Date = DateTimeOffset
                         .FromUnixTimeSeconds(timestamps[i])
                         .UtcDateTime,
