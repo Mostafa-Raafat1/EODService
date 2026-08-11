@@ -358,5 +358,23 @@ namespace EODSettingsApp.Forms
             using var form = new SymbolSettingsForm();
             form.ShowDialog(this);
         }
+
+        /// <summary>
+        /// Settings → Database Connection: opens the Oracle database connection configuration & testing dialog.
+        /// </summary>
+        private void MnuItemDatabaseSettings_Click(object? sender, EventArgs e)
+        {
+            using var form = new DatabaseSettingsForm();
+            form.ShowDialog(this);
+        }
+
+        /// <summary>
+        /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
+        /// </summary>
+        private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
+        {
+            using var form = new HistoricalDataForm();
+            form.ShowDialog(this);
+        }
     }
 }

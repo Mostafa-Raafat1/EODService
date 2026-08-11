@@ -34,7 +34,6 @@ namespace EODSettingsApp.AppSettingsConfig
     }
 
     /// <summary>
-    /// Represents the editable configuration sections of EODService's AppSettings.json.
     /// Automated schedule settings section from AppSettings.json.
     /// </summary>
     public class ScheduleSettingsSection
@@ -45,8 +44,15 @@ namespace EODSettingsApp.AppSettingsConfig
     }
 
     /// <summary>
-    /// Represents the provider-specific and schedule sections of EODService's AppSettings.json
-    /// that are editable via the Settings UI. All other sections are preserved.
+    /// Connection strings section from AppSettings.json.
+    /// </summary>
+    public class ConnectionStringsSection
+    {
+        public string DefaultConnection { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Represents the provider-specific, schedule, and connection sections of EODService's AppSettings.json.
     /// </summary>
     public class AppSettingsModel
     {
@@ -54,5 +60,6 @@ namespace EODSettingsApp.AppSettingsConfig
         public TwelveDataSettingsSection TwelveDataSettings { get; set; } = new();
         public SymbolSettingsSection     SymbolSettings     { get; set; } = new();
         public ScheduleSettingsSection   ScheduleSettings   { get; set; } = new();
+        public ConnectionStringsSection  ConnectionStrings  { get; set; } = new();
     }
 }

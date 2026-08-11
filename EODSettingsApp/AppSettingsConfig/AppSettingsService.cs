@@ -6,9 +6,8 @@ using System.Text.Json.Nodes;
 namespace EODSettingsApp.AppSettingsConfig
 {
     /// <summary>
-    /// Reads and writes the Yahoo, TwelveData, and SymbolSettings sections of EODService's AppSettings.json.
-    /// Every other section (ProviderSettings, ConnectionStrings, …) is preserved
-    /// exactly as-is during a save operation.
+    /// Reads and writes editable sections (Yahoo, TwelveData, SymbolSettings, ScheduleSettings, ConnectionStrings)
+    /// of EODService's AppSettings.json. Every other section (ProviderSettings, …) is preserved as-is.
     /// </summary>
     public static class AppSettingsService
     {
@@ -23,8 +22,7 @@ namespace EODSettingsApp.AppSettingsConfig
         };
 
         /// <summary>
-        /// Loads the Yahoo, TwelveData, and SymbolSettings sections from AppSettings.json.
-        /// Returns default (empty) sections if a section key is missing from the file.
+        /// Loads settings model sections from AppSettings.json.
         /// </summary>
         public static AppSettingsModel Load()
         {
@@ -38,14 +36,14 @@ namespace EODSettingsApp.AppSettingsConfig
             {
                 YahooSettings      = ReadSection<YahooSettingsSection>(root, "YahooSettings"),
                 TwelveDataSettings = ReadSection<TwelveDataSettingsSection>(root, "TwelveDataSettings"),
-                SymbolSettings     = ReadSection<SymbolSettingsSection>(root, "SymbolSettings")
+                SymbolSettings     = ReadSection<SymbolSettingsSection>(root, "SymbolSettings"),
+                ScheduleSettings   = ReadSection<ScheduleSettingsSection>(root, "ScheduleSettings"),
+                ConnectionStrings  = ReadSection<ConnectionStringsSection>(root, "ConnectionStrings")
             };
         }
 
         /// <summary>
-        /// Saves the Yahoo, TwelveData, and SymbolSettings sections back into AppSettings.json
-        /// and syncs changes to active bin output files.
-        /// All other keys in the file are left untouched.
+        /// Saves settings model sections back into AppSettings.json and syncs changes to output files.
         /// </summary>
         public static void Save(AppSettingsModel model)
         {
@@ -62,6 +60,12 @@ namespace EODSettingsApp.AppSettingsConfig
                 
             if (model.SymbolSettings != null)
                 root["SymbolSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.SymbolSettings));
+
+            if (model.ScheduleSettings != null)
+                root["ScheduleSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.ScheduleSettings));
+
+            if (model.ConnectionStrings != null)
+                root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(model.ConnectionStrings));
 
             var updatedJson = root.ToJsonString(_writeOptions);
 
