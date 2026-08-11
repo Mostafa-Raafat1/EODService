@@ -30,7 +30,7 @@ namespace EODSettingsApp.Forms
         private void SetupGridColumns()
         {
             dgvHistory.Columns.Clear();
-            dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Symbol", HeaderText = "Symbol", DataPropertyName = "Symbol" });
+            dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { Name = "TickerID", HeaderText = "Ticker / Symbol", DataPropertyName = "TickerID" });
             dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Date", HeaderText = "Date", DataPropertyName = "Date" });
             dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { Name = "Open", HeaderText = "Open", DataPropertyName = "Open" });
             dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { Name = "High", HeaderText = "High", DataPropertyName = "High" });
@@ -107,12 +107,12 @@ namespace EODSettingsApp.Forms
 
                 if (!string.Equals(selectedSymbol, "ALL", StringComparison.OrdinalIgnoreCase))
                 {
-                    historyQuery = historyQuery.Where(h => h.Symbol.ToUpper() == selectedSymbol.ToUpper());
+                    historyQuery = historyQuery.Where(h => h.TickerID.ToUpper() == selectedSymbol.ToUpper());
                 }
 
                 historyQuery = historyQuery.Where(h => h.Date >= fromDate && h.Date <= toDate);
 
-                var historyList = await historyQuery.OrderByDescending(h => h.Date).ThenBy(h => h.Symbol).ToListAsync();
+                var historyList = await historyQuery.OrderByDescending(h => h.Date).ThenBy(h => h.TickerID).ToListAsync();
                 var results = historyList.Cast<EodData>().ToList();
 
                 // If EodHistory is empty, fallback check in EodDaily table
@@ -122,11 +122,11 @@ namespace EODSettingsApp.Forms
 
                     if (!string.Equals(selectedSymbol, "ALL", StringComparison.OrdinalIgnoreCase))
                     {
-                        dailyQuery = dailyQuery.Where(d => d.Symbol.ToUpper() == selectedSymbol.ToUpper());
+                        dailyQuery = dailyQuery.Where(d => d.TickerID.ToUpper() == selectedSymbol.ToUpper());
                     }
 
                     dailyQuery = dailyQuery.Where(d => d.Date >= fromDate && d.Date <= toDate);
-                    var dailyList = await dailyQuery.OrderByDescending(d => d.Date).ThenBy(d => d.Symbol).ToListAsync();
+                    var dailyList = await dailyQuery.OrderByDescending(d => d.Date).ThenBy(d => d.TickerID).ToListAsync();
                     results = dailyList.Cast<EodData>().ToList();
                 }
 
@@ -156,7 +156,7 @@ namespace EODSettingsApp.Forms
             foreach (var r in records)
             {
                 dgvHistory.Rows.Add(
-                    r.Symbol,
+                    r.TickerID,
                     r.Date.ToString("yyyy-MM-dd"),
                     r.Open?.ToString("F4") ?? "-",
                     r.High?.ToString("F4") ?? "-",
