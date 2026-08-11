@@ -32,19 +32,40 @@ if (providerSettings == null || string.IsNullOrWhiteSpace(providerSettings.Activ
 logger.LogInformation("Active Provider: {Provider}", providerSettings.ActiveProvider);
 
 // ─── Step 2: Load SymbolSettings ─────────────────────────────────────────────
-var symbolSettings = SymbolSettingsMapper.MapToSymbolSettings();
+var symbolSettings = new SymbolSettings();
 
-if (symbolSettings == null || symbolSettings.Symbols == null || !symbolSettings.Symbols.Any())
-{
-    logger.LogError("'SymbolSettings:Symbols' is missing or empty in appsettings.json. Exiting.");
-    return;
-}
 
 // ─── Step 3: Load Provider-Specific Settings ──────────────────────────────────
 var yahooSettings      = YahooSettingsMapper.MapToYahooSettings();
 var twelveDataSettings = TwelveDataSettingsMapper.MapToTwelveDataSettings();
 
-// Validate Yahoo settings if it's the active provider
+
+// ─── Step 4: Create Connection and Get Symbols for selected provider ──────────────────────────────────
+var connectionString = OracleSettingsMapper.GetConnectionString();
+// Create a DbContext instance for database operations
+AppDbContext? dbContext = null;
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    logger.LogWarning("Connection string 'DefaultConnection' is missing or unconfigured in appsettings.json. Skipping database save.");
+}
+else
+{
+    logger.LogInformation("Connecting to Database...");
+    try
+    {
+        dbContext = AppDbContextFactory.Create(connectionString);
+        await dbContext.Database.EnsureCreatedAsync();
+
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error occurred while connecting to the database.");
+        return;
+    }
+}
+
+// Validate Yahoo settings if it's the active provider and get symbols from database
 if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgnoreCase))
 {
     if (yahooSettings == null || string.IsNullOrWhiteSpace(yahooSettings.BaseUrl) || string.IsNullOrWhiteSpace(yahooSettings.Endpoint))
@@ -52,9 +73,14 @@ if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgno
         logger.LogError("'YahooSettings' (BaseUrl or Endpoint) is missing or empty in appsettings.json. Exiting.");
         return;
     }
+    symbolSettings = await EodPersistenceService.GetSymbolsForYahooFinance(dbContext);
+    foreach(var symbol in symbolSettings.Symbols)
+    {
+        logger.LogInformation($"Processing symbol: {symbol}");
+    }
 }
 
-// Validate TwelveData settings if it's the active provider
+// Validate TwelveData settings if it's the active provider and get symbols from database
 if (providerSettings.ActiveProvider.Equals("TwelveData", StringComparison.OrdinalIgnoreCase))
 {
     if (twelveDataSettings == null || string.IsNullOrWhiteSpace(twelveDataSettings.BaseUrl) || string.IsNullOrWhiteSpace(twelveDataSettings.ApiKey))
@@ -62,9 +88,15 @@ if (providerSettings.ActiveProvider.Equals("TwelveData", StringComparison.Ordina
         logger.LogError("'TwelveDataSettings' (BaseUrl or ApiKey) is missing or empty in appsettings.json. Exiting.");
         return;
     }
+    symbolSettings = await EodPersistenceService.GetSymbolsForTwelveData(dbContext);
+    foreach (var symbol in symbolSettings.Symbols)
+    {
+        logger.LogInformation($"Processing symbol: {symbol}");
+    }
 }
 
-// ─── Step 4: Create Shared HttpClient with Timeout ──────────────────────────
+
+// ─── Step 5: Create Shared HttpClient with Timeout ──────────────────────────
 using var httpClient = new HttpClient
 {
     Timeout = TimeSpan.FromSeconds(30)
@@ -74,8 +106,9 @@ httpClient.DefaultRequestHeaders.Add(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
-// ─── Step 5: Create Service via Factory ──────────────────────────────────────
-IEODService service;
+
+// ─── Step 6: Create Service via Factory ──────────────────────────────────────
+        IEODService service;
 try
 {
     service = EODServiceFactory.CreateProvider(
@@ -92,7 +125,7 @@ catch (ArgumentException ex)
     return;
 }
 
-// ─── Step 6: Run the Import ───────────────────────────────────────────────────
+// ─── Step 7: Run the Import ───────────────────────────────────────────────────
 logger.LogInformation("Starting EOD data import...");
 var results = await service.GetEodDataAsync();
 
@@ -102,26 +135,15 @@ if (!results.Any())
     return;
 }
 
-// ─── Step 7: Save to Oracle Database via Centralized Persistence Service ────
+// ─── Step 8: Save to Oracle Database via Centralized Persistence Service ────
 
-var connectionString = OracleSettingsMapper.GetConnectionString();
-
-if (string.IsNullOrWhiteSpace(connectionString))
+logger.LogInformation("Saving to Oracle Database...");
+try
 {
-    logger.LogWarning("Connection string 'DefaultConnection' is missing or unconfigured in appsettings.json. Skipping database save.");
+    await EodPersistenceService.SaveEodDataAsync(results, dbContext, logger);
 }
-else
+catch (Exception ex)
 {
-    logger.LogInformation("Saving to Oracle Database...");
-    try
-    {
-        using var dbContext = AppDbContextFactory.Create(connectionString);
-        await dbContext.Database.EnsureCreatedAsync();
-
-        await EodPersistenceService.SaveEodDataAsync(results, dbContext, logger);
-    }
-    catch (Exception ex)
-    {
         logger.LogError(ex, "Error occurred while processing database save operation.");
-    }
 }
+

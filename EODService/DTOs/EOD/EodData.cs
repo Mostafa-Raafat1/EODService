@@ -6,7 +6,7 @@ namespace EODService.DTOs.EOD
 {
     public class EodData
     {
-        public string Symbol { get; set; } = string.Empty;
+        public string TickerID { get; set; } = string.Empty;
 
         public DateTime Date { get; set; }
 

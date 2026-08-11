@@ -42,8 +42,10 @@ namespace EODService.Services
                 "EOD import started. Processing {Count} symbol(s).",
                 _symbolSettings.Symbols.Count);
 
-            foreach (var symbol in _symbolSettings.Symbols)
+            for(int i = 0; i < _symbolSettings.Symbols.Count; i++)
             {
+                var symbol = _symbolSettings.Symbols[i];
+                var TickerID = _symbolSettings.TickerID[i]; // Assuming the symbol itself is the TickerID; adjust if needed
                 try
                 {
                     _logger.LogInformation("Downloading EOD data for {Symbol}...", symbol);
@@ -64,7 +66,7 @@ namespace EODService.Services
                     }
 
                     // Delegate mapping to the static Yahoo EOD mapper
-                    var eodData = YahooEodMapper.Map(yahooResponse, symbol);
+                    var eodData = YahooEodMapper.Map(yahooResponse, TickerID);
 
                     //If mapping returns null, it means the response didn't contain valid EOD data
 
@@ -126,7 +128,7 @@ namespace EODService.Services
             // Yahoo Finance requires the LSE suffix ".L" for GDR symbols.
             // Base symbols are stored without suffix in appsettings.json (e.g., "CBKD"),
             // so we append it here to keep provider-specific formatting inside the provider.
-            var yahooSymbol = $"{symbol}.L";
+            var yahooSymbol = $"{symbol}";
             return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{yahooSymbol}" +
                    $"?interval={_yahooSettings.Interval}&range={_yahooSettings.Range}";
         }

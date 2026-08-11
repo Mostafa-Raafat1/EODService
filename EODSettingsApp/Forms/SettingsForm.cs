@@ -61,7 +61,9 @@ namespace EODSettingsApp.Forms
 
         private void PopulateScheduleUI(ScheduleSettingsSection schedule)
         {
+            chkEnableSchedule.CheckedChanged -= ChkEnableSchedule_CheckedChanged;
             chkEnableSchedule.Checked = schedule.Enabled;
+            ToggleScheduleControlsState(schedule.Enabled);
 
             var days = schedule.WorkingDays ?? new List<string>();
             chkMon.Checked = days.Contains("Monday", StringComparer.OrdinalIgnoreCase);
@@ -82,6 +84,49 @@ namespace EODSettingsApp.Forms
             }
 
             UpdateNextRunIndicator(schedule);
+            chkEnableSchedule.CheckedChanged += ChkEnableSchedule_CheckedChanged;
+        }
+
+        private void ChkEnableSchedule_CheckedChanged(object? sender, EventArgs e)
+        {
+            bool isEnabled = chkEnableSchedule.Checked;
+            ToggleScheduleControlsState(isEnabled);
+
+            try
+            {
+                // Automatically save Enabled state to AppSettings.json and update Task Scheduler without manual save
+                var appSettings = AppSettingsService.Load();
+                appSettings.ScheduleSettings.Enabled = isEnabled;
+                appSettings.ScheduleSettings.WorkingDays = CollectSelectedWorkingDays();
+                appSettings.ScheduleSettings.RunTime = dtpRunTime.Value.ToString("HH:mm:ss");
+                AppSettingsService.Save(appSettings);
+
+                var exePath = EodServiceLauncher.ResolveExePath();
+                WindowsTaskSchedulerService.RegisterOrUpdateTask(appSettings.ScheduleSettings, exePath);
+
+                UpdateNextRunIndicator(appSettings.ScheduleSettings);
+                SetStatus($"✔ Automated schedule {(isEnabled ? "enabled" : "disabled")}.", success: true);
+                AppendLog($"[Schedule] Auto-schedule {(isEnabled ? "enabled" : "disabled")}.");
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"✘ Error updating schedule: {ex.Message}", success: false);
+            }
+        }
+
+        private void ToggleScheduleControlsState(bool isEnabled)
+        {
+            lblWorkingDaysLabel.Enabled = isEnabled;
+            chkMon.Enabled = isEnabled;
+            chkTue.Enabled = isEnabled;
+            chkWed.Enabled = isEnabled;
+            chkThu.Enabled = isEnabled;
+            chkFri.Enabled = isEnabled;
+            chkSat.Enabled = isEnabled;
+            chkSun.Enabled = isEnabled;
+            lblTimeLabel.Enabled = isEnabled;
+            dtpRunTime.Enabled = isEnabled;
+            btnSaveSchedule.Enabled = isEnabled;
         }
 
         // ── Define the DataGridView columns ──────────────────────────────────────
@@ -291,7 +336,7 @@ namespace EODSettingsApp.Forms
                         foreach (var r in dailyRecords)
                         {
                             dgvResults.Rows.Add(
-                                r.Symbol,
+                                r.TickerID,
                                 r.Date.ToString("yyyy-MM-dd"),
                                 r.Open?.ToString("F4") ?? "-",
                                 r.High?.ToString("F4") ?? "-",
@@ -318,7 +363,7 @@ namespace EODSettingsApp.Forms
             foreach (var r in results)
             {
                 dgvResults.Rows.Add(
-                    r.Symbol,
+                    r.TickerID,
                     r.Date.ToString("yyyy-MM-dd"),
                     r.Open?.ToString("F4") ?? "-",
                     r.High?.ToString("F4") ?? "-",

@@ -203,6 +203,7 @@ namespace EODSettingsApp.Forms
             chkEnableSchedule.TabIndex = 2;
             chkEnableSchedule.Text = "Enable Automated Schedule";
             chkEnableSchedule.UseVisualStyleBackColor = true;
+            chkEnableSchedule.CheckedChanged += ChkEnableSchedule_CheckedChanged;
             // 
             // lblWorkingDaysLabel
             // 

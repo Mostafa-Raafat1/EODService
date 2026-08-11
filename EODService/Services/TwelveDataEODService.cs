@@ -27,7 +27,7 @@ namespace EODService.Services
             ILogger<TwelveDataEODService> logger)
         {
             _twelveDataSettings = twelveDataSettings;
-            _symbolSettings     = symbolSettings;
+            _symbolSettings = symbolSettings;
             _httpClient         = httpClient;
             _logger             = logger;
         }
