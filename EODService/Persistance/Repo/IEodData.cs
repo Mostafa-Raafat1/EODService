@@ -7,7 +7,7 @@ namespace EODService.Persistance.Repo
 {
     public interface IEodData
     {
-        Task<DateTime?> GetLastDateForSymbolAsync(string symbol);
+        Task<DateTime?> GetLastDateForIdAsync(int Id);
         Task AddToHistoryAsync(EodDataHistory data);
         Task SaveBatchAsync(IEnumerable<EodData> data);
     }

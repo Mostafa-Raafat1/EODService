@@ -18,8 +18,7 @@ namespace EODService.Persistance.Repo
         {
             var stocks = await dbContext.Stock
                 .Where(s => s.YahooFinanceExists &&
-                            s.YahooFinanceID != null &&
-                            s.TickerID != null)
+                            s.YahooFinanceID != null)
                 .ToListAsync();
 
             return new SymbolSettings
@@ -28,9 +27,13 @@ namespace EODService.Persistance.Repo
                     .Select(s => s.YahooFinanceID!)
                     .ToList(),
 
-                TickerID = stocks
-                    .Select(s => s.TickerID!)
+                Ids = stocks
+                    .Select(s => s.Id)
+                    .ToList(),
+                Names = stocks
+                    .Select(s => s.StockName)
                     .ToList()
+
             };
         }
 
@@ -38,8 +41,7 @@ namespace EODService.Persistance.Repo
         {
             var stocks = await dbContext.Stock
                 .Where(s => s.TwelveDataExists &&
-                            s.TwelveDataID != null &&
-                            s.TickerID != null)
+                            s.TwelveDataID != null)
                 .ToListAsync();
 
             return new SymbolSettings
@@ -48,8 +50,11 @@ namespace EODService.Persistance.Repo
                     .Select(s => s.TwelveDataID!)
                     .ToList(),
 
-                TickerID = stocks
-                    .Select(s => s.TickerID!)
+                Ids = stocks
+                    .Select(s => s.Id)
+                    .ToList(),
+                Names = stocks
+                    .Select(s => s.StockName)
                     .ToList()
             };
         }

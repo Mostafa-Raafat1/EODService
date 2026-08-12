@@ -34,21 +34,21 @@ namespace EODService.Services
 
             try
             {
-                var symbols = results.Select(r => r.TickerID).Distinct().ToList();
+                var symbols = results.Select(r => r.Id).Distinct().ToList();
 
                 // 1. Fetch matching EodDaily rows first (100% compatible SQL translation for Oracle EF Core)
                 var dailyRows = await dbContext.EodDaily
-                    .Where(e => symbols.Contains(e.TickerID))
+                    .Where(e => symbols.Contains(e.Id))
                     .ToListAsync(ct);
 
                 // Group in memory to avoid Oracle EF Core LINQ provider GroupBy translation bugs
                 var existingDailyDict = dailyRows
-                    .GroupBy(e => e.TickerID)
+                    .GroupBy(e => e.Id)
                     .ToDictionary(g => g.Key, g => g.First());
 
                 foreach (var result in results)
                 {
-                    if (!existingDailyDict.TryGetValue(result.TickerID, out var existing))
+                    if (!existingDailyDict.TryGetValue(result.Id, out var existing))
                     {
                         dbContext.EodDaily.Add(result.ToDaily());
                     }
@@ -66,17 +66,17 @@ namespace EODService.Services
 
                 // 2. Fetch history dates safely
                 var historyRows = await dbContext.EodHistory
-                    .Where(e => symbols.Contains(e.TickerID))
-                    .Select(e => new { e.TickerID, e.Date })
+                    .Where(e => symbols.Contains(e.Id))
+                    .Select(e => new { e.Id, e.Date })
                     .ToListAsync(ct);
 
                 var lastHistoryDates = historyRows
-                    .GroupBy(e => e.TickerID)
+                    .GroupBy(e => e.Id)
                     .ToDictionary(g => g.Key, g => (DateTime?)g.Max(x => x.Date));
 
                 foreach (var result in results)
                 {
-                    lastHistoryDates.TryGetValue(result.TickerID, out var lastDate);
+                    lastHistoryDates.TryGetValue(result.Id, out var lastDate);
                     if (lastDate == null || lastDate < result.Date)
                     {
                         dbContext.EodHistory.Add(result.ToHistory());

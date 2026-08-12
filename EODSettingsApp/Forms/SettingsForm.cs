@@ -336,7 +336,8 @@ namespace EODSettingsApp.Forms
                         foreach (var r in dailyRecords)
                         {
                             dgvResults.Rows.Add(
-                                r.TickerID,
+                                r.Id,
+                                r.Name,
                                 r.Date.ToString("yyyy-MM-dd"),
                                 r.Open?.ToString("F4") ?? "-",
                                 r.High?.ToString("F4") ?? "-",
@@ -363,7 +364,8 @@ namespace EODSettingsApp.Forms
             foreach (var r in results)
             {
                 dgvResults.Rows.Add(
-                    r.TickerID,
+                    r.Id,
+                    r.Name,
                     r.Date.ToString("yyyy-MM-dd"),
                     r.Open?.ToString("F4") ?? "-",
                     r.High?.ToString("F4") ?? "-",

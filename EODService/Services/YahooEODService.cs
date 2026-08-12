@@ -45,7 +45,8 @@ namespace EODService.Services
             for(int i = 0; i < _symbolSettings.Symbols.Count; i++)
             {
                 var symbol = _symbolSettings.Symbols[i];
-                var TickerID = _symbolSettings.TickerID[i]; // Assuming the symbol itself is the TickerID; adjust if needed
+                var Id = _symbolSettings.Ids[i]; 
+                var name = _symbolSettings.Names[i]; 
                 try
                 {
                     _logger.LogInformation("Downloading EOD data for {Symbol}...", symbol);
@@ -66,7 +67,7 @@ namespace EODService.Services
                     }
 
                     // Delegate mapping to the static Yahoo EOD mapper
-                    var eodData = YahooEodMapper.Map(yahooResponse, TickerID);
+                    var eodData = YahooEodMapper.Map(yahooResponse, Id, name);
 
                     //If mapping returns null, it means the response didn't contain valid EOD data
 
