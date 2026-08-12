@@ -27,8 +27,6 @@ namespace EODService.Services
             if (results == null || !results.Any())
                 return;
 
-            await dbContext.Database.EnsureCreatedAsync(ct);
-
             // Wrap entire read-upsert-insert pipeline in an explicit database transaction
             await using var tx = await dbContext.Database.BeginTransactionAsync(ct);
 

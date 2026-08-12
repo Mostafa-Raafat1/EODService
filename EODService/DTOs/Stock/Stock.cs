@@ -7,7 +7,7 @@ namespace EODService.DTOs.Stock
     public class Stock
     {
         public int Id { get; set; }
-        public string SC_Comp_Id { get; set; }
+        public int SC_Comp_Id { get; set; }
         public string StockName { get; set;  }
 
         public string? YahooFinanceID { get; set; }
