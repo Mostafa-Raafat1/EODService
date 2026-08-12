@@ -45,7 +45,7 @@ namespace EODSettingsApp.AppSettingsConfig
         }
 
         /// <summary>
-        /// Saves the Yahoo, TwelveData, and SymbolSettings sections back into AppSettings.json
+        /// Saves the Yahoo, TwelveData, SymbolSettings, ScheduleSettings, and ConnectionStrings sections back into AppSettings.json
         /// and syncs changes to active bin output files.
         /// All other keys in the file are left untouched.
         /// </summary>
@@ -90,6 +90,12 @@ namespace EODSettingsApp.AppSettingsConfig
                 
             if (model.SymbolSettings != null)
                 root["SymbolSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.SymbolSettings));
+
+            if (model.ScheduleSettings != null)
+                root["ScheduleSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.ScheduleSettings));
+
+            if (model.ConnectionStrings != null)
+                root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(model.ConnectionStrings));
 
             var updatedJson = root.ToJsonString(_writeOptions);
 
