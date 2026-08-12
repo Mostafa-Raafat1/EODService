@@ -31,8 +31,27 @@ namespace EODSettingsApp.Forms
                 var model = AppSettingsService.Load();
                 var connectionString = model.ConnectionStrings?.DefaultConnection ?? string.Empty;
 
-                txtConnectionString.Text = connectionString;
-                ParseAndPopulateFields(connectionString);
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    // No saved connection yet — populate with defaults and build the string
+                    _isUpdatingFields = true;
+                    txtHost.Text        = "10.120.143.51";
+                    txtPort.Text        = "1521";
+                    txtServiceName.Text = "cibcorclhq";
+                    txtUserId.Text      = "intern";
+                    txtPassword.Text    = "intern";
+                    _isUpdatingFields = false;
+
+                    // Trigger the live build so txtConnectionString is populated
+                    Parameter_TextChanged(this, EventArgs.Empty);
+                    SetStatus(success: true, "ℹ Default connection values loaded. Review and save.");
+                }
+                else
+                {
+                    txtConnectionString.Text = connectionString;
+                    ParseAndPopulateFields(connectionString);
+                    SetStatus(success: true, "✔ Connection settings loaded from AppSettings.json");
+                }
             }
             catch (Exception ex)
             {
@@ -132,14 +151,8 @@ namespace EODSettingsApp.Forms
 
             try
             {
-                var model = AppSettingsService.Load();
-                model.ConnectionStrings = new ConnectionStringsSection
-                {
-                    DefaultConnection = connectionString
-                };
-
-                AppSettingsService.Save(model);
-                SetStatus(success: true, "✔ Database connection settings saved successfully.");
+                AppSettingsService.SaveConnectionString(connectionString);
+                SetStatus(success: true, "✔ Connection settings saved successfully.");
             }
             catch (Exception ex)
             {
@@ -157,9 +170,14 @@ namespace EODSettingsApp.Forms
             lblDatabaseSettingsStatus.Text = message;
         }
 
-        private void txtConnectionString_TextChanged(object sender, EventArgs e)
+        private void txtConnectionString_TextChanged(object? sender, EventArgs e)
         {
-
+            if (_isUpdatingFields) return;
+            var connectionString = txtConnectionString.Text.Trim();
+            if (!string.IsNullOrWhiteSpace(connectionString))
+            {
+                ParseAndPopulateFields(connectionString);
+            }
         }
     }
 }
