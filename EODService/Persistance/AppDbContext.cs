@@ -2,6 +2,7 @@ using EODService.DTOs.EOD;
 using EODService.DTOs.Stock;
 using EODService.Persistance.Repo;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,10 +29,13 @@ namespace EODService.Persistance
                 entity.ToTable("EodDaily");
 
                 // Only one latest record per symbol
-                entity.HasKey(e => e.TickerID);
+                entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.TickerID)
-                    .HasColumnName("Ticker_ID");
+                entity.Property(e => e.Id)
+                    .HasColumnName("STOCK_ID");
+
+                entity.Property(e => e.Name)
+                    .HasColumnName("STOCK_NAME");
 
                 entity.Property(e => e.Date)
                     .HasColumnName("DATE");
@@ -68,12 +72,15 @@ namespace EODService.Persistance
 
                 entity.HasKey(e => new
                 {
-                    e.TickerID,
+                    e.Id,
                     e.Date
                 });
 
-                entity.Property(e => e.TickerID)
-                    .HasColumnName("Ticker_ID");
+                entity.Property(e => e.Id)
+                    .HasColumnName("STOCK_ID");
+
+                entity.Property(e => e.Name)
+                    .HasColumnName("STOCK_NAME");
 
                 entity.Property(e => e.Date)
                     .HasColumnName("DATE");
@@ -105,48 +112,24 @@ namespace EODService.Persistance
             // For Stock Table
             modelBuilder.Entity<Stock>(entity =>
             {
-                entity.ToTable("STOCK");
+                entity.ToTable("EOD_STOCKS");
 
 
                 entity.HasKey(e => e.Id);
 
                 entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("STOCK_ID")
+                    .HasPrecision(10);
+
+                entity.Property(e => e.SC_Comp_Id)
                     .HasColumnName("SC_COMP_ID")
                     .HasPrecision(4);
 
-                entity.Property(e => e.LongArName)
-                    .HasColumnName("SCA_LONG_NAME")
-                    .HasMaxLength(500)
-                    .IsRequired();
-
-                entity.Property(e => e.LongEngName)
-                    .HasColumnName("SCE_LONG_NAME")
-                    .HasMaxLength(500)
-                    .IsRequired();
-
-                entity.Property(e => e.ShortArName)
-                    .HasColumnName("SCA_SHORT_NAME")
-                    .HasMaxLength(500)
-                    .IsRequired();
-
-                entity.Property(e => e.ShortEngName)
-                    .HasColumnName("SCE_SHORT_NAME")
-                    .HasMaxLength(500)
-                    .IsRequired();
-
-                entity.Property(e => e.ArabicAddress)
-                    .HasColumnName("SCA_ADDRESS")
-                    .HasMaxLength(100)
-                    .IsRequired();
-
-                entity.Property(e => e.EnglishAddress)
-                    .HasColumnName("SCE_ADDRESS")
-                    .HasMaxLength(100)
-                    .IsRequired();
-
-                entity.Property(e => e.TickerID)
-                    .HasColumnName("TICKER_ID")
-                    .HasMaxLength(100);
+                entity.Property(e => e.StockName)
+                    .IsRequired()
+                    .HasColumnName("STOCK_NAME")
+                    .HasMaxLength(200);
 
                 entity.Property(e => e.YahooFinanceID)
                     .HasColumnName("Y_FINANCE")
@@ -157,16 +140,22 @@ namespace EODService.Persistance
                     .HasMaxLength(100);
 
                 entity.Property(e => e.YahooFinanceExists)
+                    .IsRequired()
                     .HasColumnName("YF_FLAG")
                     .HasConversion(
                         v => v ? "Y" : "N",
                         v => v == "Y");
 
                 entity.Property(e => e.TwelveDataExists)
+                    .IsRequired()
                     .HasColumnName("TD_FLAG")
                     .HasConversion(
                         v => v ? "Y" : "N",
                         v => v == "Y");
+
+                entity.Property(e => e.StockExchange)
+                    .HasColumnName("SC_EXCHANGE")
+                    .HasMaxLength(50);
             });
 
             // For EodStock Table (EOD_STOCK)

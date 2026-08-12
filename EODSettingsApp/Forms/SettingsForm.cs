@@ -133,7 +133,8 @@ namespace EODSettingsApp.Forms
         private void SetupGridColumns()
         {
             dgvResults.Columns.Clear();
-            dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Symbol", HeaderText = "Symbol", DataPropertyName = "Symbol" });
+            dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "Stock ID", DataPropertyName = "Id" });
+            dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Stock Name", DataPropertyName = "Name" });
             dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Date", HeaderText = "Date", DataPropertyName = "Date" });
             dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Open", HeaderText = "Open", DataPropertyName = "Open" });
             dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "High", HeaderText = "High", DataPropertyName = "High" });
@@ -336,7 +337,8 @@ namespace EODSettingsApp.Forms
                         foreach (var r in dailyRecords)
                         {
                             dgvResults.Rows.Add(
-                                r.TickerID,
+                                r.Id,
+                                r.Name,
                                 r.Date.ToString("yyyy-MM-dd"),
                                 r.Open?.ToString("F4") ?? "-",
                                 r.High?.ToString("F4") ?? "-",
@@ -363,7 +365,8 @@ namespace EODSettingsApp.Forms
             foreach (var r in results)
             {
                 dgvResults.Rows.Add(
-                    r.TickerID,
+                    r.Id,
+                    r.Name,
                     r.Date.ToString("yyyy-MM-dd"),
                     r.Open?.ToString("F4") ?? "-",
                     r.High?.ToString("F4") ?? "-",

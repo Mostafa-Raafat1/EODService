@@ -44,7 +44,8 @@ namespace EODService.Services
             for (int i = 0; i < _symbolSettings.Symbols.Count; i++)
             {
                 var symbol = _symbolSettings.Symbols[i];
-                var TickerID = _symbolSettings.TickerID[i]; // Assuming the symbol itself is the TickerID; adjust if needed
+                var Id = _symbolSettings.Ids[i];
+                var name = _symbolSettings.Names[i];
                 try
                 {
                     _logger.LogInformation("Downloading EOD data for {Symbol} via Twelve Data...", symbol);
@@ -65,7 +66,7 @@ namespace EODService.Services
                     }
 
                     // Delegate mapping to the Twelve Data mapper
-                    var eodData = TwelveDataMapper.Map(twelveDataResponse, TickerID);
+                    var eodData = TwelveDataMapper.Map(twelveDataResponse, Id, name);
 
                     if (eodData != null)
                     {
