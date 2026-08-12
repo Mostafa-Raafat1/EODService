@@ -25,12 +25,10 @@ namespace EODService.Persistance.Repo
             await _appDb.SaveChangesAsync();
         }
 
-        public async Task<DateTime?> GetLastDateForSymbolAsync(string symbol)
+        public async Task<DateTime?> GetLastDateForIdAsync(int Id)
         {
-            if (string.IsNullOrWhiteSpace(symbol)) return null;
-
             return await _appDb.EodHistory
-                .Where(x => x.TickerID.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.Id == Id)
                 .MaxAsync(x => (DateTime?)x.Date);
         }
 

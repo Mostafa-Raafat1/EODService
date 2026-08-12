@@ -6,8 +6,8 @@ namespace EODService.DTOs.EOD
 {
     public class EodData
     {
-        public string TickerID { get; set; } = string.Empty;
-
+        public int Id { get; set; }
+        public string Name { get; set; }
         public DateTime Date { get; set; }
 
         public decimal? Open { get; set; }

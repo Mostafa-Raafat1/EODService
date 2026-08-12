@@ -5,7 +5,7 @@ namespace EODService.DTOs.TwelveDataResponse
 {
     public static class TwelveDataMapper
     {
-        public static EodData? Map(TwelveDataResponse response, string TickerID)
+        public static EodData? Map(TwelveDataResponse response, int Id, string Name)
         {
             // Validate the response status and that values exist
             if (response == null || response.Status != "ok" || response.Values == null || !response.Values.Any())
@@ -36,7 +36,8 @@ namespace EODService.DTOs.TwelveDataResponse
 
                 return new EodData
                 {
-                    TickerID = TickerID,
+                    Id = Id,
+                    Name = Name,
                     Date = parsedDate,
                     Open = parsedOpen,
                     High = parsedHigh,
