@@ -442,6 +442,12 @@ namespace EODSettingsApp.Forms
             form.ShowDialog(this);
         }
 
+        private void MnuItemAddStock_Click(object? sender, EventArgs e)
+        {
+            using var form = new stockadd();
+            form.ShowDialog(this);
+        }
+
         // ── Toolbar: Run EOD Now ──────────────────────────────────────────────────
         private void TsBtnRunNow_Click(object? sender, EventArgs e)
         {

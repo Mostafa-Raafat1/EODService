@@ -45,6 +45,7 @@ namespace EODSettingsApp.Forms
         private ToolStripMenuItem mnuItemSymbolSettings;
         private ToolStripMenuItem mnuItemDatabaseSettings;
         private ToolStripMenuItem mnuItemHistory;
+        private ToolStripMenuItem mnuItemAddStock;
 
         // Toolbar
         private ToolStrip         tsToolBar;
@@ -95,6 +96,7 @@ namespace EODSettingsApp.Forms
             mnuItemSymbolSettings = new ToolStripMenuItem();
             mnuItemDatabaseSettings = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
+            mnuItemAddStock = new ToolStripMenuItem();
             tsToolBar = new ToolStrip();
             tsBtnRunNow = new ToolStripButton();
             pnlHeader.SuspendLayout();
@@ -475,7 +477,7 @@ namespace EODSettingsApp.Forms
             // 
             // mnuItemSettings
             // 
-            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings, mnuItemSymbolSettings, mnuItemDatabaseSettings });
+            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings, mnuItemSymbolSettings, mnuItemDatabaseSettings, mnuItemAddStock });
             mnuItemSettings.ForeColor = Color.White;
             mnuItemSettings.Name = "mnuItemSettings";
             mnuItemSettings.Size = new Size(76, 20);
@@ -501,6 +503,13 @@ namespace EODSettingsApp.Forms
             mnuItemDatabaseSettings.Size = new Size(255, 22);
             mnuItemDatabaseSettings.Text = "🗄 Database Connection";
             mnuItemDatabaseSettings.Click += MnuItemDatabaseSettings_Click;
+            // 
+            // mnuItemAddStock
+            // 
+            mnuItemAddStock.Name = "mnuItemAddStock";
+            mnuItemAddStock.Size = new Size(255, 22);
+            mnuItemAddStock.Text = "➕ Add Stock";
+            mnuItemAddStock.Click += MnuItemAddStock_Click;
             // 
             // mnuItemHistory
             // 
