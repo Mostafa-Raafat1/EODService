@@ -45,6 +45,7 @@ namespace EODSettingsApp.Forms
         private ToolStripMenuItem mnuItemSymbolSettings;
         private ToolStripMenuItem mnuItemDatabaseSettings;
         private ToolStripMenuItem mnuItemHistory;
+        private ToolStripMenuItem mnuItemAddStock;
 
         protected override void Dispose(bool disposing)
         {
@@ -55,9 +56,9 @@ namespace EODSettingsApp.Forms
 
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             pnlHeader = new Panel();
             lblTitle = new Label();
             lblSubtitle = new Label();
@@ -65,36 +66,33 @@ namespace EODSettingsApp.Forms
             lblProviderLabel = new Label();
             cmbProvider = new ComboBox();
             lblProviderHint = new Label();
-            lblStatus = new Label();
-
-            // Schedule Controls
-            chkEnableSchedule   = new CheckBox();
+            chkEnableSchedule = new CheckBox();
             lblWorkingDaysLabel = new Label();
-            chkMon              = new CheckBox();
-            chkTue              = new CheckBox();
-            chkWed              = new CheckBox();
-            chkThu              = new CheckBox();
-            chkFri              = new CheckBox();
-            chkSat              = new CheckBox();
-            chkSun              = new CheckBox();
-            lblTimeLabel        = new Label();
-            dtpRunTime          = new DateTimePicker();
-            btnSaveSchedule     = new Button();
-            lblNextRunStatus    = new Label();
-
+            chkMon = new CheckBox();
+            chkTue = new CheckBox();
+            chkWed = new CheckBox();
+            chkThu = new CheckBox();
+            chkFri = new CheckBox();
+            chkSat = new CheckBox();
+            chkSun = new CheckBox();
+            lblTimeLabel = new Label();
+            dtpRunTime = new DateTimePicker();
+            btnSaveSchedule = new Button();
+            lblNextRunStatus = new Label();
+            lblStatus = new Label();
             pnlGrid = new Panel();
             dgvResults = new DataGridView();
             pnlGridHeader = new Panel();
             lblGridTitle = new Label();
             pnlLogs = new Panel();
             rtbLogs = new RichTextBox();
-            lblGridTitle            = new Label();
-            mnuMain                 = new MenuStrip();
-            mnuItemSettings         = new ToolStripMenuItem();
+            mnuMain = new MenuStrip();
+            mnuItemSettings = new ToolStripMenuItem();
             mnuItemProviderSettings = new ToolStripMenuItem();
-            mnuItemSymbolSettings   = new ToolStripMenuItem();
+            mnuItemSymbolSettings = new ToolStripMenuItem();
             mnuItemDatabaseSettings = new ToolStripMenuItem();
-            mnuItemHistory          = new ToolStripMenuItem();
+            mnuItemAddStock = new ToolStripMenuItem();
+            mnuItemHistory = new ToolStripMenuItem();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             pnlGrid.SuspendLayout();
@@ -203,7 +201,7 @@ namespace EODSettingsApp.Forms
             chkEnableSchedule.ForeColor = Color.FromArgb(30, 58, 138);
             chkEnableSchedule.Location = new Point(360, 14);
             chkEnableSchedule.Name = "chkEnableSchedule";
-            chkEnableSchedule.Size = new Size(175, 19);
+            chkEnableSchedule.Size = new Size(182, 19);
             chkEnableSchedule.TabIndex = 2;
             chkEnableSchedule.Text = "Enable Automated Schedule";
             chkEnableSchedule.UseVisualStyleBackColor = true;
@@ -223,9 +221,10 @@ namespace EODSettingsApp.Forms
             // 
             chkMon.AutoSize = true;
             chkMon.Checked = true;
+            chkMon.CheckState = CheckState.Checked;
             chkMon.Location = new Point(455, 42);
             chkMon.Name = "chkMon";
-            chkMon.Size = new Size(52, 19);
+            chkMon.Size = new Size(54, 21);
             chkMon.TabIndex = 4;
             chkMon.Text = "Mon";
             chkMon.UseVisualStyleBackColor = true;
@@ -234,9 +233,10 @@ namespace EODSettingsApp.Forms
             // 
             chkTue.AutoSize = true;
             chkTue.Checked = true;
+            chkTue.CheckState = CheckState.Checked;
             chkTue.Location = new Point(510, 42);
             chkTue.Name = "chkTue";
-            chkTue.Size = new Size(46, 19);
+            chkTue.Size = new Size(48, 21);
             chkTue.TabIndex = 5;
             chkTue.Text = "Tue";
             chkTue.UseVisualStyleBackColor = true;
@@ -245,9 +245,10 @@ namespace EODSettingsApp.Forms
             // 
             chkWed.AutoSize = true;
             chkWed.Checked = true;
+            chkWed.CheckState = CheckState.Checked;
             chkWed.Location = new Point(560, 42);
             chkWed.Name = "chkWed";
-            chkWed.Size = new Size(51, 19);
+            chkWed.Size = new Size(53, 21);
             chkWed.TabIndex = 6;
             chkWed.Text = "Wed";
             chkWed.UseVisualStyleBackColor = true;
@@ -256,9 +257,10 @@ namespace EODSettingsApp.Forms
             // 
             chkThu.AutoSize = true;
             chkThu.Checked = true;
+            chkThu.CheckState = CheckState.Checked;
             chkThu.Location = new Point(615, 42);
             chkThu.Name = "chkThu";
-            chkThu.Size = new Size(47, 19);
+            chkThu.Size = new Size(48, 21);
             chkThu.TabIndex = 7;
             chkThu.Text = "Thu";
             chkThu.UseVisualStyleBackColor = true;
@@ -267,9 +269,10 @@ namespace EODSettingsApp.Forms
             // 
             chkFri.AutoSize = true;
             chkFri.Checked = true;
+            chkFri.CheckState = CheckState.Checked;
             chkFri.Location = new Point(665, 42);
             chkFri.Name = "chkFri";
-            chkFri.Size = new Size(40, 19);
+            chkFri.Size = new Size(41, 21);
             chkFri.TabIndex = 8;
             chkFri.Text = "Fri";
             chkFri.UseVisualStyleBackColor = true;
@@ -279,7 +282,7 @@ namespace EODSettingsApp.Forms
             chkSat.AutoSize = true;
             chkSat.Location = new Point(710, 42);
             chkSat.Name = "chkSat";
-            chkSat.Size = new Size(43, 19);
+            chkSat.Size = new Size(45, 21);
             chkSat.TabIndex = 9;
             chkSat.Text = "Sat";
             chkSat.UseVisualStyleBackColor = true;
@@ -289,7 +292,7 @@ namespace EODSettingsApp.Forms
             chkSun.AutoSize = true;
             chkSun.Location = new Point(755, 42);
             chkSun.Name = "chkSun";
-            chkSun.Size = new Size(47, 19);
+            chkSun.Size = new Size(48, 21);
             chkSun.TabIndex = 10;
             chkSun.Text = "Sun";
             chkSun.UseVisualStyleBackColor = true;
@@ -311,7 +314,7 @@ namespace EODSettingsApp.Forms
             dtpRunTime.Location = new Point(625, 11);
             dtpRunTime.Name = "dtpRunTime";
             dtpRunTime.ShowUpDown = true;
-            dtpRunTime.Size = new Size(80, 23);
+            dtpRunTime.Size = new Size(80, 24);
             dtpRunTime.TabIndex = 12;
             // 
             // btnSaveSchedule
@@ -367,32 +370,32 @@ namespace EODSettingsApp.Forms
             dgvResults.AllowUserToAddRows = false;
             dgvResults.AllowUserToDeleteRows = false;
             dgvResults.AllowUserToResizeRows = false;
-            dataGridViewCellStyle4.BackColor = Color.FromArgb(241, 245, 249);
-            dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(241, 245, 249);
+            dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvResults.BackgroundColor = Color.White;
             dgvResults.BorderStyle = BorderStyle.None;
             dgvResults.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = Color.FromArgb(30, 58, 138);
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            dataGridViewCellStyle5.ForeColor = Color.White;
-            dataGridViewCellStyle5.Padding = new Padding(8, 0, 0, 0);
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
-            dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(30, 58, 138);
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.Padding = new Padding(8, 0, 0, 0);
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             dgvResults.ColumnHeadersHeight = 38;
             dgvResults.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = SystemColors.Window;
-            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9.5F);
-            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle6.Padding = new Padding(8, 2, 4, 2);
-            dataGridViewCellStyle6.SelectionBackColor = Color.FromArgb(191, 219, 254);
-            dataGridViewCellStyle6.SelectionForeColor = Color.FromArgb(15, 23, 42);
-            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
-            dgvResults.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Window;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.5F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle3.Padding = new Padding(8, 2, 4, 2);
+            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(191, 219, 254);
+            dataGridViewCellStyle3.SelectionForeColor = Color.FromArgb(15, 23, 42);
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            dgvResults.DefaultCellStyle = dataGridViewCellStyle3;
             dgvResults.Dock = DockStyle.Fill;
             dgvResults.EnableHeadersVisualStyles = false;
             dgvResults.Font = new Font("Segoe UI", 9.5F);
@@ -445,7 +448,7 @@ namespace EODSettingsApp.Forms
             rtbLogs.BackColor = Color.FromArgb(15, 23, 42);
             rtbLogs.BorderStyle = BorderStyle.None;
             rtbLogs.Dock = DockStyle.Fill;
-            rtbLogs.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            rtbLogs.Font = new Font("Consolas", 9F);
             rtbLogs.ForeColor = Color.FromArgb(200, 210, 220);
             rtbLogs.Location = new Point(12, 12);
             rtbLogs.Name = "rtbLogs";
@@ -459,8 +462,7 @@ namespace EODSettingsApp.Forms
             // 
             mnuMain.BackColor = Color.FromArgb(23, 48, 107);
             mnuMain.ForeColor = Color.White;
-            mnuMain.Items.Add(mnuItemSettings);
-            mnuMain.Items.Add(mnuItemHistory);
+            mnuMain.Items.AddRange(new ToolStripItem[] { mnuItemSettings, mnuItemHistory });
             mnuMain.Location = new Point(0, 0);
             mnuMain.Name = "mnuMain";
             mnuMain.Size = new Size(1034, 24);
@@ -468,37 +470,47 @@ namespace EODSettingsApp.Forms
             // 
             // mnuItemSettings
             // 
+            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings, mnuItemSymbolSettings, mnuItemDatabaseSettings, mnuItemAddStock });
             mnuItemSettings.ForeColor = Color.White;
             mnuItemSettings.Name = "mnuItemSettings";
+            mnuItemSettings.Size = new Size(61, 20);
             mnuItemSettings.Text = "Settings";
-            mnuItemSettings.DropDownItems.Add(mnuItemProviderSettings);
-            mnuItemSettings.DropDownItems.Add(mnuItemSymbolSettings);
-            mnuItemSettings.DropDownItems.Add(mnuItemDatabaseSettings);
             // 
             // mnuItemProviderSettings
             // 
             mnuItemProviderSettings.Name = "mnuItemProviderSettings";
+            mnuItemProviderSettings.Size = new Size(187, 22);
             mnuItemProviderSettings.Text = "Provider Settings";
             mnuItemProviderSettings.Click += MnuItemProviderSettings_Click;
-            //
+            // 
             // mnuItemSymbolSettings
-            //
-            mnuItemSymbolSettings.Name   = "mnuItemSymbolSettings";
-            mnuItemSymbolSettings.Text   = "Symbol Settings";
+            // 
+            mnuItemSymbolSettings.Name = "mnuItemSymbolSettings";
+            mnuItemSymbolSettings.Size = new Size(187, 22);
+            mnuItemSymbolSettings.Text = "Symbol Settings";
             mnuItemSymbolSettings.Click += MnuItemSymbolSettings_Click;
-            //
+            // 
             // mnuItemDatabaseSettings
-            //
-            mnuItemDatabaseSettings.Name   = "mnuItemDatabaseSettings";
-            mnuItemDatabaseSettings.Text   = "Database Connection";
+            // 
+            mnuItemDatabaseSettings.Name = "mnuItemDatabaseSettings";
+            mnuItemDatabaseSettings.Size = new Size(187, 22);
+            mnuItemDatabaseSettings.Text = "Database Connection";
             mnuItemDatabaseSettings.Click += MnuItemDatabaseSettings_Click;
-            //
+            // 
+            // mnuItemAddStock
+            // 
+            mnuItemAddStock.Name = "mnuItemAddStock";
+            mnuItemAddStock.Size = new Size(187, 22);
+            mnuItemAddStock.Text = "Add Stock";
+            mnuItemAddStock.Click += MnuItemAddStock_Click;
+            // 
             // mnuItemHistory
-            //
+            // 
             mnuItemHistory.ForeColor = Color.White;
-            mnuItemHistory.Name      = "mnuItemHistory";
-            mnuItemHistory.Text      = "History";
-            mnuItemHistory.Click    += MnuItemHistoricalData_Click;
+            mnuItemHistory.Name = "mnuItemHistory";
+            mnuItemHistory.Size = new Size(57, 20);
+            mnuItemHistory.Text = "History";
+            mnuItemHistory.Click += MnuItemHistoricalData_Click;
             // 
             // SettingsForm
             // 
@@ -510,8 +522,8 @@ namespace EODSettingsApp.Forms
             Controls.Add(pnlHeader);
             Controls.Add(mnuMain);
             Font = new Font("Segoe UI", 9.5F);
-            MinimumSize = new Size(800, 650);
             MainMenuStrip = mnuMain;
+            MinimumSize = new Size(800, 650);
             Name = "SettingsForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "EOD Data Service — Settings & Schedule";

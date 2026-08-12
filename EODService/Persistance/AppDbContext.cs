@@ -18,6 +18,7 @@ namespace EODService.Persistance
         public DbSet<EodDataHistory> EodHistory { get; set; }
         public DbSet<EodDataDaily> EodDaily { get; set; }
         public DbSet<Stock> Stock { get; set; }
+        public DbSet<EodStock> EodStocks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -166,6 +167,51 @@ namespace EODService.Persistance
                     .HasConversion(
                         v => v ? "Y" : "N",
                         v => v == "Y");
+            });
+
+            // For EodStock Table (EOD_STOCK)
+            modelBuilder.Entity<EodStock>(entity =>
+            {
+                entity.ToTable("EOD_STOCK");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.StockName)
+                    .HasColumnName("STOCK_NAME")
+                    .HasMaxLength(250)
+                    .IsRequired();
+
+                entity.Property(e => e.InitialId)
+                    .HasColumnName("SC_STOCK_ID")
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Exchange)
+                    .HasColumnName("EXCHANGE")
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.TdTradable)
+                    .HasColumnName("TD_TRADABLE")
+                    .HasConversion(
+                        v => v ? "Y" : "N",
+                        v => v == "Y");
+
+                entity.Property(e => e.YfTradable)
+                    .HasColumnName("YF_TRADABLE")
+                    .HasConversion(
+                        v => v ? "Y" : "N",
+                        v => v == "Y");
+
+                entity.Property(e => e.TdSymbol)
+                    .HasColumnName("TD_SYMBOL")
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.YfSymbol)
+                    .HasColumnName("YF_SYMBOL")
+                    .HasMaxLength(100);
             });
         }
 

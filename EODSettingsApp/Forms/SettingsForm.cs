@@ -189,7 +189,7 @@ namespace EODSettingsApp.Forms
                 // 5. Update UI status & Next Run indicator
                 UpdateNextRunIndicator(scheduleSection);
                 SetStatus($"✔ Schedule saved & Windows Task updated (Provider: {selectedProvider}).", success: true);
-                AppendLog($"[Schedule] Settings saved successfully. Windows Task '{ (chkEnableSchedule.Checked ? "Updated" : "Disabled") }'.");
+                AppendLog($"[Schedule] Settings saved successfully. Windows Task '{(chkEnableSchedule.Checked ? "Updated" : "Disabled")}'.");
             }
             catch (Exception ex)
             {
@@ -431,11 +431,26 @@ namespace EODSettingsApp.Forms
         }
 
         /// <summary>
+        /// Settings → Add Stock: opens the Add New Stock dialog.
+        /// </summary>
+        private void MnuItemAddStock_Click(object? sender, EventArgs e)
+        {
+            using var form = new stockadd();
+            form.ShowDialog(this);
+        }
+
+        /// <summary>
         /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
         /// </summary>
         private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
         {
             using var form = new HistoricalDataForm();
+            form.ShowDialog(this);
+        }
+
+        private void eeeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using var form = new stockadd();
             form.ShowDialog(this);
         }
     }
