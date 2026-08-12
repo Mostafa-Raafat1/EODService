@@ -441,5 +441,35 @@ namespace EODSettingsApp.Forms
             using var form = new HistoricalDataForm();
             form.ShowDialog(this);
         }
+
+        // ── Toolbar: Run EOD Now ──────────────────────────────────────────────────
+        private void TsBtnRunNow_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                var exePath = Services.EodServiceLauncher.ResolveExePath();
+                if (!System.IO.File.Exists(exePath))
+                {
+                    SetStatus("✘ EODService.exe not found. Build the project first.", success: false);
+                    return;
+                }
+
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = exePath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                System.Diagnostics.Process.Start(psi);
+
+                SetStatus("▶ EOD import started manually. Check the log below for progress.", success: true);
+                AppendLog($"[{DateTime.Now:HH:mm:ss}] ▶ Manual EOD import triggered by user.");
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"✘ Failed to start EOD service: {ex.Message}", success: false);
+                AppendLogError($"Manual run error: {ex.Message}");
+            }
+        }
     }
 }

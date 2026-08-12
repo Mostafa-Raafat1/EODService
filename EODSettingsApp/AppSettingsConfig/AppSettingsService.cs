@@ -38,7 +38,9 @@ namespace EODSettingsApp.AppSettingsConfig
             {
                 YahooSettings      = ReadSection<YahooSettingsSection>(root, "YahooSettings"),
                 TwelveDataSettings = ReadSection<TwelveDataSettingsSection>(root, "TwelveDataSettings"),
-                SymbolSettings     = ReadSection<SymbolSettingsSection>(root, "SymbolSettings")
+                SymbolSettings     = ReadSection<SymbolSettingsSection>(root, "SymbolSettings"),
+                ScheduleSettings   = ReadSection<ScheduleSettingsSection>(root, "ScheduleSettings"),
+                ConnectionStrings  = ReadSection<ConnectionStringsSection>(root, "ConnectionStrings")
             };
         }
 
@@ -47,6 +49,32 @@ namespace EODSettingsApp.AppSettingsConfig
         /// and syncs changes to active bin output files.
         /// All other keys in the file are left untouched.
         /// </summary>
+        /// <summary>
+        /// Convenience method: merges only the DefaultConnection string into AppSettings.json
+        /// without touching any other section.
+        /// </summary>
+        public static void SaveConnectionString(string connectionString)
+        {
+            var mainPath = AppSettingsPath.Resolve();
+            var existing = File.ReadAllText(mainPath);
+            var root     = JsonNode.Parse(existing)!.AsObject();
+
+            var section = new ConnectionStringsSection { DefaultConnection = connectionString };
+            root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(section, _writeOptions));
+
+            var updatedJson = root.ToJsonString(_writeOptions);
+            File.WriteAllText(mainPath, updatedJson);
+
+            SyncToCopy(Path.Combine(AppContext.BaseDirectory, AppSettingsPath.FileName), mainPath, updatedJson);
+
+            var mainDir = Path.GetDirectoryName(mainPath);
+            if (!string.IsNullOrEmpty(mainDir))
+            {
+                var devBinPath = Path.GetFullPath(Path.Combine(mainDir, "bin", "Debug", "net10.0", AppSettingsPath.FileName));
+                SyncToCopy(devBinPath, mainPath, updatedJson);
+            }
+        }
+
         public static void Save(AppSettingsModel model)
         {
             var mainPath = AppSettingsPath.Resolve();

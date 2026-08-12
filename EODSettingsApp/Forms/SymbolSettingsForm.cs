@@ -2,191 +2,351 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using EODService.DTOs.Stock;
+using EODService.Persistance;
 using EODSettingsApp.AppSettingsConfig;
 
 namespace EODSettingsApp.Forms
 {
     /// <summary>
-    /// Modal dialog for viewing, adding, editing, and removing stock ticker symbols stored in AppSettings.json.
+    /// Modal dialog for managing, updating, and deleting stock definitions stored in Oracle Database (EOD_STOCKS).
     /// </summary>
     public partial class SymbolSettingsForm : Form
     {
-        private int _editingIndex = -1;
+        private List<Stock> _stocks = new();
+        private int _selectedStockId = 0;
 
         public SymbolSettingsForm()
         {
             InitializeComponent();
-            LoadSymbolSettings();
+            SetupGridColumns();
+            LoadStockSettingsAsync();
         }
 
-        // ── Load ─────────────────────────────────────────────────────────────────
+        private void SetupGridColumns()
+        {
+            dgvStocks.Columns.Clear();
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", DataPropertyName = "Id", FillWeight = 25 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "SC_Comp_Id", HeaderText = "Comp ID", DataPropertyName = "SC_Comp_Id", FillWeight = 35 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "StockName", HeaderText = "Stock Name", DataPropertyName = "StockName", FillWeight = 135 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "Isin", HeaderText = "ISIN", DataPropertyName = "Isin", FillWeight = 60 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "YahooFinanceID", HeaderText = "Yahoo Ticker", DataPropertyName = "YahooFinanceID", FillWeight = 70 });
+            dgvStocks.Columns.Add(new DataGridViewCheckBoxColumn { Name = "YahooFinanceExists", HeaderText = "YF Active", DataPropertyName = "YahooFinanceExists", FillWeight = 45 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "TwelveDataID", HeaderText = "Twelve Data Ticker", DataPropertyName = "TwelveDataID", FillWeight = 70 });
+            dgvStocks.Columns.Add(new DataGridViewCheckBoxColumn { Name = "TwelveDataExists", HeaderText = "TD Active", DataPropertyName = "TwelveDataExists", FillWeight = 45 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "StockExchange", HeaderText = "Exchange", DataPropertyName = "StockExchange", FillWeight = 50 });
+        }
 
-        /// <summary>
-        /// Reads AppSettings.json and populates the symbols listbox.
-        /// </summary>
-        private void LoadSymbolSettings()
+        private async void LoadStockSettingsAsync()
         {
             try
             {
-                var model = AppSettingsService.Load();
-                lstSymbols.Items.Clear();
-                ResetEditState();
-
-                if (model.SymbolSettings?.Symbols != null)
+                SetStatus(success: true, "Loading stock configurations from Oracle DB...");
+                var connectionString = GetConnectionString();
+                if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
-                    foreach (var symbol in model.SymbolSettings.Symbols)
-                    {
-                        if (!string.IsNullOrWhiteSpace(symbol))
-                        {
-                            lstSymbols.Items.Add(symbol.Trim().ToUpperInvariant());
-                        }
-                    }
+                    throw new Exception("Oracle database connection string is missing or invalid.");
+                }
+
+                using var dbContext = AppDbContextFactory.Create(connectionString);
+                _stocks = await dbContext.Stock.AsNoTracking().OrderBy(s => s.Id).ToListAsync();
+
+                PopulateGrid();
+
+                if (_stocks.Any())
+                {
+                    dgvStocks.Rows[0].Selected = true;
+                    SetStatus(success: true, $"✔ Loaded {_stocks.Count} stock record(s) from Oracle DB (EOD_STOCKS).");
+                }
+                else
+                {
+                    ClearEditForm();
+                    SetStatus(success: false, "No stocks found in database.");
                 }
             }
             catch (Exception ex)
             {
-                SetStatus(success: false, $"✘ Could not load symbols: {ex.Message}");
+                SetStatus(success: false, $"✘ Failed loading database stocks: {ex.Message}");
             }
         }
 
-        // ── Add / Edit Symbol Logic ──────────────────────────────────────────────
-
-        private void BtnAddSymbol_Click(object? sender, EventArgs e)
+        private void PopulateGrid()
         {
-            AddOrUpdateSymbolFromInput();
-        }
-
-        private void TxtNewSymbol_KeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
+            dgvStocks.Rows.Clear();
+            foreach (var s in _stocks)
             {
-                e.SuppressKeyPress = true;
-                AddOrUpdateSymbolFromInput();
+                dgvStocks.Rows.Add(
+                    s.Id,
+                    s.SC_Comp_Id,
+                    s.StockName,
+                    s.Isin ?? "-",
+                    s.YahooFinanceID ?? "-",
+                    s.YahooFinanceExists,
+                    s.TwelveDataID ?? "-",
+                    s.TwelveDataExists,
+                    s.StockExchange ?? "-"
+                );
             }
         }
 
-        private void BtnEditSymbol_Click(object? sender, EventArgs e)
+        private void DgvStocks_SelectionChanged(object? sender, EventArgs e)
         {
-            if (lstSymbols.SelectedItem == null)
+            if (dgvStocks.SelectedRows.Count == 0)
             {
-                SetStatus(success: false, "✘ Please select a symbol from the list to edit.");
+                ClearEditForm();
                 return;
             }
 
-            _editingIndex = lstSymbols.SelectedIndex;
-            var currentSymbol = lstSymbols.SelectedItem.ToString()!;
+            var row = dgvStocks.SelectedRows[0];
+            if (row.Cells[0].Value == null) return;
 
-            txtNewSymbol.Text = currentSymbol;
-            txtNewSymbol.Focus();
-            txtNewSymbol.SelectAll();
+            int id = Convert.ToInt32(row.Cells[0].Value);
+            var stock = _stocks.FirstOrDefault(s => s.Id == id);
+            if (stock != null)
+            {
+                _selectedStockId = stock.Id;
+                txtStockId.Text = stock.Id.ToString();
+                txtCompId.Text = stock.SC_Comp_Id.ToString();
+                txtStockName.Text = stock.StockName;
+                txtIsin.Text = stock.Isin ?? "";
+                txtYahooId.Text = stock.YahooFinanceID ?? "";
+                chkYahooActive.Checked = stock.YahooFinanceExists;
+                txtTwelveDataId.Text = stock.TwelveDataID ?? "";
+                chkTwelveDataActive.Checked = stock.TwelveDataExists;
+                txtExchange.Text = stock.StockExchange ?? "";
 
-            btnAddSymbol.Text = "Update Symbol";
-            btnAddSymbol.BackColor = Color.FromArgb(16, 185, 129); // Emerald green for update action
+                UpdateProviderControlsState();
 
-            SetStatus(success: true, $"Editing '{currentSymbol}'. Type changes and click 'Update Symbol'.");
+                grpEditStock.Enabled = true;
+                btnUpdateStock.Enabled = true;
+                btnRemoveSymbol.Enabled = true;
+            }
         }
 
-        private void AddOrUpdateSymbolFromInput()
+        private void ChkYahooActive_CheckedChanged(object? sender, EventArgs e)
         {
-            var symbol = txtNewSymbol.Text.Trim().ToUpperInvariant();
+            txtYahooId.Enabled = chkYahooActive.Checked;
+            txtYahooId.BackColor = chkYahooActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
+        }
 
-            if (string.IsNullOrWhiteSpace(symbol))
+        private void ChkTwelveDataActive_CheckedChanged(object? sender, EventArgs e)
+        {
+            txtTwelveDataId.Enabled = chkTwelveDataActive.Checked;
+            txtTwelveDataId.BackColor = chkTwelveDataActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
+        }
+
+        private void UpdateProviderControlsState()
+        {
+            txtYahooId.Enabled = chkYahooActive.Checked;
+            txtYahooId.BackColor = chkYahooActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
+            txtTwelveDataId.Enabled = chkTwelveDataActive.Checked;
+            txtTwelveDataId.BackColor = chkTwelveDataActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
+        }
+
+        private void BtnUpdateStock_Click(object? sender, EventArgs e)
+        {
+            if (_selectedStockId == 0)
             {
-                SetStatus(success: false, "✘ Please enter a valid ticker symbol.");
+                SetStatus(success: false, "✘ Please select a stock from the grid to update.");
                 return;
             }
 
-            // Check duplicate entries (excluding the symbol currently being edited)
-            for (int i = 0; i < lstSymbols.Items.Count; i++)
-            {
-                if (i == _editingIndex) continue;
+            var stock = _stocks.FirstOrDefault(s => s.Id == _selectedStockId);
+            if (stock == null) return;
 
-                if (string.Equals(lstSymbols.Items[i].ToString(), symbol, StringComparison.OrdinalIgnoreCase))
-                {
-                    SetStatus(success: false, $"✘ Symbol '{symbol}' is already in the list.");
-                    return;
-                }
+            var name = txtStockName.Text.Trim();
+            var compIdText = txtCompId.Text.Trim();
+            var isin = txtIsin.Text.Trim().ToUpperInvariant();
+            var yahooId = txtYahooId.Text.Trim().ToUpperInvariant();
+            var twelveDataId = txtTwelveDataId.Text.Trim().ToUpperInvariant();
+            var exchange = txtExchange.Text.Trim().ToUpperInvariant();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                SetStatus(success: false, "✘ Stock Name cannot be empty.");
+                return;
             }
 
-            if (_editingIndex >= 0 && _editingIndex < lstSymbols.Items.Count)
+            if (!int.TryParse(compIdText, out var compId))
             {
-                // Update existing item
-                var oldSymbol = lstSymbols.Items[_editingIndex].ToString();
-                lstSymbols.Items[_editingIndex] = symbol;
-                lstSymbols.SelectedIndex = _editingIndex;
-                SetStatus(success: true, $"✔ Updated '{oldSymbol}' → '{symbol}'.");
-            }
-            else
-            {
-                // Add new item
-                lstSymbols.Items.Add(symbol);
-                lstSymbols.SelectedIndex = lstSymbols.Items.Count - 1;
-                SetStatus(success: true, $"✔ Added '{symbol}' to list.");
+                SetStatus(success: false, "✘ Company ID must be a valid integer number (e.g. 687, 10).");
+                return;
             }
 
-            ResetEditState();
+            if (!chkYahooActive.Checked && !chkTwelveDataActive.Checked)
+            {
+                SetStatus(success: false, "✘ At least one provider (Yahoo Finance or Twelve Data) must be enabled.");
+                return;
+            }
+
+            if (chkYahooActive.Checked && string.IsNullOrWhiteSpace(yahooId))
+            {
+                SetStatus(success: false, "✘ Yahoo Finance Ticker is required when Yahoo Active is enabled.");
+                return;
+            }
+
+            if (chkTwelveDataActive.Checked && string.IsNullOrWhiteSpace(twelveDataId))
+            {
+                SetStatus(success: false, "✘ Twelve Data Ticker is required when TD Active is enabled.");
+                return;
+            }
+
+            stock.StockName = name;
+            stock.SC_Comp_Id = compId;
+            stock.Isin = string.IsNullOrWhiteSpace(isin) ? null : isin;
+            stock.YahooFinanceID = string.IsNullOrWhiteSpace(yahooId) ? null : yahooId;
+            stock.YahooFinanceExists = chkYahooActive.Checked;
+            stock.TwelveDataID = string.IsNullOrWhiteSpace(twelveDataId) ? null : twelveDataId;
+            stock.TwelveDataExists = chkTwelveDataActive.Checked;
+            stock.StockExchange = string.IsNullOrWhiteSpace(exchange) ? null : exchange;
+
+            PopulateGrid();
+            SelectGridRowById(_selectedStockId);
+
+            SetStatus(success: true, $"✔ Updated '{name}' (Comp ID: {compId}). Click 'Save Database Changes' to commit to Oracle DB.");
         }
-
-        private void ResetEditState()
-        {
-            _editingIndex = -1;
-            txtNewSymbol.Clear();
-            btnAddSymbol.Text = "Add Symbol";
-            btnAddSymbol.BackColor = Color.FromArgb(30, 58, 138); // Standard Navy Blue
-        }
-
-        // ── Remove Symbol ────────────────────────────────────────────────────────
 
         private void BtnRemoveSymbol_Click(object? sender, EventArgs e)
         {
-            if (lstSymbols.SelectedItem == null)
+            if (_selectedStockId == 0)
             {
-                SetStatus(success: false, "✘ Please select a symbol to remove.");
+                SetStatus(success: false, "✘ Please select a stock from the grid to delete.");
                 return;
             }
 
-            var removedSymbol = lstSymbols.SelectedItem.ToString();
-            lstSymbols.Items.Remove(lstSymbols.SelectedItem);
-            ResetEditState();
+            var stock = _stocks.FirstOrDefault(s => s.Id == _selectedStockId);
+            if (stock == null) return;
 
-            SetStatus(success: true, $"✔ Removed '{removedSymbol}' from list.");
-        }
+            var confirm = MessageBox.Show(
+                $"Are you sure you want to delete stock '{stock.StockName}' (ID: {stock.Id}) from the database?",
+                "Confirm Delete Stock",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
 
-        // ── Save ─────────────────────────────────────────────────────────────────
-
-        private void BtnSaveSymbolSettings_Click(object? sender, EventArgs e)
-        {
-            if (lstSymbols.Items.Count == 0)
+            if (confirm == DialogResult.Yes)
             {
-                SetStatus(success: false, "✘ Symbol list cannot be empty. At least 1 symbol is required.");
-                return;
-            }
+                _stocks.Remove(stock);
+                PopulateGrid();
 
-            try
-            {
-                var symbolsList = new List<string>();
-                foreach (var item in lstSymbols.Items)
+                if (_stocks.Any())
                 {
-                    symbolsList.Add(item.ToString()!);
+                    dgvStocks.Rows[0].Selected = true;
+                }
+                else
+                {
+                    ClearEditForm();
                 }
 
-                var currentModel = AppSettingsService.Load();
-                currentModel.SymbolSettings = new SymbolSettingsSection
-                {
-                    Symbols = symbolsList
-                };
+                SetStatus(success: true, $"✔ Removed '{stock.StockName}'. Click 'Save Database Changes' to commit deletion.");
+            }
+        }
 
-                AppSettingsService.Save(currentModel);
-                SetStatus(success: true, "✔ Symbol settings saved successfully.");
+        private async void BtnSaveSymbolSettings_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                SetStatus(success: true, "Saving stock changes to Oracle Database...");
+                var connectionString = GetConnectionString();
+                using var dbContext = AppDbContextFactory.Create(connectionString);
+
+                // Reconcile EOD_STOCKS table
+                var dbStocks = await dbContext.Stock.ToListAsync();
+
+                // Remove deleted stocks
+                var currentIds = _stocks.Select(s => s.Id).ToHashSet();
+                var toRemove = dbStocks.Where(s => !currentIds.Contains(s.Id)).ToList();
+                if (toRemove.Any())
+                {
+                    dbContext.Stock.RemoveRange(toRemove);
+                }
+
+                // Update existing stocks
+                foreach (var s in _stocks)
+                {
+                    var existing = dbStocks.FirstOrDefault(x => x.Id == s.Id);
+                    if (existing != null)
+                    {
+                        existing.StockName = s.StockName;
+                        existing.SC_Comp_Id = s.SC_Comp_Id;
+                        existing.Isin = s.Isin;
+                        existing.YahooFinanceID = s.YahooFinanceID;
+                        existing.YahooFinanceExists = s.YahooFinanceExists;
+                        existing.TwelveDataID = s.TwelveDataID;
+                        existing.TwelveDataExists = s.TwelveDataExists;
+                        existing.StockExchange = s.StockExchange;
+                    }
+                }
+
+                await dbContext.SaveChangesAsync();
+
+                // Keep AppSettings.json in sync for legacy compatibility
+                var model = AppSettingsService.Load();
+                model.SymbolSettings = new SymbolSettingsSection
+                {
+                    Symbols = _stocks.Where(s => !string.IsNullOrWhiteSpace(s.TwelveDataID)).Select(s => s.TwelveDataID!).ToList()
+                };
+                AppSettingsService.Save(model);
+
+                SetStatus(success: true, "✔ All stock changes saved successfully to Oracle DB (EOD_STOCKS).");
+                MessageBox.Show("Stock configurations saved successfully to Oracle Database!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                SetStatus(success: false, $"✘ Save failed: {ex.Message}");
+                SetStatus(success: false, $"✘ Database save failed: {ex.Message}");
+                MessageBox.Show($"Failed saving stocks to Oracle DB:\n\n{ex.Message}", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // ── Status Helper ────────────────────────────────────────────────────────
+        private void SelectGridRowById(int stockId)
+        {
+            foreach (DataGridViewRow row in dgvStocks.Rows)
+            {
+                if (row.Cells[0].Value != null && Convert.ToInt32(row.Cells[0].Value) == stockId)
+                {
+                    row.Selected = true;
+                    dgvStocks.FirstDisplayedScrollingRowIndex = row.Index;
+                    break;
+                }
+            }
+        }
+
+        private void ClearEditForm()
+        {
+            _selectedStockId = 0;
+            txtStockId.Clear();
+            txtCompId.Clear();
+            txtStockName.Clear();
+            txtIsin.Clear();
+            txtYahooId.Clear();
+            chkYahooActive.Checked = false;
+            txtTwelveDataId.Clear();
+            chkTwelveDataActive.Checked = false;
+            txtExchange.Clear();
+
+            grpEditStock.Enabled = false;
+            btnUpdateStock.Enabled = false;
+            btnRemoveSymbol.Enabled = false;
+        }
+
+        private string GetConnectionString()
+        {
+            var model = AppSettingsService.Load();
+            if (!string.IsNullOrWhiteSpace(model.ConnectionStrings?.DefaultConnection))
+            {
+                return model.ConnectionStrings.DefaultConnection;
+            }
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
+                .Build();
+
+            return configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+        }
 
         private void SetStatus(bool success, string message)
         {

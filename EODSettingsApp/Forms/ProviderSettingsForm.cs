@@ -76,11 +76,11 @@ namespace EODSettingsApp.Forms
 
             try
             {
-                AppSettingsService.Save(new AppSettingsModel
-                {
-                    YahooSettings      = CollectYahooSettings(),
-                    TwelveDataSettings = CollectTwelveDataSettings(outputSize)
-                });
+                // Load the full current model first to avoid overwriting other sections
+                var model = AppSettingsService.Load();
+                model.YahooSettings      = CollectYahooSettings();
+                model.TwelveDataSettings = CollectTwelveDataSettings(outputSize);
+                AppSettingsService.Save(model);
 
                 return true;
             }

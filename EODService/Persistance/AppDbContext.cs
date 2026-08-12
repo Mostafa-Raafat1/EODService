@@ -143,17 +143,21 @@ namespace EODService.Persistance
                     .HasColumnName("YF_FLAG")
                     .HasConversion(
                         v => v ? "Y" : "N",
-                        v => v == "Y");
+                        v => v != null && (v.Trim().ToUpper() == "Y" || v.Trim() == "1" || v.Trim().ToUpper() == "TRUE"));
 
                 entity.Property(e => e.TwelveDataExists)
                     .IsRequired()
                     .HasColumnName("TD_FLAG")
                     .HasConversion(
                         v => v ? "Y" : "N",
-                        v => v == "Y");
+                        v => v != null && (v.Trim().ToUpper() == "Y" || v.Trim() == "1" || v.Trim().ToUpper() == "TRUE"));
 
                 entity.Property(e => e.StockExchange)
                     .HasColumnName("SC_EXCHANGE")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Isin)
+                    .HasColumnName("ISIN")
                     .HasMaxLength(50);
             });
         }
