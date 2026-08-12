@@ -9,6 +9,7 @@ namespace EODService.DTOs.Stock
         public int Id { get; set; }
         public int SC_Comp_Id { get; set; }
         public string StockName { get; set; } = string.Empty;
+        public string ISIN { get; set; } = string.Empty;
 
         public string? YahooFinanceID { get; set; }
         public string? TwelveDataID { get; set; }
