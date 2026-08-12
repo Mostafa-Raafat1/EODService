@@ -43,6 +43,8 @@ namespace EODSettingsApp.Forms
         private ToolStripMenuItem mnuItemSettings;
         private ToolStripMenuItem mnuItemProviderSettings;
         private ToolStripMenuItem mnuItemSymbolSettings;
+        private ToolStripMenuItem mnuItemDatabaseSettings;
+        private ToolStripMenuItem mnuItemHistory;
 
         protected override void Dispose(bool disposing)
         {
@@ -91,6 +93,8 @@ namespace EODSettingsApp.Forms
             mnuItemSettings         = new ToolStripMenuItem();
             mnuItemProviderSettings = new ToolStripMenuItem();
             mnuItemSymbolSettings   = new ToolStripMenuItem();
+            mnuItemDatabaseSettings = new ToolStripMenuItem();
+            mnuItemHistory          = new ToolStripMenuItem();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             pnlGrid.SuspendLayout();
@@ -456,6 +460,7 @@ namespace EODSettingsApp.Forms
             mnuMain.BackColor = Color.FromArgb(23, 48, 107);
             mnuMain.ForeColor = Color.White;
             mnuMain.Items.Add(mnuItemSettings);
+            mnuMain.Items.Add(mnuItemHistory);
             mnuMain.Location = new Point(0, 0);
             mnuMain.Name = "mnuMain";
             mnuMain.Size = new Size(1034, 24);
@@ -468,7 +473,7 @@ namespace EODSettingsApp.Forms
             mnuItemSettings.Text = "Settings";
             mnuItemSettings.DropDownItems.Add(mnuItemProviderSettings);
             mnuItemSettings.DropDownItems.Add(mnuItemSymbolSettings);
-            //
+            mnuItemSettings.DropDownItems.Add(mnuItemDatabaseSettings);
             // 
             // mnuItemProviderSettings
             // 
@@ -481,6 +486,19 @@ namespace EODSettingsApp.Forms
             mnuItemSymbolSettings.Name   = "mnuItemSymbolSettings";
             mnuItemSymbolSettings.Text   = "Symbol Settings";
             mnuItemSymbolSettings.Click += MnuItemSymbolSettings_Click;
+            //
+            // mnuItemDatabaseSettings
+            //
+            mnuItemDatabaseSettings.Name   = "mnuItemDatabaseSettings";
+            mnuItemDatabaseSettings.Text   = "Database Connection";
+            mnuItemDatabaseSettings.Click += MnuItemDatabaseSettings_Click;
+            //
+            // mnuItemHistory
+            //
+            mnuItemHistory.ForeColor = Color.White;
+            mnuItemHistory.Name      = "mnuItemHistory";
+            mnuItemHistory.Text      = "History";
+            mnuItemHistory.Click    += MnuItemHistoricalData_Click;
             // 
             // SettingsForm
             // 

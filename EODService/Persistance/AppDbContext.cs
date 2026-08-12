@@ -122,7 +122,6 @@ namespace EODService.Persistance
                     .HasPrecision(10);
 
                 entity.Property(e => e.SC_Comp_Id)
-                    .IsRequired()
                     .HasColumnName("SC_COMP_ID")
                     .HasPrecision(4);
 

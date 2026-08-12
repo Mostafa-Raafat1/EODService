@@ -133,7 +133,8 @@ namespace EODSettingsApp.Forms
         private void SetupGridColumns()
         {
             dgvResults.Columns.Clear();
-            dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Symbol", HeaderText = "Symbol", DataPropertyName = "Symbol" });
+            dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "Stock ID", DataPropertyName = "Id" });
+            dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Stock Name", DataPropertyName = "Name" });
             dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Date", HeaderText = "Date", DataPropertyName = "Date" });
             dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "Open", HeaderText = "Open", DataPropertyName = "Open" });
             dgvResults.Columns.Add(new DataGridViewTextBoxColumn { Name = "High", HeaderText = "High", DataPropertyName = "High" });
@@ -420,6 +421,24 @@ namespace EODSettingsApp.Forms
         private void MnuItemSymbolSettings_Click(object? sender, EventArgs e)
         {
             using var form = new SymbolSettingsForm();
+            form.ShowDialog(this);
+        }
+
+        /// <summary>
+        /// Settings → Database Connection: opens the Oracle database connection configuration & testing dialog.
+        /// </summary>
+        private void MnuItemDatabaseSettings_Click(object? sender, EventArgs e)
+        {
+            using var form = new DatabaseSettingsForm();
+            form.ShowDialog(this);
+        }
+
+        /// <summary>
+        /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
+        /// </summary>
+        private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
+        {
+            using var form = new HistoricalDataForm();
             form.ShowDialog(this);
         }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,7 +8,7 @@ namespace EODService.DTOs.Stock
     {
         public int Id { get; set; }
         public int SC_Comp_Id { get; set; }
-        public string StockName { get; set;  }
+        public string StockName { get; set; } = string.Empty;
 
         public string? YahooFinanceID { get; set; }
         public string? TwelveDataID { get; set; }
@@ -16,6 +16,6 @@ namespace EODService.DTOs.Stock
         public bool YahooFinanceExists { get; set; }
         public bool TwelveDataExists { get; set; }
 
-        public string StockExchange { get; set; }
+        public string? StockExchange { get; set; }
     }
 }

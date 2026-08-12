@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "oracle-db": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-oracle"
+      ],
+      "env": {
+        "ORACLE_USER": "intern",
+        "ORACLE_PASSWORD": "intern",
+        "ORACLE_HOST": "10.120.143.51",
+        "ORACLE_PORT": "1521",
+        "ORACLE_SERVICE": "cibcorclhq",
+        "ORACLE_CONNECT_STRING": "10.120.143.51:1521/cibcorclhq"
+      }
+    }
+  }
+}
