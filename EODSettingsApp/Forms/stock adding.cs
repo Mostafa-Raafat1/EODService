@@ -42,18 +42,20 @@ namespace EODSettingsApp.Forms
 
                 using var dbContext = AppDbContextFactory.Create(connectionString);
 
-                var newStock = new EodStock
+                int.TryParse(txtInitialId.Text.Trim(), out int initialId);
+
+                var newStock = new Stock
                 {
                     StockName = stockName,
-                    InitialId = string.IsNullOrWhiteSpace(txtInitialId.Text) ? null : txtInitialId.Text.Trim(),
-                    Exchange  = string.IsNullOrWhiteSpace(txtExchange.Text)  ? null : txtExchange.Text.Trim(),
-                    TdTradable = rdoTdYes.Checked,
-                    YfTradable = rdoYfYes.Checked,
-                    TdSymbol  = string.IsNullOrWhiteSpace(txtTdSymbol.Text)  ? null : txtTdSymbol.Text.Trim(),
-                    YfSymbol  = string.IsNullOrWhiteSpace(txtYfSymbol.Text)  ? null : txtYfSymbol.Text.Trim()
+                    SC_Comp_Id = initialId,
+                    StockExchange = string.IsNullOrWhiteSpace(txtExchange.Text) ? null : txtExchange.Text.Trim(),
+                    TwelveDataExists = rdoTdYes.Checked,
+                    YahooFinanceExists = rdoYfYes.Checked,
+                    TwelveDataID = string.IsNullOrWhiteSpace(txtTdSymbol.Text) ? null : txtTdSymbol.Text.Trim(),
+                    YahooFinanceID = string.IsNullOrWhiteSpace(txtYfSymbol.Text) ? null : txtYfSymbol.Text.Trim()
                 };
 
-                dbContext.EodStocks.Add(newStock);
+                dbContext.Stock.Add(newStock);
                 await dbContext.SaveChangesAsync();
 
                 SetStatus(success: true, $"✔ Stock '{stockName}' added successfully!");
@@ -61,7 +63,6 @@ namespace EODSettingsApp.Forms
             }
             catch (Exception ex)
             {
-                // Show the deepest inner exception for better Oracle diagnostics
                 var inner = ex;
                 while (inner.InnerException != null)
                     inner = inner.InnerException;
