@@ -83,7 +83,7 @@ namespace EODSettingsApp.Forms
                     s.Id,
                     s.SC_Comp_Id,
                     s.StockName,
-                    s.Isin ?? "-",
+                    s.ISIN ?? "-",
                     s.YahooFinanceID ?? "-",
                     s.YahooFinanceExists,
                     s.TwelveDataID ?? "-",
@@ -112,7 +112,7 @@ namespace EODSettingsApp.Forms
                 txtStockId.Text = stock.Id.ToString();
                 txtCompId.Text = stock.SC_Comp_Id.ToString();
                 txtStockName.Text = stock.StockName;
-                txtIsin.Text = stock.Isin ?? "";
+                txtIsin.Text = stock.ISIN ?? "";
                 txtYahooId.Text = stock.YahooFinanceID ?? "";
                 chkYahooActive.Checked = stock.YahooFinanceExists;
                 txtTwelveDataId.Text = stock.TwelveDataID ?? "";
@@ -197,7 +197,7 @@ namespace EODSettingsApp.Forms
 
             stock.StockName = name;
             stock.SC_Comp_Id = compId;
-            stock.Isin = string.IsNullOrWhiteSpace(isin) ? null : isin;
+            stock.ISIN = string.IsNullOrWhiteSpace(isin) ? null : isin;
             stock.YahooFinanceID = string.IsNullOrWhiteSpace(yahooId) ? null : yahooId;
             stock.YahooFinanceExists = chkYahooActive.Checked;
             stock.TwelveDataID = string.IsNullOrWhiteSpace(twelveDataId) ? null : twelveDataId;
@@ -272,7 +272,7 @@ namespace EODSettingsApp.Forms
                     {
                         existing.StockName = s.StockName;
                         existing.SC_Comp_Id = s.SC_Comp_Id;
-                        existing.Isin = s.Isin;
+                        existing.ISIN = s.ISIN;
                         existing.YahooFinanceID = s.YahooFinanceID;
                         existing.YahooFinanceExists = s.YahooFinanceExists;
                         existing.TwelveDataID = s.TwelveDataID;
