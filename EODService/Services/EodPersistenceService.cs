@@ -27,8 +27,6 @@ namespace EODService.Services
             if (results == null || !results.Any())
                 return;
 
-            await dbContext.Database.EnsureCreatedAsync(ct);
-
             // Wrap entire read-upsert-insert pipeline in an explicit database transaction
             await using var tx = await dbContext.Database.BeginTransactionAsync(ct);
 
@@ -36,48 +34,41 @@ namespace EODService.Services
             {
                 var symbols = results.Select(r => r.Id).Distinct().ToList();
 
-                // 1. Fetch matching EodDaily rows first (100% compatible SQL translation for Oracle EF Core)
+                // 1. Fetch matching EodDaily rows as NoTracking
                 var dailyRows = await dbContext.EodDaily
+                    .AsNoTracking()
                     .Where(e => symbols.Contains(e.Id))
                     .ToListAsync(ct);
 
-                // Group in memory to avoid Oracle EF Core LINQ provider GroupBy translation bugs
-                var existingDailyDict = dailyRows
-                    .GroupBy(e => e.Id)
-                    .ToDictionary(g => g.Key, g => g.First());
+                var existingDailyIds = dailyRows.Select(e => e.Id).ToHashSet();
 
                 foreach (var result in results)
                 {
-                    if (!existingDailyDict.TryGetValue(result.Id, out var existing))
+                    var dailyEntity = result.ToDaily();
+                    if (existingDailyIds.Contains(result.Id))
                     {
-                        dbContext.EodDaily.Add(result.ToDaily());
+                        dbContext.EodDaily.Update(dailyEntity);
                     }
-                    else if (existing.Date <= result.Date)
+                    else
                     {
-                        existing.Date          = result.Date;
-                        existing.Open          = result.Open;
-                        existing.High          = result.High;
-                        existing.Low           = result.Low;
-                        existing.Close         = result.Close;
-                        existing.AdjustedClose = result.AdjustedClose;
-                        existing.Volume        = result.Volume;
+                        dbContext.EodDaily.Add(dailyEntity);
                     }
                 }
 
-                // 2. Fetch history dates safely
+                // 2. Fetch history dates as NoTracking
                 var historyRows = await dbContext.EodHistory
+                    .AsNoTracking()
                     .Where(e => symbols.Contains(e.Id))
                     .Select(e => new { e.Id, e.Date })
                     .ToListAsync(ct);
 
-                var lastHistoryDates = historyRows
-                    .GroupBy(e => e.Id)
-                    .ToDictionary(g => g.Key, g => (DateTime?)g.Max(x => x.Date));
+                var existingHistoryKeys = historyRows
+                    .Select(x => (x.Id, x.Date))
+                    .ToHashSet();
 
                 foreach (var result in results)
                 {
-                    lastHistoryDates.TryGetValue(result.Id, out var lastDate);
-                    if (lastDate == null || lastDate < result.Date)
+                    if (!existingHistoryKeys.Contains((result.Id, result.Date)))
                     {
                         dbContext.EodHistory.Add(result.ToHistory());
                     }

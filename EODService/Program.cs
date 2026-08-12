@@ -55,8 +55,6 @@ else
     try
     {
         dbContext = AppDbContextFactory.Create(connectionString);
-        await dbContext.Database.EnsureCreatedAsync();
-
     }
     catch (Exception ex)
     {
@@ -73,7 +71,7 @@ if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgno
         logger.LogError("'YahooSettings' (BaseUrl or Endpoint) is missing or empty in appsettings.json. Exiting.");
         return;
     }
-    symbolSettings = await EodPersistenceService.GetSymbolsForYahooFinance(dbContext);
+    symbolSettings = await EodPersistenceService.GetSymbolsForYahooFinance(dbContext!) ?? new SymbolSettings();
     foreach(var symbol in symbolSettings.Symbols)
     {
         logger.LogInformation($"Processing symbol: {symbol}");
@@ -88,7 +86,7 @@ if (providerSettings.ActiveProvider.Equals("TwelveData", StringComparison.Ordina
         logger.LogError("'TwelveDataSettings' (BaseUrl or ApiKey) is missing or empty in appsettings.json. Exiting.");
         return;
     }
-    symbolSettings = await EodPersistenceService.GetSymbolsForTwelveData(dbContext);
+    symbolSettings = await EodPersistenceService.GetSymbolsForTwelveData(dbContext!) ?? new SymbolSettings();
     foreach (var symbol in symbolSettings.Symbols)
     {
         logger.LogInformation($"Processing symbol: {symbol}");
@@ -140,7 +138,7 @@ if (!results.Any())
 logger.LogInformation("Saving to Oracle Database...");
 try
 {
-    await EodPersistenceService.SaveEodDataAsync(results, dbContext, logger);
+    await EodPersistenceService.SaveEodDataAsync(results, dbContext!, logger);
 }
 catch (Exception ex)
 {

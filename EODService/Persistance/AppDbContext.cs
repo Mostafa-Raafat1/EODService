@@ -34,7 +34,7 @@ namespace EODService.Persistance
                     .HasColumnName("STOCK_ID");
 
                 entity.Property(e => e.Name)
-                    .HasColumnName("NAME");
+                    .HasColumnName("STOCK_NAME");
 
                 entity.Property(e => e.Date)
                     .HasColumnName("DATE");
@@ -79,7 +79,7 @@ namespace EODService.Persistance
                     .HasColumnName("STOCK_ID");
 
                 entity.Property(e => e.Name)
-                    .HasColumnName("NAME");
+                    .HasColumnName("STOCK_NAME");
 
                 entity.Property(e => e.Date)
                     .HasColumnName("DATE");
@@ -122,7 +122,6 @@ namespace EODService.Persistance
                     .HasPrecision(10);
 
                 entity.Property(e => e.SC_Comp_Id)
-                    .IsRequired()
                     .HasColumnName("SC_COMP_ID")
                     .HasPrecision(4);
 
