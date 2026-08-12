@@ -124,6 +124,10 @@ namespace EODService.Persistance
                 entity.Property(e => e.SC_Comp_Id)
                     .HasColumnName("SC_COMP_ID")
                     .HasPrecision(4);
+                entity.Property(e => e.ISIN)
+                    .IsRequired()
+                    .HasColumnName("ISIN")
+                    .HasMaxLength(20);
 
                 entity.Property(e => e.StockName)
                     .IsRequired()
