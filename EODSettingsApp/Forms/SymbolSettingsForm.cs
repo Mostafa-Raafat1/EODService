@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using EODService.DTOs.Stock;
 using EODService.Persistance;
 using EODSettingsApp.AppSettingsConfig;
+using EODService.DTOs.Stock;
 
 namespace EODSettingsApp.Forms
 {

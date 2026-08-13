@@ -5,10 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using EODService.DTOs.EOD;
 using EODService.Persistance;
 using EODService.DTOs.SymbolSettings;
 using EODService.Persistance.Repo;
+using EODService.DTOs.EOD;
+using EODService.Models.Provider;
 
 namespace EODService.Services
 {
@@ -109,6 +110,19 @@ namespace EODService.Services
             IStock repo = new StockRepo(dbContext);
             var stocks = await repo.GetSymbolAndTickerIDForTwelveData();
             return stocks;
+        }
+
+        public static async Task<Provider?> GetProviderById(AppDbContext dbContext, int providerId)
+        {
+            IProvider repo = new ProviderRepo(dbContext);
+            var provider = await repo.GetProviderById(providerId);
+            return provider;
+        }
+
+        public static async Task UpdateProvider(AppDbContext dbContext, int providerId, string name, string baseUrl, string endPoint, string? apiKey)
+        {
+            IProvider repo = new ProviderRepo(dbContext);
+            await repo.UpdateProvider(providerId, name, baseUrl, endPoint, apiKey);
         }
     }
 }
