@@ -78,8 +78,11 @@ namespace EODSettingsApp.Forms
             {
                 // Load the full current model first to avoid overwriting other sections
                 var model = AppSettingsService.Load();
-                model.YahooSettings      = CollectYahooSettings();
-                model.TwelveDataSettings = CollectTwelveDataSettings(outputSize);
+                var yahooId = model.YahooSettings?.ID > 0 ? model.YahooSettings.ID : 1;
+                var twelveDataId = model.TwelveDataSettings?.ID > 0 ? model.TwelveDataSettings.ID : 2;
+
+                model.YahooSettings      = CollectYahooSettings(yahooId);
+                model.TwelveDataSettings = CollectTwelveDataSettings(twelveDataId, outputSize);
                 AppSettingsService.Save(model);
 
                 return true;
@@ -91,16 +94,18 @@ namespace EODSettingsApp.Forms
             }
         }
 
-        private YahooSettingsSection CollectYahooSettings() => new()
+        private YahooSettingsSection CollectYahooSettings(int id) => new()
         {
+            ID       = id,
             BaseUrl  = txtYahooBaseUrl.Text.Trim(),
             Endpoint = txtYahooEndpoint.Text.Trim(),
             Interval = txtYahooInterval.Text.Trim(),
             Range    = txtYahooRange.Text.Trim()
         };
 
-        private TwelveDataSettingsSection CollectTwelveDataSettings(int outputSize) => new()
+        private TwelveDataSettingsSection CollectTwelveDataSettings(int id, int outputSize) => new()
         {
+            ID         = id,
             BaseUrl    = txtTwelveBaseUrl.Text.Trim(),
             Endpoint   = txtTwelveEndpoint.Text.Trim(),
             Interval   = txtTwelveInterval.Text.Trim(),

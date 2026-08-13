@@ -23,9 +23,6 @@ var logger = loggerFactory.CreateLogger("Program");
 // Write a banner to the log file so each run is clearly separated
 EODService.Logging.FileLoggerProvider.WriteRunBanner();
 
-// ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
-var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
-
 // ─── Step 4: Create Connection and Get Symbols for selected provider ──────────────────────────────────
 var connectionString = OracleSettingsMapper.GetConnectionString();
 // Create a DbContext instance for database operations
@@ -66,8 +63,8 @@ var symbolSettings = new SymbolSettings();
 
 
 // ─── Step 3: Load Provider-Specific Settings ──────────────────────────────────
-var yahooSettings      =  await YahooSettingsMapper.MapToYahooSettings(dbContext);
-var twelveDataSettings = await TwelveDataSettingsMapper.MapToTwelveDataSettings(dbContext);
+var yahooSettings      = await YahooSettingsMapper.MapToYahooSettings(dbContext, logger);
+var twelveDataSettings = await TwelveDataSettingsMapper.MapToTwelveDataSettings(dbContext, logger);
 
 
 
@@ -77,7 +74,7 @@ if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgno
 {
     if (yahooSettings == null || string.IsNullOrWhiteSpace(yahooSettings.BaseUrl) || string.IsNullOrWhiteSpace(yahooSettings.Endpoint))
     {
-        logger.LogError("'YahooSettings' (BaseUrl or Endpoint) is missing or empty in appsettings.json. Exiting.");
+        logger.LogError("Yahoo provider config (BaseUrl or Endpoint) could not be loaded. Ensure a row with ID={YahooId} exists in the PROVIDER table.", yahooSettings?.ID);
         return;
     }
     symbolSettings = await EodPersistenceService.GetSymbolsForYahooFinance(dbContext!) ?? new SymbolSettings();
@@ -92,7 +89,7 @@ if (providerSettings.ActiveProvider.Equals("TwelveData", StringComparison.Ordina
 {
     if (twelveDataSettings == null || string.IsNullOrWhiteSpace(twelveDataSettings.BaseUrl) || string.IsNullOrWhiteSpace(twelveDataSettings.ApiKey))
     {
-        logger.LogError("'TwelveDataSettings' (BaseUrl or ApiKey) is missing or empty in appsettings.json. Exiting.");
+        logger.LogError("TwelveData provider config (BaseUrl or ApiKey) could not be loaded. Ensure a row with ID={TwelveDataId} exists in the PROVIDER table.", twelveDataSettings?.ID);
         return;
     }
     symbolSettings = await EodPersistenceService.GetSymbolsForTwelveData(dbContext!) ?? new SymbolSettings();
