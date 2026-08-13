@@ -1,5 +1,6 @@
 using EODService.DTOs.EOD;
 using EODService.DTOs.Stock;
+using EODService.Models.Provider;
 using EODService.Persistance.Repo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -19,6 +20,7 @@ namespace EODService.Persistance
         public DbSet<EodDataHistory> EodHistory { get; set; }
         public DbSet<EodDataDaily> EodDaily { get; set; }
         public DbSet<Stock> Stock { get; set; }
+        public DbSet<Provider> Provider { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -159,6 +161,40 @@ namespace EODService.Persistance
                 entity.Property(e => e.StockExchange)
                     .HasColumnName("SC_EXCHANGE")
                     .HasMaxLength(50);
+            });
+
+            // For Provider Table
+
+            modelBuilder.Entity<Provider>(entity =>
+            {
+                entity.ToTable("PROVIDER");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .ValueGeneratedOnAdd()
+                    .HasPrecision(10);
+
+                entity.Property(e => e.Name)
+                    .HasColumnName("PROVIDER")
+                    .HasMaxLength(100)
+                    .IsRequired();
+
+                entity.Property(e => e.ApiKey)
+                    .HasColumnName("API_KEY")
+                    .HasMaxLength(500)
+                    .IsRequired(false);
+
+                entity.Property(e => e.BaseUrl)
+                    .HasColumnName("BASE_URL")
+                    .HasMaxLength(500)
+                    .IsRequired();
+
+                entity.Property(e => e.EndPoint)
+                    .HasColumnName("ENDPOINT")
+                    .HasMaxLength(500)
+                    .IsRequired();
             });
         }
 

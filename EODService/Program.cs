@@ -26,23 +26,6 @@ EODService.Logging.FileLoggerProvider.WriteRunBanner();
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
 
-if (providerSettings == null || string.IsNullOrWhiteSpace(providerSettings.ActiveProvider))
-{
-    logger.LogError("'ProviderSettings:ActiveProvider' is missing or empty in appsettings.json. Exiting.");
-    return;
-}
-
-logger.LogInformation("Active Provider: {Provider}", providerSettings.ActiveProvider);
-
-// ─── Step 2: Load SymbolSettings ─────────────────────────────────────────────
-var symbolSettings = new SymbolSettings();
-
-
-// ─── Step 3: Load Provider-Specific Settings ──────────────────────────────────
-var yahooSettings      = YahooSettingsMapper.MapToYahooSettings();
-var twelveDataSettings = TwelveDataSettingsMapper.MapToTwelveDataSettings();
-
-
 // ─── Step 4: Create Connection and Get Symbols for selected provider ──────────────────────────────────
 var connectionString = OracleSettingsMapper.GetConnectionString();
 // Create a DbContext instance for database operations
@@ -58,6 +41,7 @@ else
     try
     {
         dbContext = AppDbContextFactory.Create(connectionString);
+        dbContext.Database.EnsureCreated();
     }
     catch (Exception ex)
     {
@@ -65,6 +49,28 @@ else
         return;
     }
 }
+
+// ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
+var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
+
+if (providerSettings == null || string.IsNullOrWhiteSpace(providerSettings.ActiveProvider))
+{
+    logger.LogError("'ProviderSettings:ActiveProvider' is missing or empty in appsettings.json. Exiting.");
+    return;
+}
+
+logger.LogInformation("Active Provider: {Provider}", providerSettings.ActiveProvider);
+
+// ─── Step 2: Load SymbolSettings ─────────────────────────────────────────────
+var symbolSettings = new SymbolSettings();
+
+
+// ─── Step 3: Load Provider-Specific Settings ──────────────────────────────────
+var yahooSettings      =  await YahooSettingsMapper.MapToYahooSettings(dbContext);
+var twelveDataSettings = await TwelveDataSettingsMapper.MapToTwelveDataSettings(dbContext);
+
+
+
 
 // Validate Yahoo settings if it's the active provider and get symbols from database
 if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgnoreCase))
