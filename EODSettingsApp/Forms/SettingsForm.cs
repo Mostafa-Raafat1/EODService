@@ -257,7 +257,7 @@ namespace EODSettingsApp.Forms
         // ── Background Log Monitoring & Grid Auto Refresh ────────────────────────
         private void InitializeBackgroundLogAndGridMonitoring()
         {
-            var logPath = FileLoggerProvider.LogFilePath;
+            var logPath = FileLoggerProvider.GetTodayLogFilePath();
             if (File.Exists(logPath))
             {
                 _lastLogFilePosition = new FileInfo(logPath).Length;
@@ -273,7 +273,7 @@ namespace EODSettingsApp.Forms
 
         private async Task PollLogFileAndRefreshGridAsync()
         {
-            var logPath = FileLoggerProvider.LogFilePath;
+            var logPath = FileLoggerProvider.GetTodayLogFilePath();
             if (!File.Exists(logPath)) return;
 
             try

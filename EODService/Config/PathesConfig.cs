@@ -8,7 +8,8 @@ namespace EODService.Config
     {
         public string ActiveProviderSettingsPath { get; set; } = @"C:\EODConfig\settings.json";
         public string AppSettingsPath { get; set; } = "AppSettings.json";
-        public string LogPath { get; set; } = "Logs.txt";
+        /// <summary>Root folder where all log sub-folders (by month) and daily log files will be created.</summary>
+        public string LogFolderPath { get; set; } = @"C:\EODConfig\Logs";
     }
 
     /// <summary>
@@ -27,6 +28,9 @@ namespace EODService.Config
             Path.GetDirectoryName(ActiveProviderSettingsPath) ?? @"C:\EODConfig";
 
         public static string AppSettingsFileName => Current.AppSettingsPath;
+
+        /// <summary>Root folder for all log files. Sub-folders are created per month (yyyy-MM) and daily files per day (yyyy-MM-dd.txt).</summary>
+        public static string LogFolderPath => Current.LogFolderPath;
 
         public static PathesConfigData LoadConfig()
         {

@@ -6,19 +6,103 @@ using EODService.Config;
 namespace EODService.Logging
 {
     /// <summary>
-    /// File logger provider that writes all service logs to eod_service.log in the config directory.
-    /// This allows EODSettingsApp to read and present background scheduled run logs in real-time.
+    /// File logger provider that writes service logs into a structured folder hierarchy:
+    ///   {LogFolderPath}\{yyyy-MM}\{yyyy-MM-dd}.txt
+    ///
+    /// Log format per line:
+    ///   HH:mm:ss │ LEVEL   │ ShortClassName        │ message
+    ///
+    /// A run banner is written once at startup via WriteRunBanner() to clearly
+    /// separate consecutive runs in the same daily file.
+    /// A new daily file is created automatically at midnight without a restart.
     /// </summary>
     public class FileLoggerProvider : ILoggerProvider
     {
         private static readonly object _lock = new object();
 
-        public static string LogFilePath =>
-            Path.Combine(PathesConfig.ActiveProviderFolderPath, "eod_service.log");
+        // Column widths for aligned table layout
+        private const int LevelWidth    = 7;  // "INFO   ", "WARNING", "ERROR  "
+        private const int CategoryWidth = 25; // padded class name
+
+        /// <summary>
+        /// Resolves the full path for today's log file.
+        /// Example: C:\EODConfig\Logs\2026-08\2026-08-13.txt
+        /// </summary>
+        public static string GetTodayLogFilePath()
+        {
+            var today      = DateTime.Now;
+            var monthFolder = today.ToString("yyyy-MM");           // e.g. 2026-08
+            var dayFile     = today.ToString("yyyy-MM-dd") + ".txt"; // e.g. 2026-08-13.txt
+            return Path.Combine(PathesConfig.LogFolderPath, monthFolder, dayFile);
+        }
+
+        /// <summary>
+        /// Writes a prominent run-start banner to today's log file.
+        /// Call this once at the very beginning of Program.cs so each execution
+        /// is clearly separated from previous ones in the same daily file.
+        /// </summary>
+        public static void WriteRunBanner()
+        {
+            var now    = DateTime.Now;
+            var line   = "═══════════════════════════════════════════════════════════════";
+            var header = $"  RUN STARTED  │  {now:yyyy-MM-dd  HH:mm:ss}";
+
+            var banner = Environment.NewLine
+                       + line                   + Environment.NewLine
+                       + header                 + Environment.NewLine
+                       + line                   + Environment.NewLine;
+
+            AppendToFile(banner);
+        }
+
+        // ── Helpers ─────────────────────────────────────────────────────────────
+
+        /// <summary>Strips namespace prefix, returning only the class name.</summary>
+        private static string ShortName(string categoryName)
+        {
+            var dot = categoryName.LastIndexOf('.');
+            return dot >= 0 ? categoryName[(dot + 1)..] : categoryName;
+        }
+
+        /// <summary>Converts LogLevel to a short, fixed-width label.</summary>
+        private static string LevelLabel(LogLevel level) => level switch
+        {
+            LogLevel.Trace       => "TRACE  ",
+            LogLevel.Debug       => "DEBUG  ",
+            LogLevel.Information => "INFO   ",
+            LogLevel.Warning     => "WARNING",
+            LogLevel.Error       => "ERROR  ",
+            LogLevel.Critical    => "FATAL  ",
+            _                    => "OTHER  "
+        };
+
+        private static void AppendToFile(string content)
+        {
+            lock (_lock)
+            {
+                try
+                {
+                    var filePath = GetTodayLogFilePath();
+                    var dir      = Path.GetDirectoryName(filePath);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    File.AppendAllText(filePath, content);
+                }
+                catch
+                {
+                    // Best-effort — do not crash the service on a logging failure.
+                }
+            }
+        }
+
+        // ── ILoggerProvider ──────────────────────────────────────────────────────
 
         public ILogger CreateLogger(string categoryName) => new FileLogger(categoryName);
 
         public void Dispose() { }
+
+        // ── Inner logger ─────────────────────────────────────────────────────────
 
         private class FileLogger : ILogger
         {
@@ -39,31 +123,17 @@ namespace EODService.Logging
             {
                 if (!IsEnabled(logLevel)) return;
 
-                var message = formatter(state, exception);
-                var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                var logLine = $"[{timestamp}] [{logLevel}] {message}";
+                var message   = formatter(state, exception);
+                var time      = DateTime.Now.ToString("HH:mm:ss");
+                var level     = LevelLabel(logLevel);
+                var category  = ShortName(_categoryName).PadRight(CategoryWidth);
+
+                var logLine   = $"{time} │ {level} │ {category} │ {message}";
 
                 if (exception != null)
-                {
                     logLine += Environment.NewLine + exception.ToString();
-                }
 
-                lock (_lock)
-                {
-                    try
-                    {
-                        var dir = Path.GetDirectoryName(LogFilePath);
-                        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                        {
-                            Directory.CreateDirectory(dir);
-                        }
-                        File.AppendAllText(LogFilePath, logLine + Environment.NewLine);
-                    }
-                    catch
-                    {
-                        // Best effort log file write
-                    }
-                }
+                AppendToFile(logLine + Environment.NewLine);
             }
         }
     }
