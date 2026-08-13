@@ -1,38 +1,67 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using EODService.DTOs.OracleSettings;
+using EODService.Persistance;
+using EODService.Persistance.Repo;
 using EODSettingsApp.AppSettingsConfig;
 
 namespace EODSettingsApp.Forms
 {
     /// <summary>
     /// Modal dialog for viewing and editing the Yahoo and TwelveData provider
-    /// API settings stored in EODService's AppSettings.json.
+    /// API settings stored in Oracle DB (PROVIDER table) and EODService's AppSettings.json.
     /// </summary>
     public partial class ProviderSettingsForm : Form
     {
         public ProviderSettingsForm()
         {
             InitializeComponent();
-            LoadProviderSettings();
+            _ = LoadProviderSettingsAsync();
         }
 
         // ── Load ─────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Reads AppSettings.json and populates all text boxes on startup.
+        /// Reads AppSettings.json and Oracle PROVIDER table to populate all text boxes on startup.
         /// </summary>
-        private void LoadProviderSettings()
+        private async Task LoadProviderSettingsAsync()
         {
             try
             {
                 var model = AppSettingsService.Load();
                 PopulateYahooFields(model.YahooSettings);
                 PopulateTwelveDataFields(model.TwelveDataSettings);
+
+                // Fetch BaseUrl, Endpoint, and ApiKey directly from Oracle Database PROVIDER table
+                var connectionString = OracleSettingsMapper.GetConnectionString();
+                if (!string.IsNullOrWhiteSpace(connectionString))
+                {
+                    using var dbContext = AppDbContextFactory.Create(connectionString);
+                    IProvider repo = new ProviderRepo(dbContext);
+
+                    var yahooId = model.YahooSettings?.ID > 0 ? model.YahooSettings.ID : 1;
+                    var twelveDataId = model.TwelveDataSettings?.ID > 0 ? model.TwelveDataSettings.ID : 2;
+
+                    var yahooDb = await repo.GetProviderById(yahooId);
+                    if (yahooDb != null)
+                    {
+                        txtYahooBaseUrl.Text = yahooDb.BaseUrl;
+                        txtYahooEndpoint.Text = yahooDb.EndPoint;
+                    }
+
+                    var twelveDb = await repo.GetProviderById(twelveDataId);
+                    if (twelveDb != null)
+                    {
+                        txtTwelveBaseUrl.Text = twelveDb.BaseUrl;
+                        txtTwelveEndpoint.Text = twelveDb.EndPoint;
+                        txtTwelveApiKey.Text = twelveDb.ApiKey ?? string.Empty;
+                    }
+                }
             }
             catch (Exception ex)
             {
-                SetStatus(success: false,
-                    $"✘  Could not load AppSettings: {ex.Message}");
+                SetStatus(success: false, $"✘ Could not load provider settings: {ex.Message}");
             }
         }
 
@@ -56,27 +85,35 @@ namespace EODSettingsApp.Forms
         // ── Save ─────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Validates fields, builds the model, and writes it to AppSettings.json.
+        /// Validates fields, updates AppSettings.json, and saves BaseUrl, Endpoint, and ApiKey into Oracle PROVIDER table.
         /// </summary>
-        private void BtnSaveProviderSettings_Click(object? sender, EventArgs e)
+        private async void BtnSaveProviderSettings_Click(object? sender, EventArgs e)
         {
-            if (!TryCollectAndSaveProviderSettings())
-                return;
-
-            SetStatus(success: true, "✔  Provider settings saved successfully.");
+            btnSaveProviderSettings.Enabled = false;
+            try
+            {
+                if (await TryCollectAndSaveProviderSettingsAsync())
+                {
+                    SetStatus(success: true, "✔ Provider settings saved successfully to AppSettings and Oracle DB.");
+                }
+            }
+            finally
+            {
+                btnSaveProviderSettings.Enabled = true;
+            }
         }
 
-        private bool TryCollectAndSaveProviderSettings()
+        private async Task<bool> TryCollectAndSaveProviderSettingsAsync()
         {
             if (!TryParseOutputSize(txtTwelveOutputSize.Text, out var outputSize))
             {
-                SetStatus(success: false, "✘  Output Size must be a positive integer.");
+                SetStatus(success: false, "✘ Output Size must be a positive integer.");
                 return false;
             }
 
             try
             {
-                // Load the full current model first to avoid overwriting other sections
+                // 1. Load current model and save to AppSettings.json
                 var model = AppSettingsService.Load();
                 var yahooId = model.YahooSettings?.ID > 0 ? model.YahooSettings.ID : 1;
                 var twelveDataId = model.TwelveDataSettings?.ID > 0 ? model.TwelveDataSettings.ID : 2;
@@ -85,11 +122,33 @@ namespace EODSettingsApp.Forms
                 model.TwelveDataSettings = CollectTwelveDataSettings(twelveDataId, outputSize);
                 AppSettingsService.Save(model);
 
+                // 2. Save directly to Oracle Database PROVIDER table
+                var connectionString = OracleSettingsMapper.GetConnectionString();
+                if (!string.IsNullOrWhiteSpace(connectionString))
+                {
+                    using var dbContext = AppDbContextFactory.Create(connectionString);
+                    IProvider repo = new ProviderRepo(dbContext);
+
+                    await repo.UpdateProvider(
+                        providerId: yahooId,
+                        name: "Yahoo",
+                        baseUrl: txtYahooBaseUrl.Text.Trim(),
+                        endPoint: txtYahooEndpoint.Text.Trim(),
+                        apiKey: null);
+
+                    await repo.UpdateProvider(
+                        providerId: twelveDataId,
+                        name: "TwelveData",
+                        baseUrl: txtTwelveBaseUrl.Text.Trim(),
+                        endPoint: txtTwelveEndpoint.Text.Trim(),
+                        apiKey: txtTwelveApiKey.Text.Trim());
+                }
+
                 return true;
             }
             catch (Exception ex)
             {
-                SetStatus(success: false, $"✘  Save failed: {ex.Message}");
+                SetStatus(success: false, $"✘ Save failed: {ex.Message}");
                 return false;
             }
         }

@@ -1,4 +1,4 @@
-﻿using EODService.Models.Provider;
+using EODService.Models.Provider;
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;using System.Text;
@@ -28,9 +28,15 @@ namespace EODService.Persistance.Repo
             return providers.SingleOrDefault();
         }
 
-        public Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey)
+        public async Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey)
         {
-            throw new NotImplementedException();
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($@"
+                UPDATE PROVIDER
+                SET PROVIDER = {name},
+                    BASE_URL = {baseUrl},
+                    ENDPOINT = {endPoint},
+                    API_KEY = {apiKey}
+                WHERE ID = {providerId}");
         }
     }
 }
