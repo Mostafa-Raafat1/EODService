@@ -8,6 +8,7 @@ namespace EODService.Config
     {
         public string ActiveProviderSettingsPath { get; set; } = @"C:\EODConfig\settings.json";
         public string AppSettingsPath { get; set; } = "AppSettings.json";
+        public string LogPath { get; set; } = "Logs.txt";
     }
 
     /// <summary>
