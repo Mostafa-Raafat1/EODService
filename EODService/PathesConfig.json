@@ -1,5 +1,5 @@
 {
   "ActiveProviderSettingsPath": "C:\\EODConfig\\settings.json",
   "AppSettingsPath": "AppSettings.json",
-  "LogPath": "Logs.txt"
+  "LogFolderPath": "C:\\EODConfig\\Logs"
 }

@@ -20,6 +20,9 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 
 var logger = loggerFactory.CreateLogger("Program");
 
+// Write a banner to the log file so each run is clearly separated
+EODService.Logging.FileLoggerProvider.WriteRunBanner();
+
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
 
