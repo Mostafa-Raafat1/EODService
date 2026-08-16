@@ -1,7 +1,9 @@
 using EODService.Models.Provider;
+using EODService.Services;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;using System.Text;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace EODService.Persistance.Repo
 {
@@ -14,8 +16,7 @@ namespace EODService.Persistance.Repo
             this.dbContext = dbContext;
         }
 
-
-        // Oracle generate wrong sql for this query .FirstOrDefault(), so we have to use FromSqlInterpolated
+        // Oracle generates wrong sql for this query .FirstOrDefault(), so we use FromSqlInterpolated
         public async Task<Provider?> GetProviderById(int providerId)
         {
             var providers = await dbContext.Provider
@@ -25,17 +26,40 @@ namespace EODService.Persistance.Repo
             WHERE ID = {providerId}")
                 .ToListAsync();
 
-            return providers.SingleOrDefault();
+            var provider = providers.SingleOrDefault();
+
+            // Decrypt the API key using AES-256 (shared key across devices)
+            if (provider != null && !string.IsNullOrEmpty(provider.ApiKey))
+            {
+                var aesKey = KeyStoreService.GetKey();
+                if (aesKey != null)
+                {
+                    provider.ApiKey = AesEncryptionService.Decrypt(provider.ApiKey, aesKey);
+                }
+            }
+
+            return provider;
         }
 
         public async Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey)
         {
+            // Encrypt the API key using AES-256 with shared key
+            string? encryptedApiKey = apiKey;
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                var aesKey = KeyStoreService.GetKey();
+                if (aesKey != null)
+                {
+                    encryptedApiKey = AesEncryptionService.Encrypt(apiKey, aesKey);
+                }
+            }
+
             await dbContext.Database.ExecuteSqlInterpolatedAsync($@"
                 UPDATE PROVIDER
                 SET PROVIDER = {name},
                     BASE_URL = {baseUrl},
                     ENDPOINT = {endPoint},
-                    API_KEY = {apiKey}
+                    API_KEY = {encryptedApiKey}
                 WHERE ID = {providerId}");
         }
     }

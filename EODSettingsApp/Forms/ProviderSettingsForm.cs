@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using EODService.DTOs.OracleSettings;
 using EODService.Persistance;
 using EODService.Persistance.Repo;
+using EODService.Services;
 using EODSettingsApp.AppSettingsConfig;
 
 namespace EODSettingsApp.Forms
@@ -53,9 +54,15 @@ namespace EODSettingsApp.Forms
                     var twelveDb = await repo.GetProviderById(twelveDataId);
                     if (twelveDb != null)
                     {
-                        txtTwelveBaseUrl.Text = twelveDb.BaseUrl;
+                        txtTwelveBaseUrl.Text  = twelveDb.BaseUrl;
                         txtTwelveEndpoint.Text = twelveDb.EndPoint;
-                        txtTwelveApiKey.Text = twelveDb.ApiKey ?? string.Empty;
+                        txtTwelveApiKey.Text   = twelveDb.ApiKey ?? string.Empty;
+
+                        bool isAesEncrypted = AesEncryptionService.IsAesEncrypted(twelveDb.ApiKey);
+                        if (isAesEncrypted)
+                            SetStatus(success: true, "✔ Provider settings loaded. 🔒 API Key stored securely (AES-256).");
+                        else
+                            SetStatus(success: true, "✔ Provider settings loaded from Oracle DB.");
                     }
                 }
             }
@@ -94,7 +101,7 @@ namespace EODSettingsApp.Forms
             {
                 if (await TryCollectAndSaveProviderSettingsAsync())
                 {
-                    SetStatus(success: true, "✔ Provider settings saved successfully to AppSettings and Oracle DB.");
+                    SetStatus(success: true, "✔ Provider settings saved and API Key encrypted (AES-256). 🔒");
                 }
             }
             finally

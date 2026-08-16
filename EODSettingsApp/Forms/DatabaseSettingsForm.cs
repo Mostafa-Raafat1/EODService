@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Oracle.ManagedDataAccess.Client;
 using EODSettingsApp.AppSettingsConfig;
+using EODService.Services;
 
 namespace EODSettingsApp.Forms
 {
@@ -31,6 +32,12 @@ namespace EODSettingsApp.Forms
                 var model = AppSettingsService.Load();
                 var connectionString = model.ConnectionStrings?.DefaultConnection ?? string.Empty;
 
+                // Check if the value in the file is currently encrypted
+                // (Load() already decrypts it, so we re-read the raw file to determine status)
+                var rawModel        = AppSettingsService.LoadRaw();
+                var rawConnection   = rawModel.ConnectionStrings?.DefaultConnection ?? string.Empty;
+                bool isEncrypted    = SecurityService.IsEncrypted(rawConnection);
+
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
                     // No saved connection yet — populate with defaults and build the string
@@ -50,7 +57,12 @@ namespace EODSettingsApp.Forms
                 {
                     txtConnectionString.Text = connectionString;
                     ParseAndPopulateFields(connectionString);
-                    SetStatus(success: true, "✔ Connection settings loaded from AppSettings.json");
+
+                    // Inform the user whether the stored value is protected or still plain text
+                    if (isEncrypted)
+                        SetStatus(success: true, "✔ Connection settings loaded. 🔒 Stored securely (encrypted).");
+                    else
+                        SetStatus(success: true, "⚠ Connection settings loaded. Not yet encrypted — click Save to secure.");
                 }
             }
             catch (Exception ex)
@@ -151,8 +163,10 @@ namespace EODSettingsApp.Forms
 
             try
             {
+                // AppSettingsService.SaveConnectionString() automatically encrypts
+                // the connection string using DPAPI before writing to AppSettings.json
                 AppSettingsService.SaveConnectionString(connectionString);
-                SetStatus(success: true, "✔ Connection settings saved successfully.");
+                SetStatus(success: true, "✔ Connection settings saved and encrypted successfully. 🔒");
             }
             catch (Exception ex)
             {

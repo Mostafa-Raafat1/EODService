@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using EODService.Services;
 using EODSettingsApp.Forms;
 
 namespace EODSettingsApp
@@ -15,7 +16,23 @@ namespace EODSettingsApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            // Prompt key setup on first launch if security.dat does not exist yet
+            if (!KeyStoreService.KeyExists())
+            {
+                using var setupForm = new SecuritySetupForm();
+                if (setupForm.ShowDialog() != DialogResult.OK)
+                {
+                    MessageBox.Show("Encryption key setup is required to run EODService Manager.",
+                                    "Security Setup Required",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
             Application.Run(new SettingsForm());
         }
     }
 }
+
