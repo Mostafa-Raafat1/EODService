@@ -896,18 +896,13 @@ namespace EODSettingsApp.Forms
         }
 
         /// <summary>
-        /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
+        /// Menu → History: opens the historical stock price explorer & CSV exporter dialog.
         /// </summary>
         private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
         {
-
-            using var form = new HierarchicalSettingsForm();
+            using var form = new HistoricalDataForm();
             form.ShowDialog(this);
         }
-
-        /// <summary>
-        /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
-        /// </summary
 
 
         // ── Toolbar: Run EOD Now ────────────────────────────────────────────────
