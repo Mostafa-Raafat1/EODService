@@ -54,14 +54,29 @@ namespace EODSettingsApp.Forms
                 cmbSymbol.Items.Clear();
                 cmbSymbol.Items.Add("ALL");
 
-                var model = AppSettingsService.Load();
-                if (model.SymbolSettings?.Symbols != null)
+                var connectionString = GetConnectionString();
+                if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
                 {
-                    foreach (var symbol in model.SymbolSettings.Symbols)
+                    using var dbContext = AppDbContextFactory.Create(connectionString);
+                    var stocks = dbContext.Stock.AsNoTracking().ToList();
+                    
+                    foreach (var stock in stocks)
                     {
-                        if (!string.IsNullOrWhiteSpace(symbol) && !cmbSymbol.Items.Contains(symbol))
+                        if (!string.IsNullOrWhiteSpace(stock.YahooFinanceID))
                         {
-                            cmbSymbol.Items.Add(symbol.Trim().ToUpperInvariant());
+                            var sym = stock.YahooFinanceID.Trim().ToUpperInvariant();
+                            if (!cmbSymbol.Items.Contains(sym))
+                            {
+                                cmbSymbol.Items.Add(sym);
+                            }
+                        }
+                        if (!string.IsNullOrWhiteSpace(stock.TwelveDataID))
+                        {
+                            var sym = stock.TwelveDataID.Trim().ToUpperInvariant();
+                            if (!cmbSymbol.Items.Contains(sym))
+                            {
+                                cmbSymbol.Items.Add(sym);
+                            }
                         }
                     }
                 }
@@ -70,7 +85,7 @@ namespace EODSettingsApp.Forms
             }
             catch (Exception ex)
             {
-                SetStatus(success: false, $"✘ Warning loading symbols: {ex.Message}");
+                SetStatus(success: false, $"✘ Warning loading symbols from DB: {ex.Message}");
             }
         }
 

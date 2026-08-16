@@ -16,6 +16,27 @@ namespace EODSettingsApp.Forms
             LoadProviderSettings();
         }
 
+        public ProviderSettingsForm(int activeTab) : this()
+        {
+            // Hide the tab headers to make it look like a unified form
+            tabProviders.Appearance = TabAppearance.FlatButtons;
+            tabProviders.ItemSize = new System.Drawing.Size(0, 1);
+            tabProviders.SizeMode = TabSizeMode.Fixed;
+
+            if (activeTab == 0)
+            {
+                tabProviders.SelectedIndex = 0;
+                lblTitle.Text = "Yahoo Finance Settings";
+                lblSubtitle.Text = "Configure Yahoo Finance connection parameters";
+            }
+            else if (activeTab == 1)
+            {
+                tabProviders.SelectedIndex = 1;
+                lblTitle.Text = "TwelveData Settings";
+                lblSubtitle.Text = "Configure TwelveData API key and parameters";
+            }
+        }
+
         // ── Load ─────────────────────────────────────────────────────────────────
 
         /// <summary>
@@ -76,11 +97,11 @@ namespace EODSettingsApp.Forms
 
             try
             {
-                AppSettingsService.Save(new AppSettingsModel
-                {
-                    YahooSettings      = CollectYahooSettings(),
-                    TwelveDataSettings = CollectTwelveDataSettings(outputSize)
-                });
+                // Load existing settings first so we don't overwrite ConnectionStrings, ScheduleSettings, etc.
+                var currentModel = AppSettingsService.Load();
+                currentModel.YahooSettings      = CollectYahooSettings();
+                currentModel.TwelveDataSettings = CollectTwelveDataSettings(outputSize);
+                AppSettingsService.Save(currentModel);
 
                 return true;
             }

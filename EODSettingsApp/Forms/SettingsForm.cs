@@ -412,33 +412,9 @@ namespace EODSettingsApp.Forms
         }
 
         // ── Menu handlers ────────────────────────────────────────────────────────
-        private void MnuItemProviderSettings_Click(object? sender, EventArgs e)
+        private void MnuItemSettings_Click(object? sender, EventArgs e)
         {
-            using var form = new ProviderSettingsForm();
-            form.ShowDialog(this);
-        }
-
-        private void MnuItemSymbolSettings_Click(object? sender, EventArgs e)
-        {
-            using var form = new SymbolSettingsForm();
-            form.ShowDialog(this);
-        }
-
-        /// <summary>
-        /// Settings → Database Connection: opens the Oracle database connection configuration & testing dialog.
-        /// </summary>
-        private void MnuItemDatabaseSettings_Click(object? sender, EventArgs e)
-        {
-            using var form = new DatabaseSettingsForm();
-            form.ShowDialog(this);
-        }
-
-        /// <summary>
-        /// Settings → Add Stock: opens the Add New Stock dialog.
-        /// </summary>
-        private void MnuItemAddStock_Click(object? sender, EventArgs e)
-        {
-            using var form = new stockadd();
+            using var form = new HierarchicalSettingsForm();
             form.ShowDialog(this);
         }
 
@@ -448,12 +424,6 @@ namespace EODSettingsApp.Forms
         private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
         {
             using var form = new HistoricalDataForm();
-            form.ShowDialog(this);
-        }
-
-        private void eeeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using var form = new stockadd();
             form.ShowDialog(this);
         }
     }

@@ -41,11 +41,7 @@ namespace EODSettingsApp.Forms
         // Menu bar
         private MenuStrip         mnuMain;
         private ToolStripMenuItem mnuItemSettings;
-        private ToolStripMenuItem mnuItemProviderSettings;
-        private ToolStripMenuItem mnuItemSymbolSettings;
-        private ToolStripMenuItem mnuItemDatabaseSettings;
         private ToolStripMenuItem mnuItemHistory;
-        private ToolStripMenuItem mnuItemAddStock;
 
         protected override void Dispose(bool disposing)
         {
@@ -88,10 +84,6 @@ namespace EODSettingsApp.Forms
             rtbLogs = new RichTextBox();
             mnuMain = new MenuStrip();
             mnuItemSettings = new ToolStripMenuItem();
-            mnuItemProviderSettings = new ToolStripMenuItem();
-            mnuItemSymbolSettings = new ToolStripMenuItem();
-            mnuItemDatabaseSettings = new ToolStripMenuItem();
-            mnuItemAddStock = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
@@ -470,39 +462,11 @@ namespace EODSettingsApp.Forms
             // 
             // mnuItemSettings
             // 
-            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings, mnuItemSymbolSettings, mnuItemDatabaseSettings, mnuItemAddStock });
             mnuItemSettings.ForeColor = Color.White;
             mnuItemSettings.Name = "mnuItemSettings";
             mnuItemSettings.Size = new Size(61, 20);
             mnuItemSettings.Text = "Settings";
-            // 
-            // mnuItemProviderSettings
-            // 
-            mnuItemProviderSettings.Name = "mnuItemProviderSettings";
-            mnuItemProviderSettings.Size = new Size(187, 22);
-            mnuItemProviderSettings.Text = "Provider Settings";
-            mnuItemProviderSettings.Click += MnuItemProviderSettings_Click;
-            // 
-            // mnuItemSymbolSettings
-            // 
-            mnuItemSymbolSettings.Name = "mnuItemSymbolSettings";
-            mnuItemSymbolSettings.Size = new Size(187, 22);
-            mnuItemSymbolSettings.Text = "Symbol Settings";
-            mnuItemSymbolSettings.Click += MnuItemSymbolSettings_Click;
-            // 
-            // mnuItemDatabaseSettings
-            // 
-            mnuItemDatabaseSettings.Name = "mnuItemDatabaseSettings";
-            mnuItemDatabaseSettings.Size = new Size(187, 22);
-            mnuItemDatabaseSettings.Text = "Database Connection";
-            mnuItemDatabaseSettings.Click += MnuItemDatabaseSettings_Click;
-            // 
-            // mnuItemAddStock
-            // 
-            mnuItemAddStock.Name = "mnuItemAddStock";
-            mnuItemAddStock.Size = new Size(187, 22);
-            mnuItemAddStock.Text = "Add Stock";
-            mnuItemAddStock.Click += MnuItemAddStock_Click;
+            mnuItemSettings.Click += MnuItemSettings_Click;
             // 
             // mnuItemHistory
             // 
