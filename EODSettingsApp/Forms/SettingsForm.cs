@@ -888,12 +888,6 @@ namespace EODSettingsApp.Forms
                 message;
         }
 
-
-        // ── Menu Handlers ───────────────────────────────────────────────────────
-
-        private void MnuItemProviderSettings_Click(
-            object? sender,
-            EventArgs e)
         // ── Menu handlers ────────────────────────────────────────────────────────
         private void MnuItemSettings_Click(object? sender, EventArgs e)
         {
@@ -906,38 +900,14 @@ namespace EODSettingsApp.Forms
         /// </summary>
         private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
         {
-            using var form =
-                new DatabaseSettingsForm();
 
             using var form = new HierarchicalSettingsForm();
             form.ShowDialog(this);
         }
 
-
-        private void MnuItemHistoricalData_Click(
-            object? sender,
-            EventArgs e)
-        {
-            using var form =
-                new HistoricalDataForm();
-
-            form.ShowDialog(this);
-        }
-
-
-        private void MnuItemAddStock_Click(
-            object? sender,
-            EventArgs e)
         /// <summary>
         /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
-        /// </summary>
-        private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
-        {
-            using var form =
-                new stockadd();
-
-            form.ShowDialog(this);
-        }
+        /// </summary
 
 
         // ── Toolbar: Run EOD Now ────────────────────────────────────────────────

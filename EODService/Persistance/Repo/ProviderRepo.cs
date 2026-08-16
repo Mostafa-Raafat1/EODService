@@ -1,7 +1,11 @@
-﻿using EODService.Models.Provider;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;using System.Text;
+using System.Data;
+using System.Data.Common;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using EODService.Models.Provider;
 
 namespace EODService.Persistance.Repo
 {
@@ -13,7 +17,6 @@ namespace EODService.Persistance.Repo
         {
             this.dbContext = dbContext;
         }
-
 
         // Oracle generate wrong sql for this query .FirstOrDefault(), so we have to use FromSqlInterpolated
         public async Task<List<Provider>?> GetAllProvidersAsync()
@@ -37,10 +40,61 @@ namespace EODService.Persistance.Repo
             return provider.SingleOrDefault();
         }
 
-
-        public Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey)
+        public async Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey, string? parameters)
         {
-            throw new NotImplementedException();
+            var connection = dbContext.Database.GetDbConnection();
+            bool closeOnExit = false;
+
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+                closeOnExit = true;
+            }
+
+            try
+            {
+                using var command = connection.CreateCommand();
+                command.CommandText = "UPDATE PROVIDER SET PROVIDER = :name, BASE_URL = :baseUrl, ENDPOINT = :endPoint, API_KEY = :apiKey, PARAMETERS = :parameters WHERE ID = :providerId";
+
+                var pName = command.CreateParameter();
+                pName.ParameterName = "name";
+                pName.Value = (object?)name ?? DBNull.Value;
+                command.Parameters.Add(pName);
+
+                var pBaseUrl = command.CreateParameter();
+                pBaseUrl.ParameterName = "baseUrl";
+                pBaseUrl.Value = (object?)baseUrl ?? DBNull.Value;
+                command.Parameters.Add(pBaseUrl);
+
+                var pEndPoint = command.CreateParameter();
+                pEndPoint.ParameterName = "endPoint";
+                pEndPoint.Value = (object?)endPoint ?? DBNull.Value;
+                command.Parameters.Add(pEndPoint);
+
+                var pApiKey = command.CreateParameter();
+                pApiKey.ParameterName = "apiKey";
+                pApiKey.Value = (object?)apiKey ?? DBNull.Value;
+                command.Parameters.Add(pApiKey);
+
+                var pParameters = command.CreateParameter();
+                pParameters.ParameterName = "parameters";
+                pParameters.Value = (object?)parameters ?? DBNull.Value;
+                command.Parameters.Add(pParameters);
+
+                var pId = command.CreateParameter();
+                pId.ParameterName = "providerId";
+                pId.Value = providerId;
+                command.Parameters.Add(pId);
+
+                await command.ExecuteNonQueryAsync();
+            }
+            finally
+            {
+                if (closeOnExit && connection.State == ConnectionState.Open)
+                {
+                    await connection.CloseAsync();
+                }
+            }
         }
     }
 }

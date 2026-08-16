@@ -162,7 +162,7 @@ namespace EODService.Persistance
                     .HasColumnName("SC_EXCHANGE")
                     .HasMaxLength(50);
 
-                entity.Property(e => e.Isin)
+                entity.Property(e => e.ISIN)
                     .HasColumnName("ISIN")
                     .HasMaxLength(50);
             });

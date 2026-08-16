@@ -22,22 +22,20 @@ namespace EODSettingsApp.Forms
         private TextBox txtYahooBaseUrl;
         private Label   lblYahooEndpoint;
         private TextBox txtYahooEndpoint;
-        private Label   lblYahooInterval;
-        private TextBox txtYahooInterval;
-        private Label   lblYahooRange;
-        private TextBox txtYahooRange;
+        private Label   lblYahooApiKey;
+        private TextBox txtYahooApiKey;
+        private Label   lblYahooParameters;
+        private TextBox txtYahooParameters;
 
         // TwelveData tab
         private Label   lblTwelveBaseUrl;
         private TextBox txtTwelveBaseUrl;
         private Label   lblTwelveEndpoint;
         private TextBox txtTwelveEndpoint;
-        private Label   lblTwelveInterval;
-        private TextBox txtTwelveInterval;
-        private Label   lblTwelveOutputSize;
-        private TextBox txtTwelveOutputSize;
         private Label   lblTwelveApiKey;
         private TextBox txtTwelveApiKey;
+        private Label   lblTwelveParameters;
+        private TextBox txtTwelveParameters;
 
         // Footer
         private Panel  pnlFooter;
@@ -63,20 +61,18 @@ namespace EODSettingsApp.Forms
             txtYahooBaseUrl           = new TextBox();
             lblYahooEndpoint          = new Label();
             txtYahooEndpoint          = new TextBox();
-            lblYahooInterval          = new Label();
-            txtYahooInterval          = new TextBox();
-            lblYahooRange             = new Label();
-            txtYahooRange             = new TextBox();
+            lblYahooApiKey            = new Label();
+            txtYahooApiKey            = new TextBox();
+            lblYahooParameters        = new Label();
+            txtYahooParameters        = new TextBox();
             lblTwelveBaseUrl          = new Label();
             txtTwelveBaseUrl          = new TextBox();
             lblTwelveEndpoint         = new Label();
             txtTwelveEndpoint         = new TextBox();
-            lblTwelveInterval         = new Label();
-            txtTwelveInterval         = new TextBox();
-            lblTwelveOutputSize       = new Label();
-            txtTwelveOutputSize       = new TextBox();
             lblTwelveApiKey           = new Label();
             txtTwelveApiKey           = new TextBox();
+            lblTwelveParameters       = new Label();
+            txtTwelveParameters       = new TextBox();
             pnlFooter                 = new Panel();
             btnSaveProviderSettings   = new Button();
             lblProviderSettingsStatus = new Label();
@@ -111,7 +107,7 @@ namespace EODSettingsApp.Forms
             lblSubtitle.Name      = "lblSubtitle";
             lblSubtitle.Size      = new Size(380, 20);
             lblSubtitle.TabIndex  = 1;
-            lblSubtitle.Text      = "Edit Yahoo Finance and TwelveData API settings";
+            lblSubtitle.Text      = "Edit Yahoo Finance and TwelveData API settings and JSON parameters";
 
             // ── tabProviders (fill between header and footer) ─────────────────────
             tabProviders.Controls.Add(tabPageYahoo);
@@ -121,7 +117,7 @@ namespace EODSettingsApp.Forms
             tabProviders.ItemSize      = new Size(120, 26);
             tabProviders.Name          = "tabProviders";
             tabProviders.SelectedIndex = 0;
-            tabProviders.Size          = new Size(460, 310);
+            tabProviders.Size          = new Size(460, 350);
             tabProviders.TabIndex      = 1;
 
             // ── tabPageYahoo ──────────────────────────────────────────────────────
@@ -130,22 +126,22 @@ namespace EODSettingsApp.Forms
             tabPageYahoo.Controls.Add(txtYahooBaseUrl);
             tabPageYahoo.Controls.Add(lblYahooEndpoint);
             tabPageYahoo.Controls.Add(txtYahooEndpoint);
-            tabPageYahoo.Controls.Add(lblYahooInterval);
-            tabPageYahoo.Controls.Add(txtYahooInterval);
-            tabPageYahoo.Controls.Add(lblYahooRange);
-            tabPageYahoo.Controls.Add(txtYahooRange);
+            tabPageYahoo.Controls.Add(lblYahooApiKey);
+            tabPageYahoo.Controls.Add(txtYahooApiKey);
+            tabPageYahoo.Controls.Add(lblYahooParameters);
+            tabPageYahoo.Controls.Add(txtYahooParameters);
             tabPageYahoo.Name    = "tabPageYahoo";
             tabPageYahoo.Padding = new Padding(3);
             tabPageYahoo.Text    = "  Yahoo Finance  ";
 
-            ConfigureFieldLabel(lblYahooBaseUrl,  "lblYahooBaseUrl",  "Base URL",  14,  14);
-            ConfigureFieldBox  (txtYahooBaseUrl,   "txtYahooBaseUrl",              14,  34);
-            ConfigureFieldLabel(lblYahooEndpoint,  "lblYahooEndpoint", "Endpoint",  14,  66);
-            ConfigureFieldBox  (txtYahooEndpoint,  "txtYahooEndpoint",             14,  86);
-            ConfigureFieldLabel(lblYahooInterval,  "lblYahooInterval", "Interval",  14, 118);
-            ConfigureFieldBox  (txtYahooInterval,  "txtYahooInterval",             14, 138);
-            ConfigureFieldLabel(lblYahooRange,     "lblYahooRange",    "Range",     14, 170);
-            ConfigureFieldBox  (txtYahooRange,     "txtYahooRange",                14, 190);
+            ConfigureFieldLabel(lblYahooBaseUrl,    "lblYahooBaseUrl",    "Base URL",          14,  14);
+            ConfigureFieldBox  (txtYahooBaseUrl,     "txtYahooBaseUrl",                         14,  34);
+            ConfigureFieldLabel(lblYahooEndpoint,   "lblYahooEndpoint",   "Endpoint",          14,  64);
+            ConfigureFieldBox  (txtYahooEndpoint,   "txtYahooEndpoint",                        14,  84);
+            ConfigureFieldLabel(lblYahooApiKey,     "lblYahooApiKey",     "API Key (Optional)", 14, 114, 140);
+            ConfigureFieldBox  (txtYahooApiKey,     "txtYahooApiKey",                          14, 134);
+            ConfigureFieldLabel(lblYahooParameters, "lblYahooParameters", "Parameters (JSON)", 14, 164, 200);
+            ConfigureJsonBox   (txtYahooParameters, "txtYahooParameters",                      14, 186);
 
             // ── tabPageTwelveData ─────────────────────────────────────────────────
             tabPageTwelveData.BackColor = Color.FromArgb(248, 250, 252);
@@ -153,26 +149,22 @@ namespace EODSettingsApp.Forms
             tabPageTwelveData.Controls.Add(txtTwelveBaseUrl);
             tabPageTwelveData.Controls.Add(lblTwelveEndpoint);
             tabPageTwelveData.Controls.Add(txtTwelveEndpoint);
-            tabPageTwelveData.Controls.Add(lblTwelveInterval);
-            tabPageTwelveData.Controls.Add(txtTwelveInterval);
-            tabPageTwelveData.Controls.Add(lblTwelveOutputSize);
-            tabPageTwelveData.Controls.Add(txtTwelveOutputSize);
             tabPageTwelveData.Controls.Add(lblTwelveApiKey);
             tabPageTwelveData.Controls.Add(txtTwelveApiKey);
+            tabPageTwelveData.Controls.Add(lblTwelveParameters);
+            tabPageTwelveData.Controls.Add(txtTwelveParameters);
             tabPageTwelveData.Name    = "tabPageTwelveData";
             tabPageTwelveData.Padding = new Padding(3);
             tabPageTwelveData.Text    = "  TwelveData  ";
 
-            ConfigureFieldLabel(lblTwelveBaseUrl,    "lblTwelveBaseUrl",    "Base URL",    14,  14);
-            ConfigureFieldBox  (txtTwelveBaseUrl,    "txtTwelveBaseUrl",                   14,  34);
-            ConfigureFieldLabel(lblTwelveEndpoint,   "lblTwelveEndpoint",   "Endpoint",    14,  66);
-            ConfigureFieldBox  (txtTwelveEndpoint,   "txtTwelveEndpoint",                  14,  86);
-            ConfigureFieldLabel(lblTwelveInterval,   "lblTwelveInterval",   "Interval",    14, 118);
-            ConfigureFieldBox  (txtTwelveInterval,   "txtTwelveInterval",                  14, 138);
-            ConfigureFieldLabel(lblTwelveOutputSize, "lblTwelveOutputSize", "Output Size", 14, 170);
-            ConfigureFieldBox  (txtTwelveOutputSize, "txtTwelveOutputSize",                14, 190);
-            ConfigureFieldLabel(lblTwelveApiKey,     "lblTwelveApiKey",     "API Key",     14, 222);
-            ConfigureFieldBox  (txtTwelveApiKey,     "txtTwelveApiKey",                    14, 242);
+            ConfigureFieldLabel(lblTwelveBaseUrl,    "lblTwelveBaseUrl",    "Base URL",          14,  14);
+            ConfigureFieldBox  (txtTwelveBaseUrl,    "txtTwelveBaseUrl",                         14,  34);
+            ConfigureFieldLabel(lblTwelveEndpoint,   "lblTwelveEndpoint",   "Endpoint",          14,  64);
+            ConfigureFieldBox  (txtTwelveEndpoint,   "txtTwelveEndpoint",                        14,  84);
+            ConfigureFieldLabel(lblTwelveApiKey,     "lblTwelveApiKey",     "API Key",           14, 114);
+            ConfigureFieldBox  (txtTwelveApiKey,     "txtTwelveApiKey",                          14, 134);
+            ConfigureFieldLabel(lblTwelveParameters, "lblTwelveParameters", "Parameters (JSON)", 14, 164, 200);
+            ConfigureJsonBox   (txtTwelveParameters, "txtTwelveParameters",                      14, 186);
 
             // ── pnlFooter ─────────────────────────────────────────────────────────
             pnlFooter.BackColor = Color.FromArgb(226, 232, 240);
@@ -207,15 +199,15 @@ namespace EODSettingsApp.Forms
             // ── ProviderSettingsForm ──────────────────────────────────────────────
             // Controls.Add order: fill first (lowest Z), then footer, then header (highest Z).
             BackColor       = Color.FromArgb(245, 247, 250);
-            ClientSize      = new Size(460, 440);
+            ClientSize      = new Size(460, 480);
             Controls.Add(tabProviders);
             Controls.Add(pnlFooter);
             Controls.Add(pnlHeader);
             Font            = new Font("Segoe UI", 9.5F);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox     = false;
-            MaximumSize     = new Size(476, 479);
-            MinimumSize     = new Size(476, 479);
+            MaximumSize     = new Size(476, 519);
+            MinimumSize     = new Size(476, 519);
             Name            = "ProviderSettingsForm";
             StartPosition   = FormStartPosition.CenterParent;
             Text            = "Provider Settings";
@@ -234,18 +226,18 @@ namespace EODSettingsApp.Forms
 
         /// <summary>Applies the uniform bold label style to every field caption.</summary>
         private static void ConfigureFieldLabel(
-            Label label, string name, string text, int x, int y)
+            Label label, string name, string text, int x, int y, int width = 100)
         {
             label.AutoSize  = false;
             label.Font      = new Font("Segoe UI", 8.5F, FontStyle.Bold);
             label.ForeColor = Color.FromArgb(51, 65, 85);
             label.Location  = new Point(x, y);
             label.Name      = name;
-            label.Size      = new Size(100, 18);
+            label.Size      = new Size(width, 18);
             label.Text      = text;
         }
 
-        /// <summary>Applies the uniform text-box style to every editable field.</summary>
+        /// <summary>Applies the uniform text-box style to single-line editable fields.</summary>
         private static void ConfigureFieldBox(
             TextBox box, string name, int x, int y)
         {
@@ -254,6 +246,19 @@ namespace EODSettingsApp.Forms
             box.Location    = new Point(x, y);
             box.Name        = name;
             box.Size        = new Size(424, 24);
+        }
+
+        /// <summary>Applies the code-editor text-box style to multiline JSON fields.</summary>
+        private static void ConfigureJsonBox(
+            TextBox box, string name, int x, int y, int width = 424, int height = 135)
+        {
+            box.BorderStyle = BorderStyle.FixedSingle;
+            box.Font        = new Font("Consolas", 9.5F);
+            box.Location    = new Point(x, y);
+            box.Multiline   = true;
+            box.Name        = name;
+            box.ScrollBars  = ScrollBars.Vertical;
+            box.Size        = new Size(width, height);
         }
     }
 }
