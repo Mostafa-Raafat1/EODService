@@ -888,144 +888,22 @@ namespace EODSettingsApp.Forms
                 message;
         }
 
-
-        // ── Menu Handlers ───────────────────────────────────────────────────────
-
-        private void MnuItemProviderSettings_Click(
-            object? sender,
-            EventArgs e)
+        // ── Menu handlers ────────────────────────────────────────────────────────
+        private void MnuItemSettings_Click(object? sender, EventArgs e)
         {
-            using var form =
-                new ProviderSettingsForm();
-
-            form.ShowDialog(this);
-
-            // Reload providers in case they were changed
-            _ = LoadProvidersAsync();
-        }
-
-
-        private void MnuItemSymbolSettings_Click(
-            object? sender,
-            EventArgs e)
-        {
-            using var form =
-                new SymbolSettingsForm();
-
+            using var form = new HierarchicalSettingsForm();
             form.ShowDialog(this);
         }
 
-
-        private void MnuItemDatabaseSettings_Click(
-            object? sender,
-            EventArgs e)
-        {
-            using var form =
-                new DatabaseSettingsForm();
-
-            form.ShowDialog(this);
-        }
-
-
-        private void MnuItemHistoricalData_Click(
-            object? sender,
-            EventArgs e)
-        {
-            using var form =
-                new HistoricalDataForm();
-
-            form.ShowDialog(this);
-        }
-
-
-        private void MnuItemAddStock_Click(
-            object? sender,
-            EventArgs e)
+        /// <summary>
+        /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
+        /// </summary>
+        private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
         {
             using var form =
                 new stockadd();
 
             form.ShowDialog(this);
-        }
-
-
-        // ── Toolbar: Run EOD Now ────────────────────────────────────────────────
-
-        private void TsBtnRunNow_Click(
-            object? sender,
-            EventArgs e)
-        {
-            try
-            {
-                var exePath =
-                    EodServiceLauncher.ResolveExePath();
-
-                if (!File.Exists(exePath))
-                {
-                    SetStatus(
-                        "✘ EODService.exe not found. " +
-                        "Build the project first.",
-                        success: false);
-
-                    return;
-                }
-
-
-                var psi =
-                    new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = exePath,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
-
-                System.Diagnostics.Process.Start(psi);
-
-                SetStatus(
-                    "▶ EOD import started manually. " +
-                    "Check the log below for progress.",
-                    success: true);
-
-                AppendLog(
-                    $"[{DateTime.Now:HH:mm:ss}] " +
-                    "▶ Manual EOD import triggered by user.");
-            }
-            catch (Exception ex)
-            {
-                SetStatus(
-                    $"✘ Failed to start EOD service: {ex.Message}",
-                    success: false);
-
-                AppendLogError(
-                    $"Manual run error: {ex.Message}");
-            }
-        }
-
-
-        // ── Provider ComboBox ───────────────────────────────────────────────────
-
-        private void cmbProvider_SelectedIndexChanged(
-            object sender,
-            EventArgs e)
-        {
-            // No action needed.
-            //
-            // The selected provider ID is saved when
-            // BtnSaveSchedule is clicked.
-        }
-
-
-        // ── Cleanup ─────────────────────────────────────────────────────────────
-
-        protected override void OnFormClosed(
-            FormClosedEventArgs e)
-        {
-            _logPollTimer.Stop();
-            _logPollTimer.Dispose();
-
-            _dbContext.Dispose();
-
-            base.OnFormClosed(e);
         }
     }
 }
