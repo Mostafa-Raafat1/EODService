@@ -16,17 +16,27 @@ namespace EODService.Persistance.Repo
 
 
         // Oracle generate wrong sql for this query .FirstOrDefault(), so we have to use FromSqlInterpolated
-        public async Task<Provider?> GetProviderById(int providerId)
+        public async Task<List<Provider>?> GetAllProvidersAsync()
         {
-            var providers = await dbContext.Provider
+            return await dbContext.Provider
                 .FromSqlInterpolated($@"
-            SELECT ID, PROVIDER, API_KEY, BASE_URL, ENDPOINT
-            FROM PROVIDER
-            WHERE ID = {providerId}")
+            SELECT ID, PROVIDER, API_KEY, BASE_URL, ENDPOINT, PARAMETERS
+            FROM PROVIDER")
+                .ToListAsync();
+        }
+
+        public async Task<Provider?> GetProviderByIdAsync(int providerId)
+        {
+            var provider = await dbContext.Provider
+                .FromSqlInterpolated($@"
+                        SELECT ID, PROVIDER, API_KEY, BASE_URL, ENDPOINT, PARAMETERS
+                        FROM PROVIDER
+                        WHERE ID = {providerId}")
                 .ToListAsync();
 
-            return providers.SingleOrDefault();
+            return provider.SingleOrDefault();
         }
+
 
         public Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey)
         {

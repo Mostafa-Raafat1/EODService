@@ -8,6 +8,7 @@ namespace EODService.Persistance.Repo
     public interface IProvider
     {
         public Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey);
-        public Task<Provider> GetProviderById(int providerId);
+        public Task<List<Provider>?> GetAllProvidersAsync();
+        public Task<Provider?> GetProviderByIdAsync(int providerId);
     }
 }

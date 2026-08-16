@@ -195,6 +195,11 @@ namespace EODService.Persistance
                     .HasColumnName("ENDPOINT")
                     .HasMaxLength(500)
                     .IsRequired();
+
+                entity.Property(e => e.Parameters)
+                    .HasColumnName("PARAMETERS")
+                    .HasMaxLength(4000)
+                    .IsRequired();
             });
         }
 

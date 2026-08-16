@@ -95,8 +95,8 @@ namespace EODSettingsApp.Forms
             mnuItemProviderSettings = new ToolStripMenuItem();
             mnuItemSymbolSettings = new ToolStripMenuItem();
             mnuItemDatabaseSettings = new ToolStripMenuItem();
-            mnuItemHistory = new ToolStripMenuItem();
             mnuItemAddStock = new ToolStripMenuItem();
+            mnuItemHistory = new ToolStripMenuItem();
             tsToolBar = new ToolStrip();
             tsBtnRunNow = new ToolStripButton();
             pnlHeader.SuspendLayout();
@@ -188,6 +188,7 @@ namespace EODSettingsApp.Forms
             cmbProvider.Name = "cmbProvider";
             cmbProvider.Size = new Size(160, 25);
             cmbProvider.TabIndex = 0;
+            cmbProvider.SelectedIndexChanged += cmbProvider_SelectedIndexChanged;
             // 
             // lblProviderHint
             // 
