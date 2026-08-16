@@ -46,6 +46,8 @@ namespace EODSettingsApp.Forms
         private ToolStripMenuItem mnuItemDatabaseSettings;
         private ToolStripMenuItem mnuItemHistory;
         private ToolStripMenuItem mnuItemAddStock;
+        private ToolStripMenuItem mnuItemChangeEncryptionKey;
+
 
         // Toolbar
         private ToolStrip         tsToolBar;
@@ -97,6 +99,8 @@ namespace EODSettingsApp.Forms
             mnuItemDatabaseSettings = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
             mnuItemAddStock = new ToolStripMenuItem();
+            mnuItemChangeEncryptionKey = new ToolStripMenuItem();
+
             tsToolBar = new ToolStrip();
             tsBtnRunNow = new ToolStripButton();
             pnlHeader.SuspendLayout();
@@ -477,7 +481,8 @@ namespace EODSettingsApp.Forms
             // 
             // mnuItemSettings
             // 
-            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings, mnuItemSymbolSettings, mnuItemDatabaseSettings, mnuItemAddStock });
+            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings, mnuItemSymbolSettings, mnuItemDatabaseSettings, mnuItemAddStock, mnuItemChangeEncryptionKey });
+
             mnuItemSettings.ForeColor = Color.White;
             mnuItemSettings.Name = "mnuItemSettings";
             mnuItemSettings.Size = new Size(76, 20);
@@ -510,6 +515,14 @@ namespace EODSettingsApp.Forms
             mnuItemAddStock.Size = new Size(255, 22);
             mnuItemAddStock.Text = "➕ Add Stock";
             mnuItemAddStock.Click += MnuItemAddStock_Click;
+            // 
+            // mnuItemChangeEncryptionKey
+            // 
+            mnuItemChangeEncryptionKey.Name = "mnuItemChangeEncryptionKey";
+            mnuItemChangeEncryptionKey.Size = new Size(255, 22);
+            mnuItemChangeEncryptionKey.Text = "🔒 Change Encryption Key...";
+            mnuItemChangeEncryptionKey.Click += MnuItemChangeEncryptionKey_Click;
+
             // 
             // mnuItemHistory
             // 

@@ -40,18 +40,17 @@ namespace EODSettingsApp.Forms
 
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
-                    // No saved connection yet — populate with defaults and build the string
+                    // No saved connection yet — leave fields empty for fresh entry
                     _isUpdatingFields = true;
-                    txtHost.Text        = "10.120.143.51";
-                    txtPort.Text        = "1521";
-                    txtServiceName.Text = "cibcorclhq";
-                    txtUserId.Text      = "intern";
-                    txtPassword.Text    = "intern";
+                    txtHost.Text        = string.Empty;
+                    txtPort.Text        = string.Empty;
+                    txtServiceName.Text = string.Empty;
+                    txtUserId.Text      = string.Empty;
+                    txtPassword.Text    = string.Empty;
+                    txtConnectionString.Text = string.Empty;
                     _isUpdatingFields = false;
 
-                    // Trigger the live build so txtConnectionString is populated
-                    Parameter_TextChanged(this, EventArgs.Empty);
-                    SetStatus(success: true, "ℹ Default connection values loaded. Review and save.");
+                    SetStatus(success: true, "ℹ No saved connection string found. Please enter database details.");
                 }
                 else
                 {
@@ -76,11 +75,11 @@ namespace EODSettingsApp.Forms
             _isUpdatingFields = true;
             try
             {
-                txtHost.Text = ExtractValue(connectionString, @"HOST\s*=\s*([^)\s;]+)", "10.120.143.51");
-                txtPort.Text = ExtractValue(connectionString, @"PORT\s*=\s*([^)\s;]+)", "1521");
-                txtServiceName.Text = ExtractValue(connectionString, @"SERVICE_NAME\s*=\s*([^)\s;]+)", "cibcorclhq");
-                txtUserId.Text = ExtractValue(connectionString, @"User\s*Id\s*=\s*([^;]+)", "intern");
-                txtPassword.Text = ExtractValue(connectionString, @"Password\s*=\s*([^;]+)", "intern");
+                txtHost.Text        = ExtractValue(connectionString, @"HOST\s*=\s*([^)\s;]+)");
+                txtPort.Text        = ExtractValue(connectionString, @"PORT\s*=\s*([^)\s;]+)");
+                txtServiceName.Text = ExtractValue(connectionString, @"SERVICE_NAME\s*=\s*([^)\s;]+)");
+                txtUserId.Text      = ExtractValue(connectionString, @"User\s*Id\s*=\s*([^;]+)");
+                txtPassword.Text    = ExtractValue(connectionString, @"Password\s*=\s*([^;]+)");
             }
             finally
             {
@@ -88,11 +87,11 @@ namespace EODSettingsApp.Forms
             }
         }
 
-        private string ExtractValue(string source, string pattern, string defaultValue)
+        private string ExtractValue(string source, string pattern, string defaultValue = "")
         {
-            if (string.IsNullOrWhiteSpace(source)) return defaultValue;
+            if (string.IsNullOrWhiteSpace(source)) return string.Empty;
             var match = Regex.Match(source, pattern, RegexOptions.IgnoreCase);
-            return match.Success ? match.Groups[1].Value.Trim() : defaultValue;
+            return match.Success ? match.Groups[1].Value.Trim() : string.Empty;
         }
 
         // ── Rebuild Connection String Live ───────────────────────────────────────
@@ -101,11 +100,11 @@ namespace EODSettingsApp.Forms
         {
             if (_isUpdatingFields) return;
 
-            var host = string.IsNullOrWhiteSpace(txtHost.Text) ? "10.120.143.51" : txtHost.Text.Trim();
-            var port = string.IsNullOrWhiteSpace(txtPort.Text) ? "1521" : txtPort.Text.Trim();
-            var service = string.IsNullOrWhiteSpace(txtServiceName.Text) ? "cibcorclhq" : txtServiceName.Text.Trim();
-            var user = txtUserId.Text.Trim();
-            var pass = txtPassword.Text;
+            var host    = txtHost.Text.Trim();
+            var port    = txtPort.Text.Trim();
+            var service = txtServiceName.Text.Trim();
+            var user    = txtUserId.Text.Trim();
+            var pass    = txtPassword.Text;
 
             txtConnectionString.Text = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={host})(PORT={port}))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME={service})));User Id={user};Password={pass};";
         }

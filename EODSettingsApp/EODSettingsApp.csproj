@@ -45,6 +45,9 @@
       <FilesToCopy Include="$(OutputPath)EODServiceManager.runtimeconfig.json" />
       <FilesToCopy Include="$(OutputPath)EODServiceManager.deps.json" />
       <FilesToCopy Include="$(OutputPath)PathesConfig.json" />
+      <!-- DPAPI assembly: required by SecurityService / KeyStoreService for ENC: decryption -->
+      <FilesToCopy Include="$(OutputPath)System.Security.Cryptography.ProtectedData.dll"
+                   Condition="Exists('$(OutputPath)System.Security.Cryptography.ProtectedData.dll')" />
     </ItemGroup>
     <Copy
       SourceFiles="@(FilesToCopy)"

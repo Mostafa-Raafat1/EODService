@@ -36,8 +36,10 @@ namespace EODSettingsApp.Forms
         private TextBox txtTwelveInterval;
         private Label   lblTwelveOutputSize;
         private TextBox txtTwelveOutputSize;
-        private Label   lblTwelveApiKey;
-        private TextBox txtTwelveApiKey;
+        private Label       lblTwelveApiKey;
+        private TextBox     txtTwelveApiKey;
+        private CheckBox    chkShowTwelveApiKey;
+
 
         // Footer
         private Panel  pnlFooter;
@@ -75,8 +77,10 @@ namespace EODSettingsApp.Forms
             txtTwelveInterval         = new TextBox();
             lblTwelveOutputSize       = new Label();
             txtTwelveOutputSize       = new TextBox();
-            lblTwelveApiKey           = new Label();
-            txtTwelveApiKey           = new TextBox();
+            lblTwelveApiKey = new Label();
+            txtTwelveApiKey = new TextBox();
+            chkShowTwelveApiKey = new CheckBox();
+
             pnlFooter                 = new Panel();
             btnSaveProviderSettings   = new Button();
             lblProviderSettingsStatus = new Label();
@@ -159,7 +163,9 @@ namespace EODSettingsApp.Forms
             tabPageTwelveData.Controls.Add(txtTwelveOutputSize);
             tabPageTwelveData.Controls.Add(lblTwelveApiKey);
             tabPageTwelveData.Controls.Add(txtTwelveApiKey);
+            tabPageTwelveData.Controls.Add(chkShowTwelveApiKey);
             tabPageTwelveData.Name    = "tabPageTwelveData";
+
             tabPageTwelveData.Padding = new Padding(3);
             tabPageTwelveData.Text    = "  TwelveData  ";
 
@@ -173,6 +179,19 @@ namespace EODSettingsApp.Forms
             ConfigureFieldBox  (txtTwelveOutputSize, "txtTwelveOutputSize",                14, 190);
             ConfigureFieldLabel(lblTwelveApiKey,     "lblTwelveApiKey",     "API Key",     14, 222);
             ConfigureFieldBox  (txtTwelveApiKey,     "txtTwelveApiKey",                    14, 242);
+            txtTwelveApiKey.Size = new Size(320, 24);
+            txtTwelveApiKey.UseSystemPasswordChar = true;
+
+            chkShowTwelveApiKey.AutoSize = false;
+            chkShowTwelveApiKey.Font = new Font("Segoe UI", 8.5F);
+            chkShowTwelveApiKey.ForeColor = Color.FromArgb(51, 65, 85);
+            chkShowTwelveApiKey.Location = new Point(340, 242);
+            chkShowTwelveApiKey.Name = "chkShowTwelveApiKey";
+            chkShowTwelveApiKey.Size = new Size(100, 24);
+            chkShowTwelveApiKey.Text = "👁 Show";
+            chkShowTwelveApiKey.UseVisualStyleBackColor = true;
+            chkShowTwelveApiKey.CheckedChanged += ChkShowTwelveApiKey_CheckedChanged;
+
 
             // ── pnlFooter ─────────────────────────────────────────────────────────
             pnlFooter.BackColor = Color.FromArgb(226, 232, 240);

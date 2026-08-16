@@ -31,10 +31,17 @@ namespace EODService.Persistance.Repo
             // Decrypt the API key using AES-256 (shared key across devices)
             if (provider != null && !string.IsNullOrEmpty(provider.ApiKey))
             {
-                var aesKey = KeyStoreService.GetKey();
-                if (aesKey != null)
+                try
                 {
-                    provider.ApiKey = AesEncryptionService.Decrypt(provider.ApiKey, aesKey);
+                    var aesKey = KeyStoreService.GetKey();
+                    if (aesKey != null)
+                    {
+                        provider.ApiKey = AesEncryptionService.Decrypt(provider.ApiKey, aesKey);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine($"[ProviderRepo] Decrypt API key failed: {ex.Message}");
                 }
             }
 

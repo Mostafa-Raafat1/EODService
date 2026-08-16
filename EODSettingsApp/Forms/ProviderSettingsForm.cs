@@ -189,5 +189,11 @@ namespace EODSettingsApp.Forms
                 : System.Drawing.Color.FromArgb(185, 28, 28);
             lblProviderSettingsStatus.Text = message;
         }
+
+        private void ChkShowTwelveApiKey_CheckedChanged(object? sender, EventArgs e)
+        {
+            txtTwelveApiKey.UseSystemPasswordChar = !chkShowTwelveApiKey.Checked;
+        }
     }
 }
+

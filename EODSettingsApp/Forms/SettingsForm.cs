@@ -315,14 +315,12 @@ namespace EODSettingsApp.Forms
         {
             try
             {
-                var appSettingsPath = AppSettingsPath.Resolve();
-                var configuration = new ConfigurationBuilder()
-                    .SetBasePath(Path.GetDirectoryName(appSettingsPath)!)
-                    .AddJsonFile(Path.GetFileName(appSettingsPath), optional: true, reloadOnChange: false)
-                    .Build();
+                // Use AppSettingsService.Load() which already handles decryption of the
+                // ENC:-prefixed DPAPI cipher text — never pass the raw encrypted value to Oracle.
+                var model = AppSettingsService.Load();
+                var connectionString = model.ConnectionStrings?.DefaultConnection;
 
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
-                if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
+                if (string.IsNullOrWhiteSpace(connectionString))
                     return;
 
                 using var dbContext = AppDbContextFactory.Create(connectionString);
@@ -477,5 +475,12 @@ namespace EODSettingsApp.Forms
                 AppendLogError($"Manual run error: {ex.Message}");
             }
         }
+
+        private void MnuItemChangeEncryptionKey_Click(object? sender, EventArgs e)
+        {
+            using var form = new ChangeKeyForm();
+            form.ShowDialog(this);
+        }
     }
 }
+

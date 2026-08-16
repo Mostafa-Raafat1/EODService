@@ -61,8 +61,22 @@ namespace EODService.Services
         }
 
         /// <summary>
+        /// Derives a 256-bit AES key from a passphrase using PBKDF2 with SHA-256.
+        /// </summary>
+        public static byte[] DeriveKey(string passphrase)
+        {
+            if (string.IsNullOrWhiteSpace(passphrase))
+                throw new ArgumentException("Passphrase cannot be empty.", nameof(passphrase));
+
+            var salt = Encoding.UTF8.GetBytes("EODService_Shared_Salt_2026");
+            using var deriveBytes = new Rfc2898DeriveBytes(passphrase, salt, 10_000, HashAlgorithmName.SHA256);
+            return deriveBytes.GetBytes(32);
+        }
+
+        /// <summary>
         /// Decrypts an AES-256 encrypted string ("AES:<iv>:<cipher>").
         /// Returns legacy plain-text strings unchanged.
+        /// Throws CryptographicException if the key does not match.
         /// </summary>
         public static string Decrypt(string? encryptedValue, byte[] key)
         {
@@ -97,7 +111,7 @@ namespace EODService.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine($"[AesEncryptionService] Decrypt error: {ex.Message}");
-                return string.Empty;
+                throw new CryptographicException("Decryption failed: Passphrase mismatch or corrupt cipher text.", ex);
             }
         }
 

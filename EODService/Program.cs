@@ -24,27 +24,25 @@ var logger = loggerFactory.CreateLogger("Program");
 EODService.Logging.FileLoggerProvider.WriteRunBanner();
 
 // ─── Step 4: Create Connection and Get Symbols for selected provider ──────────────────────────────────
-var connectionString = OracleSettingsMapper.GetConnectionString();
+var connectionString = OracleSettingsMapper.GetConnectionString(logger);
 // Create a DbContext instance for database operations
 AppDbContext? dbContext = null;
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    logger.LogWarning("Connection string 'DefaultConnection' is missing or unconfigured in appsettings.json. Skipping database save.");
+    // Detailed reason already logged inside OracleSettingsMapper.GetConnectionString()
+    return;
 }
-else
+
+logger.LogInformation("Connecting to Database...");
+try
 {
-    logger.LogInformation("Connecting to Database...");
-    try
-    {
-        dbContext = AppDbContextFactory.Create(connectionString);
-        dbContext.Database.EnsureCreated();
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error occurred while connecting to the database.");
-        return;
-    }
+    dbContext = AppDbContextFactory.Create(connectionString);
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "Error occurred while connecting to the database.");
+    return;
 }
 
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────

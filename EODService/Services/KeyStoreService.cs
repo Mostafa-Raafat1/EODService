@@ -78,5 +78,18 @@ namespace EODService.Services
                 return null;
             }
         }
+
+        /// <summary>
+        /// Verifies whether the provided passphrase matches the current key stored on disk.
+        /// </summary>
+        public static bool VerifyPassphrase(string passphrase)
+        {
+            var currentKey = GetKey();
+            if (currentKey == null)
+                return false;
+
+            var candidateKey = AesEncryptionService.DeriveKey(passphrase);
+            return CryptographicOperations.FixedTimeEquals(currentKey, candidateKey);
+        }
     }
 }
