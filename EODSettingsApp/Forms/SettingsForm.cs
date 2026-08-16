@@ -894,6 +894,8 @@ namespace EODSettingsApp.Forms
         private void MnuItemProviderSettings_Click(
             object? sender,
             EventArgs e)
+        // ── Menu handlers ────────────────────────────────────────────────────────
+        private void MnuItemSettings_Click(object? sender, EventArgs e)
         {
             using var form =
                 new ProviderSettingsForm();
@@ -923,6 +925,7 @@ namespace EODSettingsApp.Forms
             using var form =
                 new DatabaseSettingsForm();
 
+            using var form = new HierarchicalSettingsForm();
             form.ShowDialog(this);
         }
 
@@ -941,6 +944,10 @@ namespace EODSettingsApp.Forms
         private void MnuItemAddStock_Click(
             object? sender,
             EventArgs e)
+        /// <summary>
+        /// Settings → Historical Data: opens the historical stock price explorer & CSV exporter dialog.
+        /// </summary>
+        private void MnuItemHistoricalData_Click(object? sender, EventArgs e)
         {
             using var form =
                 new stockadd();
