@@ -46,7 +46,7 @@ namespace EODSettingsApp.Forms
             try
             {
                 SetStatus(success: true, "Loading stock configurations from Oracle DB...");
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();
                 if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
                     throw new Exception("Oracle database connection string is missing or invalid.");
@@ -250,7 +250,7 @@ namespace EODSettingsApp.Forms
             try
             {
                 SetStatus(success: true, "Saving stock changes to Oracle Database...");
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();   
                 using var dbContext = AppDbContextFactory.Create(connectionString);
 
                 // Reconcile EOD_STOCKS table
@@ -330,22 +330,6 @@ namespace EODSettingsApp.Forms
             grpEditStock.Enabled = false;
             btnUpdateStock.Enabled = false;
             btnRemoveSymbol.Enabled = false;
-        }
-
-        private string GetConnectionString()
-        {
-            var model = AppSettingsService.Load();
-            if (!string.IsNullOrWhiteSpace(model.ConnectionStrings?.DefaultConnection))
-            {
-                return model.ConnectionStrings.DefaultConnection;
-            }
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
-                .Build();
-
-            return configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
         }
 
         private void SetStatus(bool success, string message)

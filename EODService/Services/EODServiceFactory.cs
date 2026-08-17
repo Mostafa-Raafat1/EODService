@@ -18,19 +18,16 @@ namespace EODService.Services
     public static class EODServiceFactory
     {
         public static IEODService CreateProvider(
-            int ProviderId,
             SymbolSettings symbolSettings,
             HttpClient httpClient,
             ILoggerFactory loggerFactory,
             ProviderDTO provider)
         {
+            ArgumentNullException.ThrowIfNull(provider,"Provider settings must be provided.");  // one real guard, at the top
+
             switch (provider.Id)
             {
                 case (int)ProviderIds.Yahoo:
-                    if (provider == null)
-                        throw new ArgumentNullException(nameof(provider),
-                            "Provider settings must be provided when using the Yahoo provider.");
-
                     return new YahooEODService(
                         provider,
                         symbolSettings,
@@ -38,10 +35,6 @@ namespace EODService.Services
                         loggerFactory.CreateLogger<YahooEODService>());
 
                 case (int)ProviderIds.TwelveData:
-                    if (provider == null)
-                        throw new ArgumentNullException(nameof(provider),
-                            "Provider settings must be provided when using the TwelveData provider.");
-
                     return new TwelveDataEODService(
                         provider,
                         symbolSettings,

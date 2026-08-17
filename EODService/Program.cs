@@ -118,7 +118,6 @@ httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 try
 {
     service = EODServiceFactory.CreateProvider(
-        providerSettings.ActiveProvider,
         symbolSettings:      symbolSettings,
         httpClient:          httpClient,
         loggerFactory:       loggerFactory,

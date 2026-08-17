@@ -58,7 +58,7 @@ namespace EODSettingsApp.Forms
             {
                 SetStatus(success: true, "Loading provider configurations from Oracle Database...");
 
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();
                 if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
                     LoadFromAppSettingsFallback("Database connection string is missing or invalid. Loaded from AppSettings.json.");
@@ -173,7 +173,7 @@ namespace EODSettingsApp.Forms
                 btnSaveProviderSettings.Enabled = false;
                 SetStatus(success: true, "Saving provider changes to Oracle Database (PROVIDER)...");
 
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();
                 using var dbContext = AppDbContextFactory.Create(connectionString);
                 var providerRepo = new ProviderRepo(dbContext);
 
@@ -292,22 +292,6 @@ namespace EODSettingsApp.Forms
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────────
-
-        private string GetConnectionString()
-        {
-            var model = AppSettingsService.Load();
-            if (!string.IsNullOrWhiteSpace(model.ConnectionStrings?.DefaultConnection))
-            {
-                return model.ConnectionStrings.DefaultConnection;
-            }
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
-                .Build();
-
-            return configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
-        }
 
         private void SetStatus(bool success, string message)
         {
