@@ -71,11 +71,9 @@ namespace EODSettingsApp.Forms
             _providerRepo =
                 new ProviderRepo(_dbContext);
 
+            // ── Load settings on Form Load event ────────────────────────────────
 
-            // ── Load settings asynchronously ────────────────────────────────────
-
-            _ = LoadCurrentSettingsAsync();
-
+            Load += async (_, _) => await LoadCurrentSettingsAsync();
 
             // ── Start background log monitoring ─────────────────────────────────
 

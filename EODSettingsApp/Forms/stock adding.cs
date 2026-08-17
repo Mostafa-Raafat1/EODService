@@ -8,9 +8,9 @@ using EODSettingsApp.AppSettingsConfig;
 
 namespace EODSettingsApp.Forms
 {
-    public partial class stockadd : Form
+    public partial class StockAddingForm : Form
     {
-        public stockadd()
+        public StockAddingForm()
         {
             InitializeComponent();
         }
