@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace EODSettingsApp.Forms
 {
-    partial class stockadd
+    partial class AddStockForm
     {
         private System.ComponentModel.IContainer components = null;
 
