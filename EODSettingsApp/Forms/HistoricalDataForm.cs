@@ -68,7 +68,7 @@ namespace EODSettingsApp.Forms
                 cmbSymbol.Items.Clear();
                 cmbSymbol.Items.Add(new StockFilterItem { Id = 0, StockName = "ALL" });
 
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();
                 if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
                 {
                     using var dbContext = AppDbContextFactory.Create(connectionString);
@@ -123,7 +123,7 @@ namespace EODSettingsApp.Forms
 
             try
             {
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();
                 if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
                     throw new Exception("Oracle database connection string is not configured properly.");
@@ -409,22 +409,6 @@ namespace EODSettingsApp.Forms
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────────
-
-        private string GetConnectionString()
-        {
-            var model = AppSettingsService.Load();
-            if (!string.IsNullOrWhiteSpace(model.ConnectionStrings?.DefaultConnection))
-            {
-                return model.ConnectionStrings.DefaultConnection;
-            }
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
-                .Build();
-
-            return configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
-        }
 
         private void SetStatus(bool success, string message)
         {
