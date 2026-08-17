@@ -67,7 +67,7 @@ namespace EODSettingsApp.Forms
                 // 1. Fetch current API Key from Oracle DB using current key (decrypted into memory)
                 using var dbContext = AppDbContextFactory.Create(connectionString);
                 IProvider repo = new ProviderRepo(dbContext);
-                var twelveDb = await repo.GetProviderById(2);
+                var twelveDb = await repo.GetProviderByIdAsync(2);
 
                 string? plainTextApiKey = twelveDb?.ApiKey;
 
@@ -77,7 +77,7 @@ namespace EODSettingsApp.Forms
                 // 3. Re-encrypt API key in Oracle DB using the NEW passphrase via repo.UpdateProvider
                 if (twelveDb != null && !string.IsNullOrEmpty(plainTextApiKey))
                 {
-                    await repo.UpdateProvider(2, twelveDb.Name, twelveDb.BaseUrl, twelveDb.EndPoint, plainTextApiKey);
+                    await repo.UpdateProvider(2, twelveDb.Name, twelveDb.BaseUrl, twelveDb.EndPoint, plainTextApiKey, twelveDb.Parameters);
                 }
 
                 MessageBox.Show("Encryption passphrase updated and database values re-encrypted successfully! 🔒",

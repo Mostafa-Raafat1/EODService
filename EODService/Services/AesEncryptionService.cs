@@ -111,7 +111,7 @@ namespace EODService.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine($"[AesEncryptionService] Decrypt error: {ex.Message}");
-                throw new CryptographicException("Decryption failed: Passphrase mismatch or corrupt cipher text.", ex);
+                return string.Empty;
             }
         }
 

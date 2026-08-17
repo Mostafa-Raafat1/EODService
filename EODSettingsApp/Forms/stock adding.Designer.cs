@@ -39,6 +39,10 @@ namespace EODSettingsApp.Forms
         private Label       lblYfSymbolLabel;
         private TextBox     txtYfSymbol;
 
+        // ISIN
+        private Label       lblIsinLabel;
+        private TextBox     txtIsin;
+
         // ── Footer ───────────────────────────────────────────────────────────
         private Panel  pnlFooter;
         private Button btnAdd;
@@ -79,6 +83,9 @@ namespace EODSettingsApp.Forms
             rdoYfNo = new RadioButton();
             lblYfSymbolLabel = new Label();
             txtYfSymbol = new TextBox();
+
+            lblIsinLabel = new Label();
+            txtIsin = new TextBox();
 
             pnlFooter = new Panel();
             btnAdd = new Button();
@@ -132,10 +139,12 @@ namespace EODSettingsApp.Forms
             pnlMain.Controls.Add(grpYfTradable);
             pnlMain.Controls.Add(lblYfSymbolLabel);
             pnlMain.Controls.Add(txtYfSymbol);
+            pnlMain.Controls.Add(lblIsinLabel);
+            pnlMain.Controls.Add(txtIsin);
             pnlMain.Dock = DockStyle.Fill;
             pnlMain.Location = new Point(0, 70);
             pnlMain.Name = "pnlMain";
-            pnlMain.Size = new Size(460, 340);
+            pnlMain.Size = new Size(460, 350);
             pnlMain.TabIndex = 1;
 
             // 
@@ -282,7 +291,7 @@ namespace EODSettingsApp.Forms
             rdoYfNo.UseVisualStyleBackColor = true;
 
             // 
-            // Row 4: TD Symbol (under TD Tradable) | YF Symbol (under YF Tradable)
+            // Row 4: TD Symbol (left) | YF Symbol (right)
             // 
             lblTdSymbolLabel.AutoSize = true;
             lblTdSymbolLabel.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
@@ -317,6 +326,25 @@ namespace EODSettingsApp.Forms
             txtYfSymbol.TabIndex = 13;
 
             // 
+            // Row 5: ISIN
+            // 
+            lblIsinLabel.AutoSize = true;
+            lblIsinLabel.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+            lblIsinLabel.ForeColor = Color.FromArgb(51, 65, 85);
+            lblIsinLabel.Location = new Point(20, 262);
+            lblIsinLabel.Name = "lblIsinLabel";
+            lblIsinLabel.Size = new Size(33, 15);
+            lblIsinLabel.TabIndex = 14;
+            lblIsinLabel.Text = "ISIN";
+
+            txtIsin.BorderStyle = BorderStyle.FixedSingle;
+            txtIsin.Font = new Font("Segoe UI", 9.5F);
+            txtIsin.Location = new Point(20, 280);
+            txtIsin.Name = "txtIsin";
+            txtIsin.Size = new Size(420, 24);
+            txtIsin.TabIndex = 15;
+
+            // 
             // pnlFooter
             // 
             pnlFooter.BackColor = Color.FromArgb(226, 232, 240);
@@ -324,7 +352,7 @@ namespace EODSettingsApp.Forms
             pnlFooter.Controls.Add(btnClear);
             pnlFooter.Controls.Add(lblStatus);
             pnlFooter.Dock = DockStyle.Bottom;
-            pnlFooter.Location = new Point(0, 330);
+            pnlFooter.Location = new Point(0, 390);
             pnlFooter.Name = "pnlFooter";
             pnlFooter.Size = new Size(460, 60);
             pnlFooter.TabIndex = 2;
@@ -378,15 +406,15 @@ namespace EODSettingsApp.Forms
             // stockadd
             // 
             BackColor = Color.FromArgb(245, 247, 250);
-            ClientSize = new Size(460, 390);
+            ClientSize = new Size(460, 450);
             Controls.Add(pnlMain);
             Controls.Add(pnlFooter);
             Controls.Add(pnlHeader);
             Font = new Font("Segoe UI", 9.5F);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            MaximumSize = new Size(476, 429);
-            MinimumSize = new Size(476, 429);
+            MaximumSize = new Size(476, 489);
+            MinimumSize = new Size(476, 489);
             Name = "stockadd";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Add New Stock";

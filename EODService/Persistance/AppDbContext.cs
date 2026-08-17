@@ -161,6 +161,10 @@ namespace EODService.Persistance
                 entity.Property(e => e.StockExchange)
                     .HasColumnName("SC_EXCHANGE")
                     .HasMaxLength(50);
+
+                entity.Property(e => e.ISIN)
+                    .HasColumnName("ISIN")
+                    .HasMaxLength(50);
             });
 
             // For Provider Table
@@ -194,6 +198,11 @@ namespace EODService.Persistance
                 entity.Property(e => e.EndPoint)
                     .HasColumnName("ENDPOINT")
                     .HasMaxLength(500)
+                    .IsRequired();
+
+                entity.Property(e => e.Parameters)
+                    .HasColumnName("PARAMETERS")
+                    .HasMaxLength(4000)
                     .IsRequired();
             });
         }

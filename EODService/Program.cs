@@ -1,9 +1,11 @@
 using EODService.DTOs.OracleSettings;
+using EODService.DTOs.Provider;
 using EODService.DTOs.ProviderSettings;
 using EODService.DTOs.SymbolSettings;
-using EODService.DTOs.TwelveDataSettings;
 using EODService.DTOs.YahooSettings;
+using EODService.Models;
 using EODService.Persistance;
+using EODService.Persistance.Repo;
 using EODService.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -48,7 +50,7 @@ catch (Exception ex)
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
 
-if (providerSettings == null || string.IsNullOrWhiteSpace(providerSettings.ActiveProvider))
+if (providerSettings == null || providerSettings.ActiveProvider == null)
 {
     logger.LogError("'ProviderSettings:ActiveProvider' is missing or empty in appsettings.json. Exiting.");
     return;
@@ -59,20 +61,21 @@ logger.LogInformation("Active Provider: {Provider}", providerSettings.ActiveProv
 // ─── Step 2: Load SymbolSettings ─────────────────────────────────────────────
 var symbolSettings = new SymbolSettings();
 
+// ─── Step 3: Load Provider data from db ──────────────────────────────────
+IProvider ProviderRepo = new ProviderRepo(dbContext!);
+var providers = await ProviderRepo.GetProviderByIdAsync(providerSettings.ActiveProvider);
 
-// ─── Step 3: Load Provider-Specific Settings ──────────────────────────────────
-var yahooSettings      = await YahooSettingsMapper.MapToYahooSettings(dbContext, logger);
-var twelveDataSettings = await TwelveDataSettingsMapper.MapToTwelveDataSettings(dbContext, logger);
+// ─── Step 4: Map the Active Provider Data to Settings ──────────────────────────────────
 
-
+var ProviderDTO = ProviderMapper.Map(providers);
 
 
 // Validate Yahoo settings if it's the active provider and get symbols from database
-if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgnoreCase))
+if (providerSettings.ActiveProvider == (int)ProviderIds.Yahoo)
 {
-    if (yahooSettings == null || string.IsNullOrWhiteSpace(yahooSettings.BaseUrl) || string.IsNullOrWhiteSpace(yahooSettings.Endpoint))
+    if (ProviderDTO == null || string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) || string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
     {
-        logger.LogError("Yahoo provider config (BaseUrl or Endpoint) could not be loaded. Ensure a row with ID={YahooId} exists in the PROVIDER table.", yahooSettings?.ID);
+        logger.LogError("Yahoo provider config (BaseUrl or Endpoint) could not be loaded. Ensure a row with ID={YahooId} exists in the PROVIDER table.", ProviderDTO?.Id);
         return;
     }
     symbolSettings = await EodPersistenceService.GetSymbolsForYahooFinance(dbContext!) ?? new SymbolSettings();
@@ -82,12 +85,13 @@ if (providerSettings.ActiveProvider.Equals("Yahoo", StringComparison.OrdinalIgno
     }
 }
 
+
 // Validate TwelveData settings if it's the active provider and get symbols from database
-if (providerSettings.ActiveProvider.Equals("TwelveData", StringComparison.OrdinalIgnoreCase))
+if (providerSettings.ActiveProvider == (int)ProviderIds.TwelveData)
 {
-    if (twelveDataSettings == null || string.IsNullOrWhiteSpace(twelveDataSettings.BaseUrl) || string.IsNullOrWhiteSpace(twelveDataSettings.ApiKey))
+    if (ProviderDTO == null || string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) || string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
     {
-        logger.LogError("TwelveData provider config (BaseUrl or ApiKey) could not be loaded. Ensure a row with ID={TwelveDataId} exists in the PROVIDER table.", twelveDataSettings?.ID);
+        logger.LogError("TwelveData provider config (BaseUrl or Endpoint) could not be loaded. Ensure a row with ID={ProviderDTO?.Id} exists in the PROVIDER table.", ProviderDTO?.Id);
         return;
     }
     symbolSettings = await EodPersistenceService.GetSymbolsForTwelveData(dbContext!) ?? new SymbolSettings();
@@ -114,12 +118,11 @@ httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 try
 {
     service = EODServiceFactory.CreateProvider(
-        providerName:        providerSettings.ActiveProvider,
+        providerSettings.ActiveProvider,
         symbolSettings:      symbolSettings,
         httpClient:          httpClient,
         loggerFactory:       loggerFactory,
-        yahooSettings:       yahooSettings,
-        twelveDataSettings:  twelveDataSettings);
+        provider:            ProviderDTO);
 }
 catch (ArgumentException ex)
 {

@@ -1,17 +1,22 @@
 using System;
+using System.Drawing;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using EODService.DTOs.OracleSettings;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using EODService.Config;
+using EODService.Models.Provider;
 using EODService.Persistance;
 using EODService.Persistance.Repo;
-using EODService.Services;
 using EODSettingsApp.AppSettingsConfig;
 
 namespace EODSettingsApp.Forms
 {
     /// <summary>
-    /// Modal dialog for viewing and editing the Yahoo and TwelveData provider
-    /// API settings stored in Oracle DB (PROVIDER table) and EODService's AppSettings.json.
+    /// Modal dialog for viewing and editing Yahoo and TwelveData provider
+    /// settings and JSON parameters stored in Oracle Database (table PROVIDER).
     /// </summary>
     public partial class ProviderSettingsForm : Form
     {
@@ -21,88 +26,206 @@ namespace EODSettingsApp.Forms
             _ = LoadProviderSettingsAsync();
         }
 
+        public ProviderSettingsForm(int activeTab) : this()
+        {
+            // Hide the tab headers to make it look like a unified form
+            tabProviders.Appearance = TabAppearance.FlatButtons;
+            tabProviders.ItemSize = new Size(0, 1);
+            tabProviders.SizeMode = TabSizeMode.Fixed;
+
+            if (activeTab == 0)
+            {
+                tabProviders.SelectedIndex = 0;
+                lblTitle.Text = "Yahoo Finance Settings";
+                lblSubtitle.Text = "Configure Yahoo Finance connection parameters and JSON";
+            }
+            else if (activeTab == 1)
+            {
+                tabProviders.SelectedIndex = 1;
+                lblTitle.Text = "TwelveData Settings";
+                lblSubtitle.Text = "Configure TwelveData API key and JSON parameters";
+            }
+        }
+
         // ── Load ─────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Reads AppSettings.json and Oracle PROVIDER table to populate all text boxes on startup.
+        /// Loads provider records from the Oracle database PROVIDER table and populates fields.
         /// </summary>
         private async Task LoadProviderSettingsAsync()
         {
             try
             {
-                var model = AppSettingsService.Load();
-                PopulateYahooFields(model.YahooSettings);
-                PopulateTwelveDataFields(model.TwelveDataSettings);
+                SetStatus(success: true, "Loading provider configurations from Oracle Database...");
 
-                // Fetch BaseUrl, Endpoint, and ApiKey directly from Oracle Database PROVIDER table
-                var connectionString = OracleSettingsMapper.GetConnectionString();
-                if (!string.IsNullOrWhiteSpace(connectionString))
+                var connectionString = GetConnectionString();
+                if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
-                    using var dbContext = AppDbContextFactory.Create(connectionString);
-                    IProvider repo = new ProviderRepo(dbContext);
-
-                    var yahooId = model.YahooSettings?.ID > 0 ? model.YahooSettings.ID : 1;
-                    var twelveDataId = model.TwelveDataSettings?.ID > 0 ? model.TwelveDataSettings.ID : 2;
-
-                    var yahooDb = await repo.GetProviderById(yahooId);
-                    if (yahooDb != null)
-                    {
-                        txtYahooBaseUrl.Text = yahooDb.BaseUrl;
-                        txtYahooEndpoint.Text = yahooDb.EndPoint;
-                    }
-
-                    var twelveDb = await repo.GetProviderById(twelveDataId);
-                    if (twelveDb != null)
-                    {
-                        txtTwelveBaseUrl.Text  = twelveDb.BaseUrl;
-                        txtTwelveEndpoint.Text = twelveDb.EndPoint;
-                        txtTwelveApiKey.Text   = twelveDb.ApiKey ?? string.Empty;
-
-                        bool isAesEncrypted = AesEncryptionService.IsAesEncrypted(twelveDb.ApiKey);
-                        if (isAesEncrypted)
-                            SetStatus(success: true, "✔ Provider settings loaded. 🔒 API Key stored securely (AES-256).");
-                        else
-                            SetStatus(success: true, "✔ Provider settings loaded from Oracle DB.");
-                    }
+                    LoadFromAppSettingsFallback("Database connection string is missing or invalid. Loaded from AppSettings.json.");
+                    return;
                 }
+
+                using var dbContext = AppDbContextFactory.Create(connectionString);
+                var providerRepo = new ProviderRepo(dbContext);
+                var providers = await providerRepo.GetAllProvidersAsync();
+
+                if (providers == null || !providers.Any())
+                {
+                    LoadFromAppSettingsFallback("No providers found in database table PROVIDER. Loaded fallback defaults.");
+                    return;
+                }
+
+                var yahooProvider = providers.FirstOrDefault(p => p.Id == 1 || p.Name.Contains("Yahoo", StringComparison.OrdinalIgnoreCase));
+                if (yahooProvider != null)
+                {
+                    txtYahooBaseUrl.Text    = yahooProvider.BaseUrl ?? string.Empty;
+                    txtYahooEndpoint.Text   = yahooProvider.EndPoint ?? string.Empty;
+                    txtYahooApiKey.Text     = yahooProvider.ApiKey ?? string.Empty;
+                    txtYahooParameters.Text = FormatJsonString(yahooProvider.Parameters);
+                }
+
+                var twelveProvider = providers.FirstOrDefault(p => p.Id == 2 || p.Name.Contains("Twelve", StringComparison.OrdinalIgnoreCase));
+                if (twelveProvider != null)
+                {
+                    txtTwelveBaseUrl.Text    = twelveProvider.BaseUrl ?? string.Empty;
+                    txtTwelveEndpoint.Text   = twelveProvider.EndPoint ?? string.Empty;
+                    txtTwelveApiKey.Text     = twelveProvider.ApiKey ?? string.Empty;
+                    txtTwelveParameters.Text = FormatJsonString(twelveProvider.Parameters);
+                }
+
+                SetStatus(success: true, "✔ Loaded provider settings from database (PROVIDER).");
             }
             catch (Exception ex)
             {
-                SetStatus(success: false, $"✘ Could not load provider settings: {ex.Message}");
+                LoadFromAppSettingsFallback($"✘ Could not load from database ({ex.Message}). Loaded fallback settings.");
             }
         }
 
-        private void PopulateYahooFields(YahooSettingsSection yahoo)
+        private void LoadFromAppSettingsFallback(string statusMessage)
         {
-            txtYahooBaseUrl.Text  = yahoo.BaseUrl;
-            txtYahooEndpoint.Text = yahoo.Endpoint;
-            txtYahooInterval.Text = yahoo.Interval;
-            txtYahooRange.Text    = yahoo.Range;
-        }
+            try
+            {
+                var model = AppSettingsService.Load();
 
-        private void PopulateTwelveDataFields(TwelveDataSettingsSection twelveData)
-        {
-            txtTwelveBaseUrl.Text    = twelveData.BaseUrl;
-            txtTwelveEndpoint.Text   = twelveData.Endpoint;
-            txtTwelveInterval.Text   = twelveData.Interval;
-            txtTwelveOutputSize.Text = twelveData.OutputSize.ToString();
-            txtTwelveApiKey.Text     = twelveData.ApiKey;
+                txtYahooBaseUrl.Text    = model.YahooSettings.BaseUrl;
+                txtYahooEndpoint.Text   = model.YahooSettings.Endpoint;
+                txtYahooApiKey.Text     = string.Empty;
+                txtYahooParameters.Text = FormatJsonString(JsonSerializer.Serialize(new
+                {
+                    interval = model.YahooSettings.Interval,
+                    range = model.YahooSettings.Range
+                }));
+
+                txtTwelveBaseUrl.Text    = model.TwelveDataSettings.BaseUrl;
+                txtTwelveEndpoint.Text   = model.TwelveDataSettings.Endpoint;
+                txtTwelveApiKey.Text     = model.TwelveDataSettings.ApiKey;
+                txtTwelveParameters.Text = FormatJsonString(JsonSerializer.Serialize(new
+                {
+                    interval = model.TwelveDataSettings.Interval,
+                    outputsize = model.TwelveDataSettings.OutputSize
+                }));
+
+                SetStatus(success: false, statusMessage);
+            }
+            catch (Exception fallbackEx)
+            {
+                SetStatus(success: false, $"✘ Failed loading provider settings: {fallbackEx.Message}");
+            }
         }
 
         // ── Save ─────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Validates fields, updates AppSettings.json, and saves BaseUrl, Endpoint, and ApiKey into Oracle PROVIDER table.
+        /// Validates JSON in Parameters fields, then saves provider configurations to Oracle Database (PROVIDER table).
         /// </summary>
         private async void BtnSaveProviderSettings_Click(object? sender, EventArgs e)
         {
-            btnSaveProviderSettings.Enabled = false;
+            // 1. Validate Yahoo Parameters JSON
+            if (!TryValidateJson(txtYahooParameters.Text, out var yahooNormalizedJson, out var yahooError))
+            {
+                SetStatus(success: false, $"✘ Yahoo JSON Error: {yahooError}");
+                tabProviders.SelectedIndex = 0;
+                txtYahooParameters.Focus();
+                MessageBox.Show(
+                    $"Yahoo Parameters contains invalid JSON:\n\n{yahooError}\n\nPlease fix the JSON format before saving.",
+                    "JSON Validation Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 2. Validate TwelveData Parameters JSON
+            if (!TryValidateJson(txtTwelveParameters.Text, out var twelveNormalizedJson, out var twelveError))
+            {
+                SetStatus(success: false, $"✘ TwelveData JSON Error: {twelveError}");
+                tabProviders.SelectedIndex = 1;
+                txtTwelveParameters.Focus();
+                MessageBox.Show(
+                    $"TwelveData Parameters contains invalid JSON:\n\n{twelveError}\n\nPlease fix the JSON format before saving.",
+                    "JSON Validation Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
-                if (await TryCollectAndSaveProviderSettingsAsync())
+                btnSaveProviderSettings.Enabled = false;
+                SetStatus(success: true, "Saving provider changes to Oracle Database (PROVIDER)...");
+
+                var connectionString = GetConnectionString();
+                using var dbContext = AppDbContextFactory.Create(connectionString);
+                var providerRepo = new ProviderRepo(dbContext);
+
+                // Update Yahoo Finance (ID = 1)
+                await providerRepo.UpdateProvider(
+                    providerId: 1,
+                    name: "Yahoo",
+                    baseUrl: txtYahooBaseUrl.Text.Trim(),
+                    endPoint: txtYahooEndpoint.Text.Trim(),
+                    apiKey: string.IsNullOrWhiteSpace(txtYahooApiKey.Text) ? null : txtYahooApiKey.Text.Trim(),
+                    parameters: yahooNormalizedJson);
+
+                // Update TwelveData (ID = 2)
+                await providerRepo.UpdateProvider(
+                    providerId: 2,
+                    name: "TwelveData",
+                    baseUrl: txtTwelveBaseUrl.Text.Trim(),
+                    endPoint: txtTwelveEndpoint.Text.Trim(),
+                    apiKey: string.IsNullOrWhiteSpace(txtTwelveApiKey.Text) ? null : txtTwelveApiKey.Text.Trim(),
+                    parameters: twelveNormalizedJson);
+
+                // Update AppSettings.json for fallback synchronization
+                try
                 {
-                    SetStatus(success: true, "✔ Provider settings saved and API Key encrypted (AES-256). 🔒");
+                    var currentModel = AppSettingsService.Load();
+                    currentModel.YahooSettings.BaseUrl    = txtYahooBaseUrl.Text.Trim();
+                    currentModel.YahooSettings.Endpoint   = txtYahooEndpoint.Text.Trim();
+                    currentModel.TwelveDataSettings.BaseUrl    = txtTwelveBaseUrl.Text.Trim();
+                    currentModel.TwelveDataSettings.Endpoint   = txtTwelveEndpoint.Text.Trim();
+                    currentModel.TwelveDataSettings.ApiKey     = txtTwelveApiKey.Text.Trim();
+                    AppSettingsService.Save(currentModel);
                 }
+                catch
+                {
+                    // Ignore AppSettings write failure if DB succeeded
+                }
+
+                SetStatus(success: true, "✔ Provider settings saved successfully to Oracle DB (PROVIDER).");
+                MessageBox.Show(
+                    "Provider settings and JSON parameters saved successfully to Oracle Database!",
+                    "Success",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                SetStatus(success: false, $"✘ Save failed: {ex.Message}");
+                MessageBox.Show(
+                    $"Failed to save provider settings to database:\n\n{ex.Message}",
+                    "Save Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             finally
             {
@@ -110,90 +233,88 @@ namespace EODSettingsApp.Forms
             }
         }
 
-        private async Task<bool> TryCollectAndSaveProviderSettingsAsync()
+        // ── JSON Utilities ────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Validates that a string is a valid JSON document (specifically a JSON Object).
+        /// </summary>
+        private static bool TryValidateJson(string? json, out string normalizedJson, out string errorMessage)
         {
-            if (!TryParseOutputSize(txtTwelveOutputSize.Text, out var outputSize))
+            normalizedJson = string.Empty;
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(json))
             {
-                SetStatus(success: false, "✘ Output Size must be a positive integer.");
+                errorMessage = "Parameters cannot be empty. Must be a valid JSON object (e.g. {}).";
                 return false;
             }
 
             try
             {
-                // 1. Load current model and save to AppSettings.json
-                var model = AppSettingsService.Load();
-                var yahooId = model.YahooSettings?.ID > 0 ? model.YahooSettings.ID : 1;
-                var twelveDataId = model.TwelveDataSettings?.ID > 0 ? model.TwelveDataSettings.ID : 2;
-
-                model.YahooSettings      = CollectYahooSettings(yahooId);
-                model.TwelveDataSettings = CollectTwelveDataSettings(twelveDataId, outputSize);
-                AppSettingsService.Save(model);
-
-                // 2. Save directly to Oracle Database PROVIDER table
-                var connectionString = OracleSettingsMapper.GetConnectionString();
-                if (!string.IsNullOrWhiteSpace(connectionString))
+                using var doc = JsonDocument.Parse(json.Trim());
+                if (doc.RootElement.ValueKind != JsonValueKind.Object)
                 {
-                    using var dbContext = AppDbContextFactory.Create(connectionString);
-                    IProvider repo = new ProviderRepo(dbContext);
-
-                    await repo.UpdateProvider(
-                        providerId: yahooId,
-                        name: "Yahoo",
-                        baseUrl: txtYahooBaseUrl.Text.Trim(),
-                        endPoint: txtYahooEndpoint.Text.Trim(),
-                        apiKey: null);
-
-                    await repo.UpdateProvider(
-                        providerId: twelveDataId,
-                        name: "TwelveData",
-                        baseUrl: txtTwelveBaseUrl.Text.Trim(),
-                        endPoint: txtTwelveEndpoint.Text.Trim(),
-                        apiKey: txtTwelveApiKey.Text.Trim());
+                    errorMessage = "Parameters must be a JSON object (enclosed in { ... }).";
+                    return false;
                 }
 
+                // Minify or produce valid JSON string for storage
+                normalizedJson = JsonSerializer.Serialize(doc.RootElement);
                 return true;
             }
-            catch (Exception ex)
+            catch (JsonException ex)
             {
-                SetStatus(success: false, $"✘ Save failed: {ex.Message}");
+                errorMessage = ex.Message;
                 return false;
             }
         }
 
-        private YahooSettingsSection CollectYahooSettings(int id) => new()
+        /// <summary>
+        /// Formats a JSON string with 2-space indentation for easy visual editing.
+        /// </summary>
+        private static string FormatJsonString(string? json)
         {
-            ID       = id,
-            BaseUrl  = txtYahooBaseUrl.Text.Trim(),
-            Endpoint = txtYahooEndpoint.Text.Trim(),
-            Interval = txtYahooInterval.Text.Trim(),
-            Range    = txtYahooRange.Text.Trim()
-        };
+            if (string.IsNullOrWhiteSpace(json))
+                return "{\r\n}";
 
-        private TwelveDataSettingsSection CollectTwelveDataSettings(int id, int outputSize) => new()
+            try
+            {
+                using var doc = JsonDocument.Parse(json.Trim());
+                return JsonSerializer.Serialize(doc.RootElement, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+            }
+            catch
+            {
+                return json;
+            }
+        }
+
+        // ── Helpers ──────────────────────────────────────────────────────────────
+
+        private string GetConnectionString()
         {
-            ID         = id,
-            BaseUrl    = txtTwelveBaseUrl.Text.Trim(),
-            Endpoint   = txtTwelveEndpoint.Text.Trim(),
-            Interval   = txtTwelveInterval.Text.Trim(),
-            OutputSize = outputSize,
-            ApiKey     = txtTwelveApiKey.Text.Trim()
-        };
+            var model = AppSettingsService.Load();
+            if (!string.IsNullOrWhiteSpace(model.ConnectionStrings?.DefaultConnection))
+            {
+                return model.ConnectionStrings.DefaultConnection;
+            }
 
-        private static bool TryParseOutputSize(string text, out int value)
-            => int.TryParse(text.Trim(), out value) && value > 0;
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile(PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
+                .Build();
+
+            return configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+        }
 
         private void SetStatus(bool success, string message)
         {
             lblProviderSettingsStatus.ForeColor = success
-                ? System.Drawing.Color.FromArgb(22, 163, 74)
-                : System.Drawing.Color.FromArgb(185, 28, 28);
+                ? Color.FromArgb(22, 163, 74)
+                : Color.FromArgb(185, 28, 28);
             lblProviderSettingsStatus.Text = message;
-        }
-
-        private void ChkShowTwelveApiKey_CheckedChanged(object? sender, EventArgs e)
-        {
-            txtTwelveApiKey.UseSystemPasswordChar = !chkShowTwelveApiKey.Checked;
         }
     }
 }
-

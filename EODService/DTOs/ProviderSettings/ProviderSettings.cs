@@ -7,6 +7,6 @@ namespace EODService.DTOs.ProviderSettings
         ///   "Yahoo"       — Yahoo Finance (https://finance.yahoo.com)
         ///   "TwelveData"  — Twelve Data   (https://twelvedata.com)
        
-        public string ActiveProvider { get; set; } = "Yahoo";
+        public int ActiveProvider { get; set; } = 1;
     }
 }

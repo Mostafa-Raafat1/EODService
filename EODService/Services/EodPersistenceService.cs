@@ -115,14 +115,14 @@ namespace EODService.Services
         public static async Task<Provider?> GetProviderById(AppDbContext dbContext, int providerId)
         {
             IProvider repo = new ProviderRepo(dbContext);
-            var provider = await repo.GetProviderById(providerId);
+            var provider = await repo.GetProviderByIdAsync(providerId);
             return provider;
         }
 
-        public static async Task UpdateProvider(AppDbContext dbContext, int providerId, string name, string baseUrl, string endPoint, string? apiKey)
+        public static async Task UpdateProvider(AppDbContext dbContext, int providerId, string name, string baseUrl, string endPoint, string? apiKey, string? parameters = null)
         {
             IProvider repo = new ProviderRepo(dbContext);
-            await repo.UpdateProvider(providerId, name, baseUrl, endPoint, apiKey);
+            await repo.UpdateProvider(providerId, name, baseUrl, endPoint, apiKey, parameters);
         }
     }
 }

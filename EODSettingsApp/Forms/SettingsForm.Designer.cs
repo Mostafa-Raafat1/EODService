@@ -41,13 +41,8 @@ namespace EODSettingsApp.Forms
         // Menu bar
         private MenuStrip         mnuMain;
         private ToolStripMenuItem mnuItemSettings;
-        private ToolStripMenuItem mnuItemProviderSettings;
-        private ToolStripMenuItem mnuItemSymbolSettings;
-        private ToolStripMenuItem mnuItemDatabaseSettings;
         private ToolStripMenuItem mnuItemHistory;
-        private ToolStripMenuItem mnuItemAddStock;
         private ToolStripMenuItem mnuItemChangeEncryptionKey;
-
 
         // Toolbar
         private ToolStrip         tsToolBar;
@@ -94,13 +89,8 @@ namespace EODSettingsApp.Forms
             rtbLogs = new RichTextBox();
             mnuMain = new MenuStrip();
             mnuItemSettings = new ToolStripMenuItem();
-            mnuItemProviderSettings = new ToolStripMenuItem();
-            mnuItemSymbolSettings = new ToolStripMenuItem();
-            mnuItemDatabaseSettings = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
-            mnuItemAddStock = new ToolStripMenuItem();
             mnuItemChangeEncryptionKey = new ToolStripMenuItem();
-
             tsToolBar = new ToolStrip();
             tsBtnRunNow = new ToolStripButton();
             pnlHeader.SuspendLayout();
@@ -192,6 +182,7 @@ namespace EODSettingsApp.Forms
             cmbProvider.Name = "cmbProvider";
             cmbProvider.Size = new Size(160, 25);
             cmbProvider.TabIndex = 0;
+            cmbProvider.SelectedIndexChanged += cmbProvider_SelectedIndexChanged;
             // 
             // lblProviderHint
             // 
@@ -481,48 +472,11 @@ namespace EODSettingsApp.Forms
             // 
             // mnuItemSettings
             // 
-            mnuItemSettings.DropDownItems.AddRange(new ToolStripItem[] { mnuItemProviderSettings, mnuItemSymbolSettings, mnuItemDatabaseSettings, mnuItemAddStock, mnuItemChangeEncryptionKey });
-
             mnuItemSettings.ForeColor = Color.White;
             mnuItemSettings.Name = "mnuItemSettings";
-            mnuItemSettings.Size = new Size(76, 20);
-            mnuItemSettings.Text = "⚙ Settings";
-            // 
-            // mnuItemProviderSettings
-            // 
-            mnuItemProviderSettings.Name = "mnuItemProviderSettings";
-            mnuItemProviderSettings.Size = new Size(255, 22);
-            mnuItemProviderSettings.Text = "📡 Provider Settings";
-            mnuItemProviderSettings.Click += MnuItemProviderSettings_Click;
-            // 
-            // mnuItemSymbolSettings
-            // 
-            mnuItemSymbolSettings.Name = "mnuItemSymbolSettings";
-            mnuItemSymbolSettings.Size = new Size(255, 22);
-            mnuItemSymbolSettings.Text = "🏷 Symbol Settings (EOD_STOCKS)";
-            mnuItemSymbolSettings.Click += MnuItemSymbolSettings_Click;
-            // 
-            // mnuItemDatabaseSettings
-            // 
-            mnuItemDatabaseSettings.Name = "mnuItemDatabaseSettings";
-            mnuItemDatabaseSettings.Size = new Size(255, 22);
-            mnuItemDatabaseSettings.Text = "🗄 Database Connection";
-            mnuItemDatabaseSettings.Click += MnuItemDatabaseSettings_Click;
-            // 
-            // mnuItemAddStock
-            // 
-            mnuItemAddStock.Name = "mnuItemAddStock";
-            mnuItemAddStock.Size = new Size(255, 22);
-            mnuItemAddStock.Text = "➕ Add Stock";
-            mnuItemAddStock.Click += MnuItemAddStock_Click;
-            // 
-            // mnuItemChangeEncryptionKey
-            // 
-            mnuItemChangeEncryptionKey.Name = "mnuItemChangeEncryptionKey";
-            mnuItemChangeEncryptionKey.Size = new Size(255, 22);
-            mnuItemChangeEncryptionKey.Text = "🔒 Change Encryption Key...";
-            mnuItemChangeEncryptionKey.Click += MnuItemChangeEncryptionKey_Click;
-
+            mnuItemSettings.Size = new Size(61, 20);
+            mnuItemSettings.Text = "Settings";
+            mnuItemSettings.Click += MnuItemSettings_Click;
             // 
             // mnuItemHistory
             // 

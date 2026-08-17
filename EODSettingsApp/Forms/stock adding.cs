@@ -52,7 +52,8 @@ namespace EODSettingsApp.Forms
                     TwelveDataExists = rdoTdYes.Checked,
                     YahooFinanceExists = rdoYfYes.Checked,
                     TwelveDataID = string.IsNullOrWhiteSpace(txtTdSymbol.Text) ? null : txtTdSymbol.Text.Trim(),
-                    YahooFinanceID = string.IsNullOrWhiteSpace(txtYfSymbol.Text) ? null : txtYfSymbol.Text.Trim()
+                    YahooFinanceID = string.IsNullOrWhiteSpace(txtYfSymbol.Text) ? null : txtYfSymbol.Text.Trim(),
+                    ISIN = string.IsNullOrWhiteSpace(txtIsin.Text) ? null : txtIsin.Text.Trim()
                 };
 
                 dbContext.Stock.Add(newStock);
@@ -91,6 +92,7 @@ namespace EODSettingsApp.Forms
             rdoYfYes.Checked = true;
             txtTdSymbol.Clear();
             txtYfSymbol.Clear();
+            txtIsin.Clear();
             txtStockName.Focus();
         }
 

@@ -66,12 +66,26 @@ namespace EODSettingsApp.Forms
                 if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
                 {
                     using var dbContext = AppDbContextFactory.Create(connectionString);
-                    var stocks = await dbContext.Stock.AsNoTracking().ToListAsync();
-                    foreach (var s in stocks)
+                    var stocks = dbContext.Stock.AsNoTracking().ToList();
+                    
+                    foreach (var stock in stocks)
                     {
-                        var ticker = !string.IsNullOrWhiteSpace(s.TwelveDataID) ? s.TwelveDataID : s.YahooFinanceID;
-                        var label = string.IsNullOrWhiteSpace(ticker) ? s.StockName : $"{s.StockName} ({ticker})";
-                        cmbSymbol.Items.Add(new StockFilterItem { Id = s.Id, DisplayText = label });
+                        if (!string.IsNullOrWhiteSpace(stock.YahooFinanceID))
+                        {
+                            var sym = stock.YahooFinanceID.Trim().ToUpperInvariant();
+                            if (!cmbSymbol.Items.Contains(sym))
+                            {
+                                cmbSymbol.Items.Add(sym);
+                            }
+                        }
+                        if (!string.IsNullOrWhiteSpace(stock.TwelveDataID))
+                        {
+                            var sym = stock.TwelveDataID.Trim().ToUpperInvariant();
+                            if (!cmbSymbol.Items.Contains(sym))
+                            {
+                                cmbSymbol.Items.Add(sym);
+                            }
+                        }
                     }
                 }
 
@@ -79,7 +93,7 @@ namespace EODSettingsApp.Forms
             }
             catch (Exception ex)
             {
-                SetStatus(success: false, $"✘ Warning loading symbols: {ex.Message}");
+                SetStatus(success: false, $"✘ Warning loading symbols from DB: {ex.Message}");
             }
         }
 

@@ -1,4 +1,5 @@
 using EODService.DTOs.EOD;
+using EODService.DTOs.Provider;
 using EODService.DTOs.SymbolSettings;
 using EODService.DTOs.TwelveDataResponse;
 using EODService.DTOs.TwelveDataSettings;
@@ -9,10 +10,11 @@ namespace EODService.Services
 {
     public class TwelveDataEODService : IEODService
     {
-        private readonly TwelveDataSettings _twelveDataSettings;
+        private readonly ProviderDTO _twelveDataSettings;
         private readonly SymbolSettings _symbolSettings;
         private readonly HttpClient _httpClient;
         private readonly ILogger<TwelveDataEODService> _logger;
+        private readonly TwelveDataParametersDTO _parameters;
 
         // Reusable deserialization options — case-insensitive to be safe
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -21,7 +23,7 @@ namespace EODService.Services
         };
 
         public TwelveDataEODService(
-            TwelveDataSettings twelveDataSettings,
+            ProviderDTO twelveDataSettings,
             SymbolSettings symbolSettings,
             HttpClient httpClient,
             ILogger<TwelveDataEODService> logger)
@@ -30,6 +32,12 @@ namespace EODService.Services
             _symbolSettings = symbolSettings;
             _httpClient         = httpClient;
             _logger             = logger;
+
+            _parameters =
+                JsonSerializer.Deserialize<TwelveDataParametersDTO>(
+                    _twelveDataSettings.Parameters ?? "{}",
+                    _jsonOptions)
+                ?? new TwelveDataParametersDTO();
         }
 
         /// <inheritdoc />
@@ -121,10 +129,10 @@ namespace EODService.Services
         {
             // Twelve Data uses the base symbol directly (no exchange suffix needed).
             // The exchange is resolved by the API from the symbol itself.
-            return $"{_twelveDataSettings.BaseUrl}{_twelveDataSettings.Endpoint}" +
+            return $"{_twelveDataSettings.BaseUrl}{_twelveDataSettings.EndPoint}" +
                    $"?symbol={symbol}" +
-                   $"&interval={_twelveDataSettings.Interval}" +
-                   $"&outputsize={_twelveDataSettings.OutputSize}" +
+                   $"&interval={_parameters.Interval}" +
+                   $"&outputsize={_parameters.OutputSize}" +
                    $"&apikey={_twelveDataSettings.ApiKey}";
         }
     }
