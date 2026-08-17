@@ -55,16 +55,19 @@ namespace EODService.DTOs.YahooEODResponse
                     Date = DateTimeOffset
                         .FromUnixTimeSeconds(timestamps[i])
                         .UtcDateTime.Date,
-                    Open = o,
-                    High = h,
-                    Low = l,
-                    Close = c,
+                    Open = o.HasValue ? Math.Round(o.Value, 5) : null,
+                    High = h.HasValue ? Math.Round(h.Value, 5) : null,
+                    Low = l.HasValue ? Math.Round(l.Value, 5) : null,
+                    Close = c.HasValue ? Math.Round(c.Value, 5) : null,
                     Volume = v,
+
                     AdjustedClose = GetValue(
                         result.Indicators.Adjclose?
                             .FirstOrDefault()?
                             .Adjclose,
-                        i)
+                        i) is decimal adjustedClose
+                            ? Math.Round(adjustedClose, 5)
+                            : null
                 };
             }
 
