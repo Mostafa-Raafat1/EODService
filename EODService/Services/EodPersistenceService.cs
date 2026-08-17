@@ -5,10 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using EODService.DTOs.EOD;
 using EODService.Persistance;
 using EODService.DTOs.SymbolSettings;
 using EODService.Persistance.Repo;
+using EODService.DTOs.EOD;
+using EODService.Models.Provider;
 
 namespace EODService.Services
 {
@@ -27,12 +28,23 @@ namespace EODService.Services
             if (results == null || !results.Any())
                 return;
 
+            // Deduplicate and normalize input items to date-only component (00:00:00)
+            var cleanResults = results
+                .Select(r =>
+                {
+                    r.Date = r.Date.Date;
+                    return r;
+                })
+                .GroupBy(r => (r.Id, r.Date))
+                .Select(g => g.First())
+                .ToList();
+
             // Wrap entire read-upsert-insert pipeline in an explicit database transaction
             await using var tx = await dbContext.Database.BeginTransactionAsync(ct);
 
             try
             {
-                var symbols = results.Select(r => r.Id).Distinct().ToList();
+                var symbols = cleanResults.Select(r => r.Id).Distinct().ToList();
 
                 // 1. Fetch matching EodDaily rows as NoTracking
                 var dailyRows = await dbContext.EodDaily
@@ -42,7 +54,7 @@ namespace EODService.Services
 
                 var existingDailyIds = dailyRows.Select(e => e.Id).ToHashSet();
 
-                foreach (var result in results)
+                foreach (var result in cleanResults)
                 {
                     var dailyEntity = result.ToDaily();
                     if (existingDailyIds.Contains(result.Id))
@@ -55,7 +67,7 @@ namespace EODService.Services
                     }
                 }
 
-                // 2. Fetch history dates as NoTracking
+                // 2. Fetch existing history dates as NoTracking (normalized to Date component)
                 var historyRows = await dbContext.EodHistory
                     .AsNoTracking()
                     .Where(e => symbols.Contains(e.Id))
@@ -63,14 +75,16 @@ namespace EODService.Services
                     .ToListAsync(ct);
 
                 var existingHistoryKeys = historyRows
-                    .Select(x => (x.Id, x.Date))
+                    .Select(x => (x.Id, x.Date.Date))
                     .ToHashSet();
 
-                foreach (var result in results)
+                foreach (var result in cleanResults)
                 {
-                    if (!existingHistoryKeys.Contains((result.Id, result.Date)))
+                    var key = (result.Id, result.Date.Date);
+                    if (!existingHistoryKeys.Contains(key))
                     {
                         dbContext.EodHistory.Add(result.ToHistory());
+                        existingHistoryKeys.Add(key); // Prevent in-batch duplicate insertions
                     }
                 }
 
@@ -109,6 +123,19 @@ namespace EODService.Services
             IStock repo = new StockRepo(dbContext);
             var stocks = await repo.GetSymbolAndTickerIDForTwelveData();
             return stocks;
+        }
+
+        public static async Task<Provider?> GetProviderById(AppDbContext dbContext, int providerId)
+        {
+            IProvider repo = new ProviderRepo(dbContext);
+            var provider = await repo.GetProviderByIdAsync(providerId);
+            return provider;
+        }
+
+        public static async Task UpdateProvider(AppDbContext dbContext, int providerId, string name, string baseUrl, string endPoint, string? apiKey, string? parameters = null)
+        {
+            IProvider repo = new ProviderRepo(dbContext);
+            await repo.UpdateProvider(providerId, name, baseUrl, endPoint, apiKey, parameters);
         }
     }
 }

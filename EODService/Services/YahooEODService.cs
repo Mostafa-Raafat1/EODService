@@ -1,4 +1,5 @@
 using EODService.DTOs.EOD;
+using EODService.DTOs.Provider;
 using EODService.DTOs.SymbolSettings;
 using EODService.DTOs.YahooEODResponse;
 using EODService.DTOs.YahooSettings;
@@ -10,10 +11,11 @@ namespace EODService.Services
  
     public class YahooEODService : IEODService
     {
-        private readonly YahooSettings _yahooSettings;
+        private readonly ProviderDTO _yahooSettings;
         private readonly SymbolSettings _symbolSettings;
         private readonly HttpClient _httpClient;
         private readonly ILogger<YahooEODService> _logger;
+        private readonly YahooParametersDTO _parameters;
 
         // Reusable deserialization options — case-insensitive so "chart" in JSON maps to "Chart" in C#
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -22,7 +24,7 @@ namespace EODService.Services
         };
 
         public YahooEODService(
-            YahooSettings yahooSettings,
+            ProviderDTO yahooSettings,
             SymbolSettings symbolSettings,
             HttpClient httpClient,
             ILogger<YahooEODService> logger)
@@ -31,6 +33,15 @@ namespace EODService.Services
             _symbolSettings = symbolSettings;
             _httpClient = httpClient;
             _logger = logger;
+
+            // Deserialize parameters from the yahoo settings into a strongly-typed DTO for easier access
+            _parameters = JsonSerializer.Deserialize<YahooParametersDTO>(
+                    yahooSettings.Parameters ?? "{}",
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    })
+                    ?? new YahooParametersDTO();
         }
 
         /// <inheritdoc />
@@ -121,8 +132,7 @@ namespace EODService.Services
                 results.Count);
 
             return results;
-        }
-
+        } 
         
         private string BuildUrl(string symbol)
         {
@@ -130,8 +140,8 @@ namespace EODService.Services
             // Base symbols are stored without suffix in appsettings.json (e.g., "CBKD"),
             // so we append it here to keep provider-specific formatting inside the provider.
             var yahooSymbol = $"{symbol}";
-            return $"{_yahooSettings.BaseUrl}{_yahooSettings.Endpoint}{yahooSymbol}" +
-                   $"?interval={_yahooSettings.Interval}&range={_yahooSettings.Range}";
+            return $"{_yahooSettings.BaseUrl}{_yahooSettings.EndPoint}{yahooSymbol}" +
+                   $"?interval={_parameters.Interval}&range={_parameters.Range}";
         }
     }
 }

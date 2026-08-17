@@ -45,10 +45,32 @@ namespace EODSettingsApp.AppSettingsConfig
         }
 
         /// <summary>
-        /// Saves the Yahoo, TwelveData, SymbolSettings, ScheduleSettings, and ConnectionStrings sections back into AppSettings.json
-        /// and syncs changes to active bin output files.
-        /// All other keys in the file are left untouched.
+        /// Convenience method: merges only the DefaultConnection string into AppSettings.json
+        /// without touching any other section.
         /// </summary>
+        public static void SaveConnectionString(string connectionString)
+        {
+            var mainPath = AppSettingsPath.Resolve();
+            var existing = File.ReadAllText(mainPath);
+            var root     = JsonNode.Parse(existing)!.AsObject();
+
+            var section = new ConnectionStringsSection { DefaultConnection = connectionString };
+            root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(section, _writeOptions));
+
+            var updatedJson = root.ToJsonString(_writeOptions);
+            File.WriteAllText(mainPath, updatedJson);
+
+            SyncToCopy(Path.Combine(AppContext.BaseDirectory, AppSettingsPath.FileName), mainPath, updatedJson);
+            SyncToSourceProjectFile(mainPath, updatedJson);
+
+            var mainDir = Path.GetDirectoryName(mainPath);
+            if (!string.IsNullOrEmpty(mainDir))
+            {
+                var devBinPath = Path.GetFullPath(Path.Combine(mainDir, "bin", "Debug", "net10.0", AppSettingsPath.FileName));
+                SyncToCopy(devBinPath, mainPath, updatedJson);
+            }
+        }
+
         public static void Save(AppSettingsModel model)
         {
             var mainPath = AppSettingsPath.Resolve();
@@ -69,17 +91,23 @@ namespace EODSettingsApp.AppSettingsConfig
                 root["ScheduleSettings"] = JsonNode.Parse(JsonSerializer.Serialize(model.ScheduleSettings));
 
             if (model.ConnectionStrings != null)
-                root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(model.ConnectionStrings));
+            {
+                var section = new ConnectionStringsSection { DefaultConnection = model.ConnectionStrings.DefaultConnection };
+                root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(section, _writeOptions));
+            }
 
             var updatedJson = root.ToJsonString(_writeOptions);
 
-            // 1. Primary write: main EODService AppSettings.json beside Program.cs
+            // 1. Primary write
             File.WriteAllText(mainPath, updatedJson);
 
             // 2. Sync to current application bin directory if distinct
             SyncToCopy(Path.Combine(AppContext.BaseDirectory, AppSettingsPath.FileName), mainPath, updatedJson);
 
-            // 3. Sync to EODService bin/Debug output if distinct and exists
+            // 3. Sync back to source EODService project file so rebuild doesn't overwrite values
+            SyncToSourceProjectFile(mainPath, updatedJson);
+
+            // 4. Sync to EODService bin/Debug output if distinct and exists
             var mainDir = Path.GetDirectoryName(mainPath);
             if (!string.IsNullOrEmpty(mainDir))
             {
@@ -105,6 +133,43 @@ namespace EODSettingsApp.AppSettingsConfig
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine($"[AppSettingsService] Best effort sync to '{targetPath}' failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Walks up from the currently resolved AppSettings.json path to find and update
+        /// the canonical source copy in the EODService project folder.
+        /// This prevents a Visual Studio rebuild from overwriting the encrypted bin copy
+        /// with a stale plain-text source file.
+        /// </summary>
+        private static void SyncToSourceProjectFile(string currentPath, string jsonContent)
+        {
+            try
+            {
+                var fileName = AppSettingsPath.FileName;
+                var dir      = new DirectoryInfo(Path.GetDirectoryName(currentPath) ?? string.Empty);
+
+                while (dir != null)
+                {
+                    // Look for EODService\AppSettings.json + EODService\Program.cs
+                    var subDir       = Path.Combine(dir.FullName, "EODService");
+                    var candidate    = Path.Combine(subDir, fileName);
+                    var programCs    = Path.Combine(subDir, "Program.cs");
+
+                    if (File.Exists(candidate) && File.Exists(programCs) &&
+                        !string.Equals(Path.GetFullPath(candidate), Path.GetFullPath(currentPath), StringComparison.OrdinalIgnoreCase))
+                    {
+                        File.WriteAllText(candidate, jsonContent);
+                        System.Diagnostics.Trace.WriteLine($"[AppSettingsService] Synced encrypted settings to source: {candidate}");
+                        return;
+                    }
+
+                    dir = dir.Parent;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"[AppSettingsService] SyncToSourceProjectFile failed: {ex.Message}");
             }
         }
 

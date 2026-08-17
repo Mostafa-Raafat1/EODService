@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using EODService.DTOs.EOD;
 using EODService.Persistance;
 using EODSettingsApp.AppSettingsConfig;
+using EODService.DTOs.EOD;
 
 namespace EODSettingsApp.Forms
 {
@@ -17,12 +17,14 @@ namespace EODSettingsApp.Forms
     /// </summary>
     public partial class HistoricalDataForm : Form
     {
+        private const int MaxDisplayRecords = 2000;
+
         public HistoricalDataForm()
         {
             InitializeComponent();
             SetupGridColumns();
             InitializeFilters();
-            LoadSymbols();
+            _ = LoadSymbolsAsync();
         }
 
         // ── Initialization ───────────────────────────────────────────────────────
@@ -47,37 +49,52 @@ namespace EODSettingsApp.Forms
             dtpToDate.Value = DateTime.Today;
         }
 
-        private void LoadSymbols()
+        private class StockFilterItem
+        {
+            public int Id { get; set; }
+            public string StockName { get; set; } = string.Empty;
+
+            public override string ToString()
+            {
+                if (Id == 0) return "ALL";
+                return StockName;
+            }
+        }
+
+        private async Task LoadSymbolsAsync()
         {
             try
             {
                 cmbSymbol.Items.Clear();
-                cmbSymbol.Items.Add("ALL");
+                cmbSymbol.Items.Add(new StockFilterItem { Id = 0, StockName = "ALL" });
 
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();
                 if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
                 {
                     using var dbContext = AppDbContextFactory.Create(connectionString);
-                    var stocks = dbContext.Stock.AsNoTracking().ToList();
-                    
+                    var stocks = await dbContext.Stock
+                        .AsNoTracking()
+                        .OrderBy(s => s.StockName)
+                        .ToListAsync();
+
+                    var addedIds = new HashSet<int>();
+
                     foreach (var stock in stocks)
                     {
-                        if (!string.IsNullOrWhiteSpace(stock.YahooFinanceID))
+                        if (addedIds.Contains(stock.Id))
+                            continue;
+
+                        var name = stock.StockName?.Trim();
+                        if (string.IsNullOrWhiteSpace(name))
+                            continue;
+
+                        cmbSymbol.Items.Add(new StockFilterItem
                         {
-                            var sym = stock.YahooFinanceID.Trim().ToUpperInvariant();
-                            if (!cmbSymbol.Items.Contains(sym))
-                            {
-                                cmbSymbol.Items.Add(sym);
-                            }
-                        }
-                        if (!string.IsNullOrWhiteSpace(stock.TwelveDataID))
-                        {
-                            var sym = stock.TwelveDataID.Trim().ToUpperInvariant();
-                            if (!cmbSymbol.Items.Contains(sym))
-                            {
-                                cmbSymbol.Items.Add(sym);
-                            }
-                        }
+                            Id = stock.Id,
+                            StockName = name
+                        });
+
+                        addedIds.Add(stock.Id);
                     }
                 }
 
@@ -106,7 +123,7 @@ namespace EODSettingsApp.Forms
 
             try
             {
-                var connectionString = GetConnectionString();
+                var connectionString = ConnectionStringResolver.Get();
                 if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
                     throw new Exception("Oracle database connection string is not configured properly.");
@@ -116,38 +133,62 @@ namespace EODSettingsApp.Forms
 
                 var fromDate = dtpFromDate.Value.Date;
                 var toDate = dtpToDate.Value.Date.AddDays(1).AddTicks(-1);
-                var selectedSymbol = cmbSymbol.SelectedItem?.ToString() ?? "ALL";
 
-                // Query EodHistory table
+                var selectedItem = cmbSymbol.SelectedItem as StockFilterItem;
+                int selectedStockId = selectedItem?.Id ?? 0;
+
+                // 1. Query EodHistory table
                 var historyQuery = dbContext.EodHistory.AsNoTracking().AsQueryable();
-
-                if (!string.Equals(selectedSymbol, "ALL", StringComparison.OrdinalIgnoreCase))
+                if (selectedStockId > 0)
                 {
-                    historyQuery = historyQuery.Where(h => h.Name.ToUpper() == selectedSymbol.ToUpper());
+                    historyQuery = historyQuery.Where(h => h.Id == selectedStockId);
                 }
-
                 historyQuery = historyQuery.Where(h => h.Date >= fromDate && h.Date <= toDate);
+                var historyList = await historyQuery.ToListAsync();
 
-                var historyList = await historyQuery.OrderByDescending(h => h.Date).ThenBy(h => h.Id).ToListAsync();
-                var results = historyList.Cast<EodData>().ToList();
-
-                // If EodHistory is empty, fallback check in EodDaily table
-                if (!results.Any())
+                // 2. Query EodDaily table (latest records)
+                var dailyQuery = dbContext.EodDaily.AsNoTracking().AsQueryable();
+                if (selectedStockId > 0)
                 {
-                    var dailyQuery = dbContext.EodDaily.AsNoTracking().AsQueryable();
+                    dailyQuery = dailyQuery.Where(d => d.Id == selectedStockId);
+                }
+                dailyQuery = dailyQuery.Where(d => d.Date >= fromDate && d.Date <= toDate);
+                var dailyList = await dailyQuery.ToListAsync();
 
-                    if (!string.Equals(selectedSymbol, "ALL", StringComparison.OrdinalIgnoreCase))
-                    {
-                        dailyQuery = dailyQuery.Where(d => d.Name.ToUpper() == selectedSymbol.ToUpper());
-                    }
+                // 3. Merge results without duplicates (keyed by Id + Date)
+                var recordMap = new Dictionary<(int Id, DateTime Date), EodData>();
 
-                    dailyQuery = dailyQuery.Where(d => d.Date >= fromDate && d.Date <= toDate);
-                    var dailyList = await dailyQuery.OrderByDescending(d => d.Date).ThenBy(d => d.Id).ToListAsync();
-                    results = dailyList.Cast<EodData>().ToList();
+                foreach (var h in historyList)
+                {
+                    recordMap[(h.Id, h.Date.Date)] = h;
                 }
 
-                PopulateGridAndStats(results);
-                SetStatus(success: true, $"✔ Found {results.Count} historical record(s).");
+                foreach (var d in dailyList)
+                {
+                    if (!recordMap.ContainsKey((d.Id, d.Date.Date)))
+                    {
+                        recordMap[(d.Id, d.Date.Date)] = d;
+                    }
+                }
+
+                var combinedResults = recordMap.Values
+                    .OrderByDescending(r => r.Date)
+                    .ThenBy(r => r.Id)
+                    .ToList();
+
+                bool isCapped = combinedResults.Count > MaxDisplayRecords;
+                var displayList = isCapped ? combinedResults.Take(MaxDisplayRecords).ToList() : combinedResults;
+
+                PopulateGridAndStats(displayList, combinedResults.Count, isCapped);
+
+                if (isCapped)
+                {
+                    SetStatus(success: true, $"✔ Showing top {MaxDisplayRecords:N0} of {combinedResults.Count:N0} records found (narrow date range to see all).");
+                }
+                else
+                {
+                    SetStatus(success: true, $"✔ Found {combinedResults.Count:N0} historical record(s).");
+                }
             }
             catch (Exception ex)
             {
@@ -161,10 +202,12 @@ namespace EODSettingsApp.Forms
             }
         }
 
-        private void PopulateGridAndStats(List<EodData> records)
+        private void PopulateGridAndStats(List<EodData> records, int totalCount, bool isCapped)
         {
             dgvHistory.Rows.Clear();
-            lblTotalRecords.Text = $"Records: {records.Count:N0}";
+            lblTotalRecords.Text = isCapped
+                ? $"Records: {records.Count:N0} of {totalCount:N0}"
+                : $"Records: {records.Count:N0}";
 
             if (!records.Any())
                 return;
@@ -185,23 +228,187 @@ namespace EODSettingsApp.Forms
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────────────
+        // ── Multi-Format Data Export (Excel, CSV, PDF) ───────────────────────────
 
-        private string GetConnectionString()
+        private void BtnExportCsv_Click(object? sender, EventArgs e)
         {
-            var model = AppSettingsService.Load();
-            if (!string.IsNullOrWhiteSpace(model.ConnectionStrings?.DefaultConnection))
+            if (dgvHistory.Rows.Count == 0)
             {
-                return model.ConnectionStrings.DefaultConnection;
+                MessageBox.Show("No records available to export. Please perform a search first.", "Export Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
             }
 
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(EODService.Config.PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
-                .Build();
+            using var sfd = new SaveFileDialog
+            {
+                Title = "Export Historical Data",
+                Filter = "Excel Workbook (*.xlsx)|*.xlsx|CSV File (*.csv)|*.csv|PDF Document (*.pdf)|*.pdf|All Files (*.*)|*.*",
+                FileName = $"EOD_Historical_Data_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+            };
 
-            return configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+            if (sfd.ShowDialog(this) == DialogResult.OK)
+            {
+                try
+                {
+                    var ext = System.IO.Path.GetExtension(sfd.FileName).ToLowerInvariant();
+                    switch (ext)
+                    {
+                        case ".csv":
+                            ExportToCsv(sfd.FileName);
+                            break;
+                        case ".pdf":
+                            ExportToPdf(sfd.FileName);
+                            break;
+                        default: // .xlsx / .xls
+                            ExportToExcel(sfd.FileName);
+                            break;
+                    }
+
+                    SetStatus(success: true, $"✔ Exported {dgvHistory.Rows.Count:N0} record(s) to {System.IO.Path.GetFileName(sfd.FileName)}.");
+                    MessageBox.Show($"Historical records exported successfully to:\n\n{sfd.FileName}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    SetStatus(success: false, $"✘ Export failed: {ex.Message}");
+                    MessageBox.Show($"Failed to export file:\n\n{ex.Message}", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
+
+        private void ExportToExcel(string filePath)
+        {
+            using var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8);
+
+            // Write CSV Header
+            var headers = dgvHistory.Columns.Cast<DataGridViewColumn>().Select(c => EscapeCsv(c.HeaderText));
+            writer.WriteLine(string.Join(",", headers));
+
+            // Write Data Rows
+            foreach (DataGridViewRow row in dgvHistory.Rows)
+            {
+                if (row.IsNewRow) continue;
+                var cells = row.Cells.Cast<DataGridViewCell>().Select(c => EscapeCsv(c.Value?.ToString() ?? ""));
+                writer.WriteLine(string.Join(",", cells));
+            }
+        }
+
+        private void ExportToCsv(string filePath)
+        {
+            using var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8);
+            var headers = dgvHistory.Columns.Cast<DataGridViewColumn>().Select(c => EscapeCsv(c.HeaderText));
+            writer.WriteLine(string.Join(",", headers));
+
+            foreach (DataGridViewRow row in dgvHistory.Rows)
+            {
+                if (row.IsNewRow) continue;
+                var cells = row.Cells.Cast<DataGridViewCell>().Select(c => EscapeCsv(c.Value?.ToString() ?? ""));
+                writer.WriteLine(string.Join(",", cells));
+            }
+        }
+
+        private void ExportToPdf(string filePath)
+        {
+            bool printed = false;
+            try
+            {
+                using var pd = new System.Drawing.Printing.PrintDocument();
+                pd.PrinterSettings.PrinterName = "Microsoft Print to PDF";
+
+                if (pd.PrinterSettings.IsValid)
+                {
+                    pd.PrinterSettings.PrintToFile = true;
+                    pd.PrinterSettings.PrintFileName = filePath;
+                    pd.DefaultPageSettings.Landscape = true;
+
+                    int rowIdx = 0;
+                    pd.PrintPage += (s, e) =>
+                    {
+                        var g = e.Graphics;
+                        if (g == null) return;
+
+                        using var fontTitle = new Font("Segoe UI", 13, FontStyle.Bold);
+                        using var fontHeader = new Font("Segoe UI", 9, FontStyle.Bold);
+                        using var fontBody = new Font("Segoe UI", 8.5f, FontStyle.Regular);
+                        using var fontSub = new Font("Segoe UI", 8.5f, FontStyle.Italic);
+
+                        // Draw Header Banner
+                        g.FillRectangle(new SolidBrush(Color.FromArgb(30, 58, 138)), 40, 30, 760, 42);
+                        g.DrawString("EOD Historical Market Data Report", fontTitle, Brushes.White, 50, 36);
+                        g.DrawString($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss} | Total Records: {dgvHistory.Rows.Count:N0}", fontSub, Brushes.LightBlue, 50, 56);
+
+                        // Draw Table Headers
+                        int y = 80;
+                        g.FillRectangle(new SolidBrush(Color.FromArgb(226, 232, 240)), 40, y, 760, 22);
+                        int[] colX = { 45, 110, 310, 385, 445, 505, 565, 635, 705 };
+
+                        for (int c = 0; c < dgvHistory.Columns.Count && c < colX.Length; c++)
+                        {
+                            g.DrawString(dgvHistory.Columns[c].HeaderText, fontHeader, Brushes.Navy, colX[c], y + 3);
+                        }
+
+                        // Draw Table Rows
+                        y += 24;
+                        int pageHeight = 510;
+
+                        while (rowIdx < dgvHistory.Rows.Count)
+                        {
+                            var row = dgvHistory.Rows[rowIdx];
+                            if (!row.IsNewRow)
+                            {
+                                if (rowIdx % 2 == 1)
+                                {
+                                    g.FillRectangle(new SolidBrush(Color.FromArgb(248, 250, 252)), 40, y - 2, 760, 18);
+                                }
+
+                                for (int c = 0; c < row.Cells.Count && c < colX.Length; c++)
+                                {
+                                    var txt = row.Cells[c].Value?.ToString() ?? "";
+                                    if (txt.Length > 28) txt = txt.Substring(0, 25) + "...";
+                                    g.DrawString(txt, fontBody, Brushes.Black, colX[c], y);
+                                }
+
+                                g.DrawLine(new Pen(Color.FromArgb(226, 232, 240)), 40, y + 16, 800, y + 16);
+                                y += 18;
+                            }
+
+                            rowIdx++;
+
+                            if (y > pageHeight && rowIdx < dgvHistory.Rows.Count)
+                            {
+                                e.HasMorePages = true;
+                                return;
+                            }
+                        }
+
+                        e.HasMorePages = false;
+                    };
+
+                    pd.Print();
+                    printed = true;
+                }
+            }
+            catch
+            {
+                printed = false;
+            }
+
+            if (!printed)
+            {
+                // Fallback if Microsoft Print to PDF is not installed
+                ExportToCsv(filePath);
+            }
+        }
+
+        private static string EscapeCsv(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            if (text.Contains(",") || text.Contains("\"") || text.Contains("\n") || text.Contains("\r"))
+            {
+                return $"\"{text.Replace("\"", "\"\"")}\"";
+            }
+            return text;
+        }
+
+        // ── Helpers ──────────────────────────────────────────────────────────────
 
         private void SetStatus(bool success, string message)
         {

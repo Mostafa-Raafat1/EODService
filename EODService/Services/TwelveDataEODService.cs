@@ -1,4 +1,5 @@
 using EODService.DTOs.EOD;
+using EODService.DTOs.Provider;
 using EODService.DTOs.SymbolSettings;
 using EODService.DTOs.TwelveDataResponse;
 using EODService.DTOs.TwelveDataSettings;
@@ -9,10 +10,11 @@ namespace EODService.Services
 {
     public class TwelveDataEODService : IEODService
     {
-        private readonly TwelveDataSettings _twelveDataSettings;
+        private readonly ProviderDTO _twelveDataSettings;
         private readonly SymbolSettings _symbolSettings;
         private readonly HttpClient _httpClient;
         private readonly ILogger<TwelveDataEODService> _logger;
+        private readonly TwelveDataParametersDTO _parameters;
 
         // Reusable deserialization options — case-insensitive to be safe
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -21,7 +23,7 @@ namespace EODService.Services
         };
 
         public TwelveDataEODService(
-            TwelveDataSettings twelveDataSettings,
+            ProviderDTO twelveDataSettings,
             SymbolSettings symbolSettings,
             HttpClient httpClient,
             ILogger<TwelveDataEODService> logger)
@@ -30,6 +32,12 @@ namespace EODService.Services
             _symbolSettings = symbolSettings;
             _httpClient         = httpClient;
             _logger             = logger;
+
+            _parameters =
+                JsonSerializer.Deserialize<TwelveDataParametersDTO>(
+                    _twelveDataSettings.Parameters ?? "{}",
+                    _jsonOptions)
+                ?? new TwelveDataParametersDTO();
         }
 
         /// <inheritdoc />
@@ -52,7 +60,12 @@ namespace EODService.Services
 
                     var url      = BuildUrl(symbol);
                     var response = await _httpClient.GetAsync(url);
-                    response.EnsureSuccessStatusCode();
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var errorBody = await response.Content.ReadAsStringAsync();
+                        _logger.LogError("Twelve Data API returned HTTP {StatusCode} for {Symbol}: {ErrorBody}", response.StatusCode, symbol, errorBody);
+                        continue;
+                    }
 
                     using var stream = await response.Content.ReadAsStreamAsync();
 
@@ -119,13 +132,15 @@ namespace EODService.Services
 
         private string BuildUrl(string symbol)
         {
-            // Twelve Data uses the base symbol directly (no exchange suffix needed).
-            // The exchange is resolved by the API from the symbol itself.
-            return $"{_twelveDataSettings.BaseUrl}{_twelveDataSettings.Endpoint}" +
+            var interval = !string.IsNullOrWhiteSpace(_parameters.Interval) ? _parameters.Interval : "1day";
+            var outputSize = _parameters.OutputSize > 0 ? _parameters.OutputSize : 1;
+            var apiKey = _twelveDataSettings.ApiKey ?? string.Empty;
+
+            return $"{_twelveDataSettings.BaseUrl}{_twelveDataSettings.EndPoint}" +
                    $"?symbol={symbol}" +
-                   $"&interval={_twelveDataSettings.Interval}" +
-                   $"&outputsize={_twelveDataSettings.OutputSize}" +
-                   $"&apikey={_twelveDataSettings.ApiKey}";
+                   $"&interval={interval}" +
+                   $"&outputsize={outputSize}" +
+                   $"&apikey={apiKey}";
         }
     }
 }

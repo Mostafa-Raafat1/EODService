@@ -54,7 +54,7 @@ namespace EODService.DTOs.YahooEODResponse
                     Name = Name,
                     Date = DateTimeOffset
                         .FromUnixTimeSeconds(timestamps[i])
-                        .UtcDateTime,
+                        .UtcDateTime.Date,
                     Open = o,
                     High = h,
                     Low = l,

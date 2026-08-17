@@ -7,6 +7,7 @@ namespace EODSettingsApp.AppSettingsConfig
     /// </summary>
     public class YahooSettingsSection
     {
+        public int    ID       { get; set; } = 1;
         public string BaseUrl  { get; set; } = string.Empty;
         public string Endpoint { get; set; } = string.Empty;
         public string Interval { get; set; } = string.Empty;
@@ -18,6 +19,7 @@ namespace EODSettingsApp.AppSettingsConfig
     /// </summary>
     public class TwelveDataSettingsSection
     {
+        public int    ID         { get; set; } = 2;
         public string BaseUrl    { get; set; } = string.Empty;
         public string Endpoint   { get; set; } = string.Empty;
         public string Interval   { get; set; } = string.Empty;

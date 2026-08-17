@@ -8,12 +8,14 @@ namespace EODService.Config
     {
         public string ActiveProviderSettingsPath { get; set; } = @"C:\EODConfig\settings.json";
         public string AppSettingsPath { get; set; } = "AppSettings.json";
+        /// <summary>Root folder where all log sub-folders (by month) and daily log files will be created.</summary>
+        public string LogFolderPath { get; set; } = @"C:\EODConfig\Logs";
     }
 
     /// <summary>
-    /// Configurable paths reader — loads file paths from PathesConfig.json so they are not hardcoded.
+    /// Configurable paths reader — loads file paths from PathsConfig.json or PathesConfig.json so they are not hardcoded.
     /// </summary>
-    public static class PathesConfig
+    public static class PathsConfig
     {
         private const string ConfigFileName = "PathesConfig.json";
         private static PathesConfigData? _cachedData;
@@ -26,6 +28,8 @@ namespace EODService.Config
             Path.GetDirectoryName(ActiveProviderSettingsPath) ?? @"C:\EODConfig";
 
         public static string AppSettingsFileName => Current.AppSettingsPath;
+
+        public static string LogFolderPath => Current.LogFolderPath;
 
         public static PathesConfigData LoadConfig()
         {
@@ -46,7 +50,7 @@ namespace EODService.Config
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine($"[PathesConfig] Warning: Failed to load {ConfigFileName}, falling back to defaults. Error: {ex.Message}");
+                System.Diagnostics.Trace.WriteLine($"[PathsConfig] Warning: Failed to load {ConfigFileName}, falling back to defaults. Error: {ex.Message}");
             }
 
             _cachedData ??= new PathesConfigData();
@@ -66,7 +70,6 @@ namespace EODService.Config
             if (File.Exists(localPath))
                 return localPath;
 
-            // Search up directory tree if running in dev environment
             var current = new DirectoryInfo(baseDir);
             while (current != null)
             {
@@ -83,5 +86,16 @@ namespace EODService.Config
 
             return localPath;
         }
+    }
+
+    /// <summary>Backward compatible alias for PathsConfig.</summary>
+    [Obsolete("Use PathsConfig instead.")]
+    public static class PathesConfig
+    {
+        public static PathesConfigData Current => PathsConfig.Current;
+        public static string ActiveProviderSettingsPath => PathsConfig.ActiveProviderSettingsPath;
+        public static string ActiveProviderFolderPath => PathsConfig.ActiveProviderFolderPath;
+        public static string AppSettingsFileName => PathsConfig.AppSettingsFileName;
+        public static string LogFolderPath => PathsConfig.LogFolderPath;
     }
 }

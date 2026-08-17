@@ -34,6 +34,8 @@ namespace EODSettingsApp.Forms
         private Panel pnlFooter;
         private Label lblHistoryStatus;
 
+        private Button btnExportCsv;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -57,6 +59,7 @@ namespace EODSettingsApp.Forms
             lblToDate       = new Label();
             dtpToDate       = new DateTimePicker();
             btnSearchHistory = new Button();
+            btnExportCsv    = new Button();
             pnlStats        = new Panel();
             lblTotalRecords = new Label();
             pnlGrid         = new Panel();
@@ -106,6 +109,7 @@ namespace EODSettingsApp.Forms
             pnlFilter.Controls.Add(lblToDate);
             pnlFilter.Controls.Add(dtpToDate);
             pnlFilter.Controls.Add(btnSearchHistory);
+            pnlFilter.Controls.Add(btnExportCsv);
             pnlFilter.Dock = DockStyle.Top;
             pnlFilter.Name = "pnlFilter";
             pnlFilter.Padding = new Padding(16);
@@ -166,13 +170,27 @@ namespace EODSettingsApp.Forms
             btnSearchHistory.FlatStyle = FlatStyle.Flat;
             btnSearchHistory.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnSearchHistory.ForeColor = Color.White;
-            btnSearchHistory.Location = new Point(520, 16);
+            btnSearchHistory.Location = new Point(515, 16);
             btnSearchHistory.Name = "btnSearchHistory";
-            btnSearchHistory.Size = new Size(130, 27);
+            btnSearchHistory.Size = new Size(140, 27);
             btnSearchHistory.TabIndex = 6;
             btnSearchHistory.Text = "🔍 Search History";
             btnSearchHistory.UseVisualStyleBackColor = false;
             btnSearchHistory.Click += BtnSearchHistory_Click;
+
+            btnExportCsv.BackColor = Color.FromArgb(22, 163, 74);
+            btnExportCsv.Cursor = Cursors.Hand;
+            btnExportCsv.FlatAppearance.BorderSize = 0;
+            btnExportCsv.FlatStyle = FlatStyle.Flat;
+            btnExportCsv.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            btnExportCsv.ForeColor = Color.White;
+            btnExportCsv.Location = new Point(665, 16);
+            btnExportCsv.Name = "btnExportCsv";
+            btnExportCsv.Size = new Size(145, 27);
+            btnExportCsv.TabIndex = 7;
+            btnExportCsv.Text = "📥 Export Data";
+            btnExportCsv.UseVisualStyleBackColor = false;
+            btnExportCsv.Click += BtnExportCsv_Click;
 
             // ── pnlStats (records count only) ─────────────────────────────────────
             pnlStats.BackColor = Color.FromArgb(226, 232, 240);

@@ -17,6 +17,6 @@ namespace EODService.DTOs.Stock
         public bool TwelveDataExists { get; set; }
 
         public string? StockExchange { get; set; }
-        public string? Isin { get; set; }
+        public string ISIN { get; set; } = string.Empty;
     }
 }

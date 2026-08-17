@@ -1,6 +1,7 @@
+using EODService.DTOs.Provider;
 using EODService.DTOs.SymbolSettings;
-using EODService.DTOs.TwelveDataSettings;
 using EODService.DTOs.YahooSettings;
+using EODService.Models;
 using Microsoft.Extensions.Logging;
 
 namespace EODService.Services
@@ -17,40 +18,32 @@ namespace EODService.Services
     public static class EODServiceFactory
     {
         public static IEODService CreateProvider(
-            string providerName,
             SymbolSettings symbolSettings,
             HttpClient httpClient,
             ILoggerFactory loggerFactory,
-            YahooSettings? yahooSettings = null,
-            TwelveDataSettings? twelveDataSettings = null)
+            ProviderDTO provider)
         {
-            switch (providerName.ToLower())
-            {
-                case "yahoo":
-                    if (yahooSettings == null)
-                        throw new ArgumentNullException(nameof(yahooSettings),
-                            "YahooSettings must be provided when using the Yahoo provider.");
+            ArgumentNullException.ThrowIfNull(provider,"Provider settings must be provided.");  // one real guard, at the top
 
+            switch (provider.Id)
+            {
+                case (int)ProviderIds.Yahoo:
                     return new YahooEODService(
-                        yahooSettings,
+                        provider,
                         symbolSettings,
                         httpClient,
                         loggerFactory.CreateLogger<YahooEODService>());
 
-                case "twelvedata":
-                    if (twelveDataSettings == null)
-                        throw new ArgumentNullException(nameof(twelveDataSettings),
-                            "TwelveDataSettings must be provided when using the TwelveData provider.");
-
+                case (int)ProviderIds.TwelveData:
                     return new TwelveDataEODService(
-                        twelveDataSettings,
+                        provider,
                         symbolSettings,
                         httpClient,
                         loggerFactory.CreateLogger<TwelveDataEODService>());
 
                 default:
                     throw new ArgumentException(
-                        $"The provider '{providerName}' is not supported. " +
+                        $"The provider '{provider.Id}' is not supported. " +
                         $"Check 'ProviderSettings.ActiveProvider' in appsettings.json. " +
                         $"Supported values: 'Yahoo', 'TwelveData'.");
             }

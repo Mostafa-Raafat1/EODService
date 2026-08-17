@@ -12,6 +12,6 @@ namespace EODSettingsApp.ExternalConfig
 
     public class ProviderSettingsSection
     {
-        public string ActiveProvider { get; set; } = "TwelveData";
+        public int ActiveProvider { get; set; } = 1;
     }
 }

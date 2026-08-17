@@ -42,6 +42,11 @@ namespace EODSettingsApp.Forms
         private MenuStrip         mnuMain;
         private ToolStripMenuItem mnuItemSettings;
         private ToolStripMenuItem mnuItemHistory;
+        private ToolStripMenuItem mnuItemChangeEncryptionKey;
+
+        // Toolbar
+        private ToolStrip         tsToolBar;
+        private ToolStripButton   tsBtnRunNow;
 
         protected override void Dispose(bool disposing)
         {
@@ -85,6 +90,9 @@ namespace EODSettingsApp.Forms
             mnuMain = new MenuStrip();
             mnuItemSettings = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
+            mnuItemChangeEncryptionKey = new ToolStripMenuItem();
+            tsToolBar = new ToolStrip();
+            tsBtnRunNow = new ToolStripButton();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             pnlGrid.SuspendLayout();
@@ -92,6 +100,7 @@ namespace EODSettingsApp.Forms
             pnlGridHeader.SuspendLayout();
             pnlLogs.SuspendLayout();
             mnuMain.SuspendLayout();
+            tsToolBar.SuspendLayout();
             SuspendLayout();
             // 
             // pnlHeader
@@ -173,6 +182,7 @@ namespace EODSettingsApp.Forms
             cmbProvider.Name = "cmbProvider";
             cmbProvider.Size = new Size(160, 25);
             cmbProvider.TabIndex = 0;
+            cmbProvider.SelectedIndexChanged += cmbProvider_SelectedIndexChanged;
             // 
             // lblProviderHint
             // 
@@ -472,9 +482,33 @@ namespace EODSettingsApp.Forms
             // 
             mnuItemHistory.ForeColor = Color.White;
             mnuItemHistory.Name = "mnuItemHistory";
-            mnuItemHistory.Size = new Size(57, 20);
-            mnuItemHistory.Text = "History";
+            mnuItemHistory.Size = new Size(72, 20);
+            mnuItemHistory.Text = "📋 History";
             mnuItemHistory.Click += MnuItemHistoricalData_Click;
+            // 
+            // tsToolBar
+            // 
+            tsToolBar.BackColor = Color.FromArgb(30, 58, 138);
+            tsToolBar.Dock = DockStyle.None;
+            tsToolBar.GripStyle = ToolStripGripStyle.Hidden;
+            tsToolBar.Items.AddRange(new ToolStripItem[] { tsBtnRunNow });
+            tsToolBar.Location = new Point(800, 0);
+            tsToolBar.Name = "tsToolBar";
+            tsToolBar.RenderMode = ToolStripRenderMode.System;
+            tsToolBar.Size = new Size(106, 25);
+            tsToolBar.TabIndex = 5;
+            // 
+            // tsBtnRunNow
+            // 
+            tsBtnRunNow.BackColor = Color.FromArgb(16, 185, 129);
+            tsBtnRunNow.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            tsBtnRunNow.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            tsBtnRunNow.ForeColor = Color.White;
+            tsBtnRunNow.Name = "tsBtnRunNow";
+            tsBtnRunNow.Size = new Size(103, 22);
+            tsBtnRunNow.Text = "▶ Run EOD Now";
+            tsBtnRunNow.ToolTipText = "Manually trigger an immediate EOD data import";
+            tsBtnRunNow.Click += TsBtnRunNow_Click;
             // 
             // SettingsForm
             // 
@@ -485,6 +519,7 @@ namespace EODSettingsApp.Forms
             Controls.Add(pnlControls);
             Controls.Add(pnlHeader);
             Controls.Add(mnuMain);
+            Controls.Add(tsToolBar);
             Font = new Font("Segoe UI", 9.5F);
             MainMenuStrip = mnuMain;
             MinimumSize = new Size(800, 650);
@@ -500,6 +535,8 @@ namespace EODSettingsApp.Forms
             pnlLogs.ResumeLayout(false);
             mnuMain.ResumeLayout(false);
             mnuMain.PerformLayout();
+            tsToolBar.ResumeLayout(false);
+            tsToolBar.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
