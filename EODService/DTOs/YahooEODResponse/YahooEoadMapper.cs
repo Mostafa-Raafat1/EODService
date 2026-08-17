@@ -59,6 +59,7 @@ namespace EODService.DTOs.YahooEODResponse
                     High = h.HasValue ? Math.Round(h.Value, 5) : null,
                     Low = l.HasValue ? Math.Round(l.Value, 5) : null,
                     Close = c.HasValue ? Math.Round(c.Value, 5) : null,
+                    Volume = v,
 
                     AdjustedClose = GetValue(
                         result.Indicators.Adjclose?
