@@ -17,12 +17,14 @@ namespace EODSettingsApp.Forms
     /// </summary>
     public partial class HistoricalDataForm : Form
     {
+        private const int MaxDisplayRecords = 2000;
+
         public HistoricalDataForm()
         {
             InitializeComponent();
             SetupGridColumns();
             InitializeFilters();
-            LoadSymbols();
+            _ = LoadSymbolsAsync();
         }
 
         // ── Initialization ───────────────────────────────────────────────────────
@@ -50,42 +52,49 @@ namespace EODSettingsApp.Forms
         private class StockFilterItem
         {
             public int Id { get; set; }
-            public string DisplayText { get; set; } = string.Empty;
+            public string StockName { get; set; } = string.Empty;
 
-            public override string ToString() => DisplayText;
+            public override string ToString()
+            {
+                if (Id == 0) return "ALL";
+                return StockName;
+            }
         }
 
-        private async void LoadSymbols()
+        private async Task LoadSymbolsAsync()
         {
             try
             {
                 cmbSymbol.Items.Clear();
-                cmbSymbol.Items.Add(new StockFilterItem { Id = 0, DisplayText = "ALL" });
+                cmbSymbol.Items.Add(new StockFilterItem { Id = 0, StockName = "ALL" });
 
                 var connectionString = GetConnectionString();
                 if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
                 {
                     using var dbContext = AppDbContextFactory.Create(connectionString);
-                    var stocks = dbContext.Stock.AsNoTracking().ToList();
-                    
+                    var stocks = await dbContext.Stock
+                        .AsNoTracking()
+                        .OrderBy(s => s.StockName)
+                        .ToListAsync();
+
+                    var addedIds = new HashSet<int>();
+
                     foreach (var stock in stocks)
                     {
-                        if (!string.IsNullOrWhiteSpace(stock.YahooFinanceID))
+                        if (addedIds.Contains(stock.Id))
+                            continue;
+
+                        var name = stock.StockName?.Trim();
+                        if (string.IsNullOrWhiteSpace(name))
+                            continue;
+
+                        cmbSymbol.Items.Add(new StockFilterItem
                         {
-                            var sym = stock.YahooFinanceID.Trim().ToUpperInvariant();
-                            if (!cmbSymbol.Items.Contains(sym))
-                            {
-                                cmbSymbol.Items.Add(sym);
-                            }
-                        }
-                        if (!string.IsNullOrWhiteSpace(stock.TwelveDataID))
-                        {
-                            var sym = stock.TwelveDataID.Trim().ToUpperInvariant();
-                            if (!cmbSymbol.Items.Contains(sym))
-                            {
-                                cmbSymbol.Items.Add(sym);
-                            }
-                        }
+                            Id = stock.Id,
+                            StockName = name
+                        });
+
+                        addedIds.Add(stock.Id);
                     }
                 }
 
@@ -124,39 +133,62 @@ namespace EODSettingsApp.Forms
 
                 var fromDate = dtpFromDate.Value.Date;
                 var toDate = dtpToDate.Value.Date.AddDays(1).AddTicks(-1);
+
                 var selectedItem = cmbSymbol.SelectedItem as StockFilterItem;
                 int selectedStockId = selectedItem?.Id ?? 0;
 
-                // Query EodHistory table
+                // 1. Query EodHistory table
                 var historyQuery = dbContext.EodHistory.AsNoTracking().AsQueryable();
-
                 if (selectedStockId > 0)
                 {
                     historyQuery = historyQuery.Where(h => h.Id == selectedStockId);
                 }
-
                 historyQuery = historyQuery.Where(h => h.Date >= fromDate && h.Date <= toDate);
+                var historyList = await historyQuery.ToListAsync();
 
-                var historyList = await historyQuery.OrderByDescending(h => h.Date).ThenBy(h => h.Id).ToListAsync();
-                var results = historyList.Cast<EodData>().ToList();
-
-                // If EodHistory is empty, fallback check in EodDaily table
-                if (!results.Any())
+                // 2. Query EodDaily table (latest records)
+                var dailyQuery = dbContext.EodDaily.AsNoTracking().AsQueryable();
+                if (selectedStockId > 0)
                 {
-                    var dailyQuery = dbContext.EodDaily.AsNoTracking().AsQueryable();
+                    dailyQuery = dailyQuery.Where(d => d.Id == selectedStockId);
+                }
+                dailyQuery = dailyQuery.Where(d => d.Date >= fromDate && d.Date <= toDate);
+                var dailyList = await dailyQuery.ToListAsync();
 
-                    if (selectedStockId > 0)
-                    {
-                        dailyQuery = dailyQuery.Where(d => d.Id == selectedStockId);
-                    }
+                // 3. Merge results without duplicates (keyed by Id + Date)
+                var recordMap = new Dictionary<(int Id, DateTime Date), EodData>();
 
-                    dailyQuery = dailyQuery.Where(d => d.Date >= fromDate && d.Date <= toDate);
-                    var dailyList = await dailyQuery.OrderByDescending(d => d.Date).ThenBy(d => d.Id).ToListAsync();
-                    results = dailyList.Cast<EodData>().ToList();
+                foreach (var h in historyList)
+                {
+                    recordMap[(h.Id, h.Date.Date)] = h;
                 }
 
-                PopulateGridAndStats(results);
-                SetStatus(success: true, $"✔ Found {results.Count} historical record(s).");
+                foreach (var d in dailyList)
+                {
+                    if (!recordMap.ContainsKey((d.Id, d.Date.Date)))
+                    {
+                        recordMap[(d.Id, d.Date.Date)] = d;
+                    }
+                }
+
+                var combinedResults = recordMap.Values
+                    .OrderByDescending(r => r.Date)
+                    .ThenBy(r => r.Id)
+                    .ToList();
+
+                bool isCapped = combinedResults.Count > MaxDisplayRecords;
+                var displayList = isCapped ? combinedResults.Take(MaxDisplayRecords).ToList() : combinedResults;
+
+                PopulateGridAndStats(displayList, combinedResults.Count, isCapped);
+
+                if (isCapped)
+                {
+                    SetStatus(success: true, $"✔ Showing top {MaxDisplayRecords:N0} of {combinedResults.Count:N0} records found (narrow date range to see all).");
+                }
+                else
+                {
+                    SetStatus(success: true, $"✔ Found {combinedResults.Count:N0} historical record(s).");
+                }
             }
             catch (Exception ex)
             {
@@ -170,10 +202,12 @@ namespace EODSettingsApp.Forms
             }
         }
 
-        private void PopulateGridAndStats(List<EodData> records)
+        private void PopulateGridAndStats(List<EodData> records, int totalCount, bool isCapped)
         {
             dgvHistory.Rows.Clear();
-            lblTotalRecords.Text = $"Records: {records.Count:N0}";
+            lblTotalRecords.Text = isCapped
+                ? $"Records: {records.Count:N0} of {totalCount:N0}"
+                : $"Records: {records.Count:N0}";
 
             if (!records.Any())
                 return;
@@ -242,7 +276,6 @@ namespace EODSettingsApp.Forms
 
         private void ExportToExcel(string filePath)
         {
-            // UTF-8 with BOM CSV file — Excel opens .csv and .xlsx CSV files 100% cleanly without any format warnings
             using var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8);
 
             // Write CSV Header
@@ -260,7 +293,6 @@ namespace EODSettingsApp.Forms
 
         private void ExportToCsv(string filePath)
         {
-            // UTF-8 with BOM for automatic Excel encoding recognition
             using var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8);
             var headers = dgvHistory.Columns.Cast<DataGridViewColumn>().Select(c => EscapeCsv(c.HeaderText));
             writer.WriteLine(string.Join(",", headers));
@@ -364,12 +396,6 @@ namespace EODSettingsApp.Forms
                 // Fallback if Microsoft Print to PDF is not installed
                 ExportToCsv(filePath);
             }
-        }
-
-        private static string EscapePdfText(string text)
-        {
-            if (string.IsNullOrEmpty(text)) return "";
-            return text.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
         }
 
         private static string EscapeCsv(string text)
