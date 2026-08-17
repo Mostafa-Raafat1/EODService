@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using EODService.Models.Provider;
-using EODService.Services;
 
 namespace EODService.Persistance.Repo
 {
@@ -27,28 +26,6 @@ namespace EODService.Persistance.Repo
             FROM PROVIDER")
                 .ToListAsync();
 
-            if (providers != null)
-            {
-                var aesKey = KeyStoreService.GetKey();
-                if (aesKey != null)
-                {
-                    foreach (var p in providers)
-                    {
-                        if (!string.IsNullOrEmpty(p.ApiKey))
-                        {
-                            try
-                            {
-                                p.ApiKey = AesEncryptionService.Decrypt(p.ApiKey, aesKey);
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Trace.WriteLine($"[ProviderRepo] Decrypt API key failed for provider {p.Id}: {ex.Message}");
-                            }
-                        }
-                    }
-                }
-            }
-
             return providers;
         }
 
@@ -61,39 +38,11 @@ namespace EODService.Persistance.Repo
                         WHERE ID = {providerId}")
                 .ToListAsync();
 
-            var provider = providers.SingleOrDefault();
-
-            if (provider != null && !string.IsNullOrEmpty(provider.ApiKey))
-            {
-                try
-                {
-                    var aesKey = KeyStoreService.GetKey();
-                    if (aesKey != null)
-                    {
-                        provider.ApiKey = AesEncryptionService.Decrypt(provider.ApiKey, aesKey);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Trace.WriteLine($"[ProviderRepo] Decrypt API key failed: {ex.Message}");
-                }
-            }
-
-            return provider;
+            return providers.SingleOrDefault();
         }
 
         public async Task UpdateProvider(int providerId, string name, string baseUrl, string endPoint, string? apiKey, string? parameters)
         {
-            string? encryptedApiKey = apiKey;
-            if (!string.IsNullOrEmpty(apiKey))
-            {
-                var aesKey = KeyStoreService.GetKey();
-                if (aesKey != null)
-                {
-                    encryptedApiKey = AesEncryptionService.Encrypt(apiKey, aesKey);
-                }
-            }
-
             var connection = dbContext.Database.GetDbConnection();
             bool closeOnExit = false;
 
@@ -125,7 +74,7 @@ namespace EODService.Persistance.Repo
 
                 var pApiKey = command.CreateParameter();
                 pApiKey.ParameterName = "apiKey";
-                pApiKey.Value = (object?)encryptedApiKey ?? DBNull.Value;
+                pApiKey.Value = (object?)apiKey ?? DBNull.Value;
                 command.Parameters.Add(pApiKey);
 
                 var pParameters = command.CreateParameter();

@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using EODService.Services;
 
 namespace EODSettingsApp.AppSettingsConfig
 {
@@ -24,10 +23,10 @@ namespace EODSettingsApp.AppSettingsConfig
         };
 
         /// <summary>
-        /// Loads all sections from AppSettings.json WITHOUT decrypting the connection string.
-        /// Used internally by the UI to check whether the stored value is already encrypted.
+        /// Loads the Yahoo, TwelveData, and SymbolSettings sections from AppSettings.json.
+        /// Returns default (empty) sections if a section key is missing from the file.
         /// </summary>
-        public static AppSettingsModel LoadRaw()
+        public static AppSettingsModel Load()
         {
             var path = AppSettingsPath.Resolve();
             var json = File.ReadAllText(path);
@@ -46,44 +45,6 @@ namespace EODSettingsApp.AppSettingsConfig
         }
 
         /// <summary>
-        /// Loads the Yahoo, TwelveData, and SymbolSettings sections from AppSettings.json.
-        /// Returns default (empty) sections if a section key is missing from the file.
-        /// </summary>
-        public static AppSettingsModel Load()
-        {
-            var path = AppSettingsPath.Resolve();
-            var json = File.ReadAllText(path);
-
-            using var document = JsonDocument.Parse(json);
-            var root = document.RootElement;
-
-            var model = new AppSettingsModel
-            {
-                YahooSettings      = ReadSection<YahooSettingsSection>(root, "YahooSettings"),
-                TwelveDataSettings = ReadSection<TwelveDataSettingsSection>(root, "TwelveDataSettings"),
-                SymbolSettings     = ReadSection<SymbolSettingsSection>(root, "SymbolSettings"),
-                ScheduleSettings   = ReadSection<ScheduleSettingsSection>(root, "ScheduleSettings"),
-                ConnectionStrings  = ReadSection<ConnectionStringsSection>(root, "ConnectionStrings")
-            };
-
-            // Decrypt the connection string so all callers always receive plain-text credentials.
-            // Legacy plain-text values (no "ENC:" prefix) are returned unchanged — fully backward compatible.
-            if (model.ConnectionStrings != null &&
-                !string.IsNullOrEmpty(model.ConnectionStrings.DefaultConnection))
-            {
-                model.ConnectionStrings.DefaultConnection =
-                    SecurityService.Decrypt(model.ConnectionStrings.DefaultConnection);
-            }
-
-            return model;
-        }
-
-        /// <summary>
-        /// Saves the Yahoo, TwelveData, SymbolSettings, ScheduleSettings, and ConnectionStrings sections back into AppSettings.json
-        /// and syncs changes to active bin output files.
-        /// All other keys in the file are left untouched.
-        /// </summary>
-        /// <summary>
         /// Convenience method: merges only the DefaultConnection string into AppSettings.json
         /// without touching any other section.
         /// </summary>
@@ -93,15 +54,12 @@ namespace EODSettingsApp.AppSettingsConfig
             var existing = File.ReadAllText(mainPath);
             var root     = JsonNode.Parse(existing)!.AsObject();
 
-            // Encrypt the connection string before persisting so credentials are never stored in plain text
-            var encryptedConnectionString = SecurityService.Encrypt(connectionString);
-            var section = new ConnectionStringsSection { DefaultConnection = encryptedConnectionString };
+            var section = new ConnectionStringsSection { DefaultConnection = connectionString };
             root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(section, _writeOptions));
 
             var updatedJson = root.ToJsonString(_writeOptions);
             File.WriteAllText(mainPath, updatedJson);
 
-            // Sync to all known copies so no copy retains plain-text credentials
             SyncToCopy(Path.Combine(AppContext.BaseDirectory, AppSettingsPath.FileName), mainPath, updatedJson);
             SyncToSourceProjectFile(mainPath, updatedJson);
 
@@ -134,10 +92,8 @@ namespace EODSettingsApp.AppSettingsConfig
 
             if (model.ConnectionStrings != null)
             {
-                // Ensure DefaultConnection is ALWAYS encrypted before persisting to file
-                var encryptedConnectionString = SecurityService.Encrypt(model.ConnectionStrings.DefaultConnection);
-                var encryptedSection = new ConnectionStringsSection { DefaultConnection = encryptedConnectionString };
-                root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(encryptedSection, _writeOptions));
+                var section = new ConnectionStringsSection { DefaultConnection = model.ConnectionStrings.DefaultConnection };
+                root["ConnectionStrings"] = JsonNode.Parse(JsonSerializer.Serialize(section, _writeOptions));
             }
 
             var updatedJson = root.ToJsonString(_writeOptions);
@@ -148,7 +104,7 @@ namespace EODSettingsApp.AppSettingsConfig
             // 2. Sync to current application bin directory if distinct
             SyncToCopy(Path.Combine(AppContext.BaseDirectory, AppSettingsPath.FileName), mainPath, updatedJson);
 
-            // 3. Sync back to source EODService project file so rebuild doesn't overwrite encrypted values
+            // 3. Sync back to source EODService project file so rebuild doesn't overwrite values
             SyncToSourceProjectFile(mainPath, updatedJson);
 
             // 4. Sync to EODService bin/Debug output if distinct and exists

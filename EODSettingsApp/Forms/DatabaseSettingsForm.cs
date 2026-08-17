@@ -32,12 +32,6 @@ namespace EODSettingsApp.Forms
                 var model = AppSettingsService.Load();
                 var connectionString = model.ConnectionStrings?.DefaultConnection ?? string.Empty;
 
-                // Check if the value in the file is currently encrypted
-                // (Load() already decrypts it, so we re-read the raw file to determine status)
-                var rawModel        = AppSettingsService.LoadRaw();
-                var rawConnection   = rawModel.ConnectionStrings?.DefaultConnection ?? string.Empty;
-                bool isEncrypted    = SecurityService.IsEncrypted(rawConnection);
-
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
                     // No saved connection yet — leave fields empty for fresh entry
@@ -57,11 +51,7 @@ namespace EODSettingsApp.Forms
                     txtConnectionString.Text = connectionString;
                     ParseAndPopulateFields(connectionString);
 
-                    // Inform the user whether the stored value is protected or still plain text
-                    if (isEncrypted)
-                        SetStatus(success: true, "✔ Connection settings loaded. 🔒 Stored securely (encrypted).");
-                    else
-                        SetStatus(success: true, "⚠ Connection settings loaded. Not yet encrypted — click Save to secure.");
+                    SetStatus(success: true, "✔ Connection settings loaded.");
                 }
             }
             catch (Exception ex)
@@ -162,10 +152,8 @@ namespace EODSettingsApp.Forms
 
             try
             {
-                // AppSettingsService.SaveConnectionString() automatically encrypts
-                // the connection string using DPAPI before writing to AppSettings.json
                 AppSettingsService.SaveConnectionString(connectionString);
-                SetStatus(success: true, "✔ Connection settings saved and encrypted successfully. 🔒");
+                SetStatus(success: true, "✔ Connection settings saved successfully.");
             }
             catch (Exception ex)
             {

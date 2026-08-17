@@ -60,7 +60,12 @@ namespace EODService.Services
 
                     var url      = BuildUrl(symbol);
                     var response = await _httpClient.GetAsync(url);
-                    response.EnsureSuccessStatusCode();
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var errorBody = await response.Content.ReadAsStringAsync();
+                        _logger.LogError("Twelve Data API returned HTTP {StatusCode} for {Symbol}: {ErrorBody}", response.StatusCode, symbol, errorBody);
+                        continue;
+                    }
 
                     using var stream = await response.Content.ReadAsStreamAsync();
 
@@ -127,13 +132,15 @@ namespace EODService.Services
 
         private string BuildUrl(string symbol)
         {
-            // Twelve Data uses the base symbol directly (no exchange suffix needed).
-            // The exchange is resolved by the API from the symbol itself.
+            var interval = !string.IsNullOrWhiteSpace(_parameters.Interval) ? _parameters.Interval : "1day";
+            var outputSize = _parameters.OutputSize > 0 ? _parameters.OutputSize : 1;
+            var apiKey = _twelveDataSettings.ApiKey ?? string.Empty;
+
             return $"{_twelveDataSettings.BaseUrl}{_twelveDataSettings.EndPoint}" +
                    $"?symbol={symbol}" +
-                   $"&interval={_parameters.Interval}" +
-                   $"&outputsize={_parameters.OutputSize}" +
-                   $"&apikey={_twelveDataSettings.ApiKey}";
+                   $"&interval={interval}" +
+                   $"&outputsize={outputSize}" +
+                   $"&apikey={apiKey}";
         }
     }
 }

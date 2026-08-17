@@ -53,10 +53,8 @@ namespace EODSettingsApp.Forms
                     reloadOnChange: false)
                 .Build();
 
-            var rawConnectionString =
+            var connectionString =
                 configuration.GetConnectionString("DefaultConnection");
-
-            var connectionString = SecurityService.Decrypt(rawConnectionString);
 
             if (string.IsNullOrWhiteSpace(connectionString) ||
                 connectionString.Contains("YOUR_DB_USER"))
@@ -957,12 +955,6 @@ namespace EODSettingsApp.Forms
                 AppendLogError(
                     $"Manual run error: {ex.Message}");
             }
-        }
-
-        private void MnuItemChangeEncryptionKey_Click(object? sender, EventArgs e)
-        {
-            using var form = new ChangeKeyForm();
-            form.ShowDialog(this);
         }
 
         // ── Provider ComboBox ───────────────────────────────────────────────────
