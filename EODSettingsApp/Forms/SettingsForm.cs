@@ -53,8 +53,10 @@ namespace EODSettingsApp.Forms
                     reloadOnChange: false)
                 .Build();
 
-            var connectionString =
+            var rawConnectionString =
                 configuration.GetConnectionString("DefaultConnection");
+
+            var connectionString = SecurityService.Decrypt(rawConnectionString);
 
             if (string.IsNullOrWhiteSpace(connectionString) ||
                 connectionString.Contains("YOUR_DB_USER"))
