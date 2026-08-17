@@ -24,7 +24,7 @@ namespace EODSettingsApp.Forms
         {
             InitializeComponent();
             SetupGridColumns();
-            LoadStockSettingsAsync();
+            Load += async (_, _) => await LoadStockSettingsAsync();
         }
 
         private void SetupGridColumns()
@@ -41,7 +41,7 @@ namespace EODSettingsApp.Forms
             dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "StockExchange", HeaderText = "Exchange", DataPropertyName = "StockExchange", FillWeight = 50 });
         }
 
-        private async void LoadStockSettingsAsync()
+        private async Task LoadStockSettingsAsync()
         {
             try
             {

@@ -50,9 +50,9 @@ catch (Exception ex)
 // ─── Step 1: Load ProviderSettings ───────────────────────────────────────────
 var providerSettings = ProviderSettingsMapper.MapToProviderSettings();
 
-if (providerSettings == null || providerSettings.ActiveProvider == null)
+if (providerSettings == null || providerSettings.ActiveProvider <= 0)
 {
-    logger.LogError("'ProviderSettings:ActiveProvider' is missing or empty in appsettings.json. Exiting.");
+    logger.LogError("'ProviderSettings:ActiveProvider' is missing or invalid in settings. Exiting.");
     return;
 }
 
@@ -121,7 +121,7 @@ try
         symbolSettings:      symbolSettings,
         httpClient:          httpClient,
         loggerFactory:       loggerFactory,
-        provider:            ProviderDTO);
+        provider:            ProviderDTO!);
 }
 catch (ArgumentException ex)
 {
