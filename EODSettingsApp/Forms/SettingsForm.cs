@@ -23,8 +23,8 @@ namespace EODSettingsApp.Forms
     {
         // ── Database ────────────────────────────────────────────────────────────
 
-        private readonly AppDbContext _dbContext;
-        private readonly IProvider _providerRepo;
+        private AppDbContext _dbContext;
+        private IProvider _providerRepo;
 
 
         // ── Log Monitoring ──────────────────────────────────────────────────────
@@ -41,41 +41,7 @@ namespace EODSettingsApp.Forms
 
             SetupGridColumns();
 
-            // ── Create ONE database connection for this form ────────────────────
-
-            var appSettingsPath = AppSettingsPath.Resolve();
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Path.GetDirectoryName(appSettingsPath)!)
-                .AddJsonFile(
-                    Path.GetFileName(appSettingsPath),
-                    optional: false,
-                    reloadOnChange: false)
-                .Build();
-
-            var connectionString =
-                configuration.GetConnectionString("DefaultConnection");
-
-            if (string.IsNullOrWhiteSpace(connectionString) ||
-                connectionString.Contains("YOUR_DB_USER"))
-            {
-                throw new InvalidOperationException(
-                    "Database connection string is not configured.");
-            }
-
-            _dbContext =
-                AppDbContextFactory.Create(connectionString);
-
-            // ── Create repositories using the same DbContext ────────────────────
-
-            _providerRepo =
-                new ProviderRepo(_dbContext);
-
-            // ── Load settings on Form Load event ────────────────────────────────
-
-            Load += async (_, _) => await LoadCurrentSettingsAsync();
-
-            // ── Start background log monitoring ─────────────────────────────────
+            Load += async (_, _) => await SettingsForm_LoadAsync();
 
             InitializeBackgroundLogAndGridMonitoring();
         }
@@ -900,6 +866,51 @@ namespace EODSettingsApp.Forms
         {
             using var form = new HistoricalDataForm();
             form.ShowDialog(this);
+        }
+        // Loading the Form
+        private async Task SettingsForm_LoadAsync()
+        {
+            try
+            {
+                SetStatus("Connecting to database...", false);
+
+                await InitializeDatabaseAsync();
+
+                SetStatus("Loading settings...", false);
+
+                await LoadCurrentSettingsAsync();
+
+                SetStatus("Loaded successfully...", true);
+
+            }
+            catch (Exception ex)
+            {
+                SetStatus(
+                    $"Warning: Could not load settings ({ex.Message})",
+                    false);
+            }
+        }
+
+        // -- Initialization: db
+        private async Task InitializeDatabaseAsync()
+        {
+            var connectionString = ConnectionStringResolver.Get();
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Database connection string is not configured.");
+            }
+
+            _dbContext =
+                AppDbContextFactory.Create(connectionString);
+
+            await _dbContext.Database.EnsureCreatedAsync();
+
+            await DatabaseSeeder.SeedAsync(_dbContext);
+
+            _providerRepo =
+                new ProviderRepo(_dbContext);
         }
 
 

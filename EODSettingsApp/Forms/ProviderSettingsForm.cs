@@ -11,6 +11,7 @@ using EODService.Models.Provider;
 using EODService.Persistance;
 using EODService.Persistance.Repo;
 using EODSettingsApp.AppSettingsConfig;
+using EODService.Models;
 
 namespace EODSettingsApp.Forms
 {
@@ -75,7 +76,7 @@ namespace EODSettingsApp.Forms
                     return;
                 }
 
-                var yahooProvider = providers.FirstOrDefault(p => p.Id == 1 || p.Name.Contains("Yahoo", StringComparison.OrdinalIgnoreCase));
+                var yahooProvider = providers.FirstOrDefault(p => p.Id == (int)ProviderIds.Yahoo || p.Name.Contains("Yahoo", StringComparison.OrdinalIgnoreCase));
                 if (yahooProvider != null)
                 {
                     txtYahooBaseUrl.Text    = yahooProvider.BaseUrl ?? string.Empty;
@@ -84,7 +85,7 @@ namespace EODSettingsApp.Forms
                     txtYahooParameters.Text = FormatJsonString(yahooProvider.Parameters);
                 }
 
-                var twelveProvider = providers.FirstOrDefault(p => p.Id == 2 || p.Name.Contains("Twelve", StringComparison.OrdinalIgnoreCase));
+                var twelveProvider = providers.FirstOrDefault(p => p.Id == (int)ProviderIds.TwelveData || p.Name.Contains("Twelve", StringComparison.OrdinalIgnoreCase));
                 if (twelveProvider != null)
                 {
                     txtTwelveBaseUrl.Text    = twelveProvider.BaseUrl ?? string.Empty;
