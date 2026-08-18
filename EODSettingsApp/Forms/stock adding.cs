@@ -53,7 +53,7 @@ namespace EODSettingsApp.Forms
                     YahooFinanceExists = rdoYfYes.Checked,
                     TwelveDataID = string.IsNullOrWhiteSpace(txtTdSymbol.Text) ? null : txtTdSymbol.Text.Trim(),
                     YahooFinanceID = string.IsNullOrWhiteSpace(txtYfSymbol.Text) ? null : txtYfSymbol.Text.Trim(),
-                    ISIN = string.IsNullOrWhiteSpace(txtIsin.Text) ? null : txtIsin.Text.Trim()
+                    ISIN = string.IsNullOrWhiteSpace(txtIsin.Text) ? string.Empty : txtIsin.Text.Trim()
                 };
 
                 dbContext.Stock.Add(newStock);

@@ -13,7 +13,7 @@ namespace EODSettingsApp.AppSettingsConfig
     {
         private const string EodServiceProject = "EODService";
 
-        public static string FileName => PathesConfig.AppSettingsFileName;
+        public static string FileName => PathsConfig.AppSettingsFileName;
 
         /// <summary>
         /// Returns the absolute path to the active AppSettings.json file.

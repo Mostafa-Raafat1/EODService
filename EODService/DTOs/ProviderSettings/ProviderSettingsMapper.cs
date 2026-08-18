@@ -10,9 +10,9 @@ namespace EODService.DTOs.ProviderSettings
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(PathesConfig.AppSettingsFileName, optional: false, reloadOnChange: true);
+                .AddJsonFile(PathsConfig.AppSettingsFileName, optional: false, reloadOnChange: true);
 
-            var activeProviderPath = PathesConfig.ActiveProviderSettingsPath;
+            var activeProviderPath = PathsConfig.ActiveProviderSettingsPath;
             if (!string.IsNullOrWhiteSpace(activeProviderPath))
             {
                 builder.AddJsonFile(activeProviderPath, optional: true, reloadOnChange: true);

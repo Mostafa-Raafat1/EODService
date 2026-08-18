@@ -9,7 +9,7 @@ namespace EODSettingsApp.ExternalConfig
     /// </summary>
     public static class ExternalConfigPath
     {
-        public static string FolderPath => PathesConfig.ActiveProviderFolderPath;
-        public static string FilePath   => PathesConfig.ActiveProviderSettingsPath;
+        public static string FolderPath => PathsConfig.ActiveProviderFolderPath;
+        public static string FilePath   => PathsConfig.ActiveProviderSettingsPath;
     }
 }

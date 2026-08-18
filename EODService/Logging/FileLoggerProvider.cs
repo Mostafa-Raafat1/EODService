@@ -33,7 +33,7 @@ namespace EODService.Logging
             var today      = DateTime.Now;
             var monthFolder = today.ToString("yyyy-MM");           // e.g. 2026-08
             var dayFile     = today.ToString("yyyy-MM-dd") + ".txt"; // e.g. 2026-08-13.txt
-            return Path.Combine(PathesConfig.LogFolderPath, monthFolder, dayFile);
+            return Path.Combine(PathsConfig.LogFolderPath, monthFolder, dayFile);
         }
 
         /// <summary>

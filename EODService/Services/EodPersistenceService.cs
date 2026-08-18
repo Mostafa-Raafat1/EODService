@@ -45,14 +45,24 @@ namespace EODService.Services
             try
             {
                 var symbols = cleanResults.Select(r => r.Id).Distinct().ToList();
+                var minDate = cleanResults.Min(r => r.Date);
+                var maxDate = cleanResults.Max(r => r.Date);
 
-                // 1. Fetch matching EodDaily rows as NoTracking
-                var dailyRows = await dbContext.EodDaily
-                    .AsNoTracking()
-                    .Where(e => symbols.Contains(e.Id))
-                    .ToListAsync(ct);
+                // 1. Fetch matching EodDaily rows in chunks of 500 to respect Oracle's 1000 IN-clause limit (ORA-01795)
+                var existingDailyIds = new HashSet<int>();
+                foreach (var chunk in symbols.Chunk(500))
+                {
+                    var chunkIds = await dbContext.EodDaily
+                        .AsNoTracking()
+                        .Where(e => chunk.Contains(e.Id))
+                        .Select(e => e.Id)
+                        .ToListAsync(ct);
 
-                var existingDailyIds = dailyRows.Select(e => e.Id).ToHashSet();
+                    foreach (var id in chunkIds)
+                    {
+                        existingDailyIds.Add(id);
+                    }
+                }
 
                 foreach (var result in cleanResults)
                 {
@@ -67,16 +77,21 @@ namespace EODService.Services
                     }
                 }
 
-                // 2. Fetch existing history dates as NoTracking (normalized to Date component)
-                var historyRows = await dbContext.EodHistory
-                    .AsNoTracking()
-                    .Where(e => symbols.Contains(e.Id))
-                    .Select(e => new { e.Id, e.Date })
-                    .ToListAsync(ct);
+                // 2. Fetch existing history rows bounded by minDate & maxDate in chunks of 500
+                var existingHistoryKeys = new HashSet<(int Id, DateTime Date)>();
+                foreach (var chunk in symbols.Chunk(500))
+                {
+                    var chunkHistoryRows = await dbContext.EodHistory
+                        .AsNoTracking()
+                        .Where(e => chunk.Contains(e.Id) && e.Date >= minDate && e.Date <= maxDate)
+                        .Select(e => new { e.Id, e.Date })
+                        .ToListAsync(ct);
 
-                var existingHistoryKeys = historyRows
-                    .Select(x => (x.Id, x.Date.Date))
-                    .ToHashSet();
+                    foreach (var row in chunkHistoryRows)
+                    {
+                        existingHistoryKeys.Add((row.Id, row.Date.Date));
+                    }
+                }
 
                 foreach (var result in cleanResults)
                 {

@@ -15,14 +15,14 @@ namespace EODService.DTOs.OracleSettings
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(PathesConfig.AppSettingsFileName, optional: false, reloadOnChange: true)
+                .AddJsonFile(PathsConfig.AppSettingsFileName, optional: false, reloadOnChange: true)
                 .Build();
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                logger?.LogError("'ConnectionStrings:DefaultConnection' is missing or empty in {File}.", PathesConfig.AppSettingsFileName);
+                logger?.LogError("'ConnectionStrings:DefaultConnection' is missing or empty in {File}.", PathsConfig.AppSettingsFileName);
                 return null;
             }
 

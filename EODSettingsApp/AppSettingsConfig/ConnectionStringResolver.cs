@@ -1,4 +1,4 @@
-﻿using EODService.Config;
+using EODService.Config;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace EODSettingsApp.AppSettingsConfig
                 return model.ConnectionStrings.DefaultConnection;
             return new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(PathesConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
+                .AddJsonFile(PathsConfig.AppSettingsFileName, optional: true, reloadOnChange: false)
                 .Build()
                 .GetConnectionString("DefaultConnection") ?? string.Empty;
         }
