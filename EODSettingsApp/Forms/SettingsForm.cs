@@ -42,11 +42,7 @@ namespace EODSettingsApp.Forms
 
             SetupGridColumns();
 
-            // ── Load settings on Form Load event ────────────────────────────────
-
-            Load += async (_, _) => await LoadCurrentSettingsAsync();
-
-            // ── Start background log monitoring ─────────────────────────────────
+            Load += async (_, _) => await SettingsForm_LoadAsync();
 
             InitializeBackgroundLogAndGridMonitoring();
         }
@@ -889,6 +885,51 @@ namespace EODSettingsApp.Forms
         {
             using var form = new HistoricalDataForm();
             form.ShowDialog(this);
+        }
+        // Loading the Form
+        private async Task SettingsForm_LoadAsync()
+        {
+            try
+            {
+                SetStatus("Connecting to database...", false);
+
+                await InitializeDatabaseAsync();
+
+                SetStatus("Loading settings...", false);
+
+                await LoadCurrentSettingsAsync();
+
+                SetStatus("Loaded successfully...", true);
+
+            }
+            catch (Exception ex)
+            {
+                SetStatus(
+                    $"Warning: Could not load settings ({ex.Message})",
+                    false);
+            }
+        }
+
+        // -- Initialization: db
+        private async Task InitializeDatabaseAsync()
+        {
+            var connectionString = ConnectionStringResolver.Get();
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Database connection string is not configured.");
+            }
+
+            _dbContext =
+                AppDbContextFactory.Create(connectionString);
+
+            await _dbContext.Database.EnsureCreatedAsync();
+
+            await DatabaseSeeder.SeedAsync(_dbContext);
+
+            _providerRepo =
+                new ProviderRepo(_dbContext);
         }
 
         // ── Provider ComboBox ───────────────────────────────────────────────────

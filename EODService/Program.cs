@@ -43,6 +43,7 @@ logger.LogInformation("Connecting to Database...");
 try
 {
     dbContext = AppDbContextFactory.Create(connectionString);
+
 }
 catch (Exception ex)
 {
