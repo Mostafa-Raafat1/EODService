@@ -17,6 +17,9 @@ namespace EODSettingsApp
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            // Ensure runtime directories exist on machine startup
+            EODService.Config.PathsConfig.EnsureDirectoriesExist();
+
             Application.Run(new SettingsForm());
         }
     }

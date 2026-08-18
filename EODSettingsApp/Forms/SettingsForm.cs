@@ -1,3 +1,4 @@
+using EODService.Config;
 using EODService.DTOs.EOD;
 using EODService.Logging;
 using EODService.Models.Provider;
@@ -23,8 +24,8 @@ namespace EODSettingsApp.Forms
     {
         // ── Database ────────────────────────────────────────────────────────────
 
-        private readonly AppDbContext _dbContext;
-        private readonly IProvider _providerRepo;
+        private AppDbContext? _dbContext;
+        private IProvider? _providerRepo;
 
 
         // ── Log Monitoring ──────────────────────────────────────────────────────
@@ -40,36 +41,6 @@ namespace EODSettingsApp.Forms
             InitializeComponent();
 
             SetupGridColumns();
-
-            // ── Create ONE database connection for this form ────────────────────
-
-            var appSettingsPath = AppSettingsPath.Resolve();
-
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Path.GetDirectoryName(appSettingsPath)!)
-                .AddJsonFile(
-                    Path.GetFileName(appSettingsPath),
-                    optional: false,
-                    reloadOnChange: false)
-                .Build();
-
-            var connectionString =
-                configuration.GetConnectionString("DefaultConnection");
-
-            if (string.IsNullOrWhiteSpace(connectionString) ||
-                connectionString.Contains("YOUR_DB_USER"))
-            {
-                throw new InvalidOperationException(
-                    "Database connection string is not configured.");
-            }
-
-            _dbContext =
-                AppDbContextFactory.Create(connectionString);
-
-            // ── Create repositories using the same DbContext ────────────────────
-
-            _providerRepo =
-                new ProviderRepo(_dbContext);
 
             // ── Load settings on Form Load event ────────────────────────────────
 
@@ -87,9 +58,24 @@ namespace EODSettingsApp.Forms
         {
             try
             {
-                // 1. Load all providers from database
-                await LoadProvidersAsync();
+                var connectionString = ConnectionStringResolver.Get();
 
+                if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
+                {
+                    _dbContext?.Dispose();
+                    _dbContext = AppDbContextFactory.Create(connectionString);
+                    _providerRepo = new ProviderRepo(_dbContext);
+
+                    // 1. Load all providers from database
+                    await LoadProvidersAsync();
+
+                    // 4. Load existing EOD records
+                    await RefreshGridFromDatabaseAsync();
+                }
+                else
+                {
+                    SetStatus("ℹ Database not yet configured. Click 'Settings' to enter Oracle connection details.", success: true);
+                }
 
                 // 2. Load active provider ID from external JSON
                 var extSettings =
@@ -100,7 +86,7 @@ namespace EODSettingsApp.Forms
 
 
                 // Select the provider matching the saved ID
-                if (activeProviderId > 0)
+                if (activeProviderId > 0 && cmbProvider.Items.Count > 0)
                 {
                     cmbProvider.SelectedValue =
                         activeProviderId;
@@ -117,10 +103,6 @@ namespace EODSettingsApp.Forms
 
                 PopulateScheduleUI(
                     appSettings.ScheduleSettings);
-
-
-                // 4. Load existing EOD records
-                await RefreshGridFromDatabaseAsync();
             }
             catch (Exception ex)
             {
@@ -135,6 +117,9 @@ namespace EODSettingsApp.Forms
 
         private async Task LoadProvidersAsync()
         {
+            if (_providerRepo == null)
+                return;
+
             try
             {
                 var providers =
@@ -551,24 +536,24 @@ namespace EODSettingsApp.Forms
             var nextRun =
                 CalculateNextRunTime(schedule);
 
+            var lastRunInfo =
+                LastRunStatusHelper.GetLastRunInfo();
+
+            string nextRunText;
             if (nextRun.HasValue)
             {
-                lblNextRunStatus.ForeColor =
-                    Color.FromArgb(30, 58, 138);
-
-                lblNextRunStatus.Text =
-                    $"🕒 Next Scheduled Run: " +
-                    $"{nextRun.Value:dddd, MMM d, yyyy 'at' HH:mm}";
+                nextRunText = $"🕒 Next Run: {nextRun.Value:ddd, MMM d 'at' HH:mm}";
             }
             else
             {
-                lblNextRunStatus.ForeColor =
-                    Color.FromArgb(185, 28, 28);
-
-                lblNextRunStatus.Text =
-                    "🕒 Next Scheduled Run: " +
-                    "Automated schedule is disabled or has no working days selected.";
+                nextRunText = "🕒 Next Run: Schedule Disabled";
             }
+
+            lblNextRunStatus.ForeColor = lastRunInfo.IsSuccess
+                ? Color.FromArgb(22, 101, 52)
+                : (lastRunInfo.HasRun ? Color.FromArgb(185, 28, 28) : Color.FromArgb(30, 58, 138));
+
+            lblNextRunStatus.Text = $"{lastRunInfo.SummaryText}   │   {nextRunText}";
         }
 
 
@@ -742,6 +727,9 @@ namespace EODSettingsApp.Forms
 
         private async Task RefreshGridFromDatabaseAsync()
         {
+            if (_dbContext == null)
+                return;
+
             try
             {
                 var dailyRecords =
@@ -887,10 +875,11 @@ namespace EODSettingsApp.Forms
         }
 
         // ── Menu handlers ────────────────────────────────────────────────────────
-        private void MnuItemSettings_Click(object? sender, EventArgs e)
+        private async void MnuItemSettings_Click(object? sender, EventArgs e)
         {
             using var form = new HierarchicalSettingsForm();
             form.ShowDialog(this);
+            await LoadCurrentSettingsAsync();
         }
 
         /// <summary>
@@ -900,59 +889,6 @@ namespace EODSettingsApp.Forms
         {
             using var form = new HistoricalDataForm();
             form.ShowDialog(this);
-        }
-
-
-        // ── Toolbar: Run EOD Now ────────────────────────────────────────────────
-
-        private void TsBtnRunNow_Click(
-            object? sender,
-            EventArgs e)
-        {
-            try
-            {
-                var exePath =
-                    EodServiceLauncher.ResolveExePath();
-
-                if (!File.Exists(exePath))
-                {
-                    SetStatus(
-                        "✘ EODService.exe not found. " +
-                        "Build the project first.",
-                        success: false);
-
-                    return;
-                }
-
-
-                var psi =
-                    new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = exePath,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
-
-                System.Diagnostics.Process.Start(psi);
-
-                SetStatus(
-                    "▶ EOD import started manually. " +
-                    "Check the log below for progress.",
-                    success: true);
-
-                AppendLog(
-                    $"[{DateTime.Now:HH:mm:ss}] " +
-                    "▶ Manual EOD import triggered by user.");
-            }
-            catch (Exception ex)
-            {
-                SetStatus(
-                    $"✘ Failed to start EOD service: {ex.Message}",
-                    success: false);
-
-                AppendLogError(
-                    $"Manual run error: {ex.Message}");
-            }
         }
 
         // ── Provider ComboBox ───────────────────────────────────────────────────
@@ -976,7 +912,7 @@ namespace EODSettingsApp.Forms
             _logPollTimer.Stop();
             _logPollTimer.Dispose();
 
-            _dbContext.Dispose();
+            _dbContext?.Dispose();
 
             base.OnFormClosed(e);
         }
