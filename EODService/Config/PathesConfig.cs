@@ -6,14 +6,15 @@ namespace EODService.Config
 {
     public class PathesConfigData
     {
-        public string ActiveProviderSettingsPath { get; set; } = @"C:\EODConfig\settings.json";
+        public string ActiveProviderSettingsPath { get; set; } = "EODConfig/settings.json";
         public string AppSettingsPath { get; set; } = "AppSettings.json";
         /// <summary>Root folder where all log sub-folders (by month) and daily log files will be created.</summary>
-        public string LogFolderPath { get; set; } = @"C:\EODConfig\Logs";
+        public string LogFolderPath { get; set; } = "EODConfig/Logs";
     }
 
     /// <summary>
     /// Configurable paths reader — loads file paths from PathsConfig.json or PathesConfig.json so they are not hardcoded.
+    /// Supports relative paths that resolve inside the application's base directory.
     /// </summary>
     public static class PathsConfig
     {
@@ -22,14 +23,44 @@ namespace EODService.Config
 
         public static PathesConfigData Current => LoadConfig();
 
-        public static string ActiveProviderSettingsPath => Current.ActiveProviderSettingsPath;
+        public static string ActiveProviderSettingsPath => ResolveFullPath(Current.ActiveProviderSettingsPath);
 
         public static string ActiveProviderFolderPath =>
-            Path.GetDirectoryName(ActiveProviderSettingsPath) ?? @"C:\EODConfig";
+            Path.GetDirectoryName(ActiveProviderSettingsPath) ?? Path.Combine(AppContext.BaseDirectory, "EODConfig");
 
         public static string AppSettingsFileName => Current.AppSettingsPath;
 
-        public static string LogFolderPath => Current.LogFolderPath;
+        public static string LogFolderPath => ResolveFullPath(Current.LogFolderPath);
+
+        private static string GetCanonicalBaseDirectory()
+        {
+            var baseDir = AppContext.BaseDirectory;
+
+            // In development, if running inside bin/Debug/... check if EODSettingsApp exists in solution
+            var current = new DirectoryInfo(baseDir);
+            while (current != null)
+            {
+                var settingsAppDir = Path.Combine(current.FullName, "EODSettingsApp");
+                if (Directory.Exists(settingsAppDir) && File.Exists(Path.Combine(settingsAppDir, "EODSettingsApp.csproj")))
+                {
+                    return settingsAppDir;
+                }
+                current = current.Parent;
+            }
+
+            return baseDir;
+        }
+
+        private static string ResolveFullPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return GetCanonicalBaseDirectory();
+
+            if (Path.IsPathRooted(path))
+                return path;
+
+            return Path.GetFullPath(Path.Combine(GetCanonicalBaseDirectory(), path));
+        }
 
         public static PathesConfigData LoadConfig()
         {
@@ -54,7 +85,41 @@ namespace EODService.Config
             }
 
             _cachedData ??= new PathesConfigData();
+            EnsureDirectoriesExist();
             return _cachedData;
+        }
+
+        /// <summary>
+        /// Ensures that the external config folder, logs folder, and default settings file exist on the machine.
+        /// Guarantees seamless start on fresh machines without manual folder creation.
+        /// </summary>
+        public static void EnsureDirectoriesExist()
+        {
+            try
+            {
+                var folder = ActiveProviderFolderPath;
+                if (!string.IsNullOrWhiteSpace(folder) && !Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                var logFolder = LogFolderPath;
+                if (!string.IsNullOrWhiteSpace(logFolder) && !Directory.Exists(logFolder))
+                {
+                    Directory.CreateDirectory(logFolder);
+                }
+
+                var settingsPath = ActiveProviderSettingsPath;
+                if (!string.IsNullOrWhiteSpace(settingsPath) && !File.Exists(settingsPath))
+                {
+                    var defaultSettingsJson = "{\r\n  \"ProviderSettings\": {\r\n    \"ActiveProvider\": 2\r\n  }\r\n}";
+                    File.WriteAllText(settingsPath, defaultSettingsJson);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"[PathsConfig] EnsureDirectoriesExist error: {ex.Message}");
+            }
         }
 
         public static void Reload()

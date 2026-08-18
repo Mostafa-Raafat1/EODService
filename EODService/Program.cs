@@ -22,6 +22,9 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 
 var logger = loggerFactory.CreateLogger("Program");
 
+// Ensure runtime folders (C:\EODConfig, C:\EODConfig\Logs) exist on fresh machines
+EODService.Config.PathsConfig.EnsureDirectoriesExist();
+
 // Write a banner to the log file so each run is clearly separated
 EODService.Logging.FileLoggerProvider.WriteRunBanner();
 

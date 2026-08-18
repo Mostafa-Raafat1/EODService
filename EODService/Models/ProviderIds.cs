@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace EODService.Models
 
-namespace EODService.Models
-{
+
+{   /* to select the active providers (switch case byte id )*/
+
+
     public enum ProviderIds
     {
         Yahoo = 1,

@@ -42,11 +42,6 @@ namespace EODSettingsApp.Forms
         private MenuStrip         mnuMain;
         private ToolStripMenuItem mnuItemSettings;
         private ToolStripMenuItem mnuItemHistory;
-        private ToolStripMenuItem mnuItemChangeEncryptionKey;
-
-        // Toolbar
-        private ToolStrip         tsToolBar;
-        private ToolStripButton   tsBtnRunNow;
 
         protected override void Dispose(bool disposing)
         {
@@ -90,9 +85,6 @@ namespace EODSettingsApp.Forms
             mnuMain = new MenuStrip();
             mnuItemSettings = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
-            mnuItemChangeEncryptionKey = new ToolStripMenuItem();
-            tsToolBar = new ToolStrip();
-            tsBtnRunNow = new ToolStripButton();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             pnlGrid.SuspendLayout();
@@ -100,7 +92,6 @@ namespace EODSettingsApp.Forms
             pnlGridHeader.SuspendLayout();
             pnlLogs.SuspendLayout();
             mnuMain.SuspendLayout();
-            tsToolBar.SuspendLayout();
             SuspendLayout();
             // 
             // pnlHeader
@@ -350,52 +341,52 @@ namespace EODSettingsApp.Forms
             // 
             lblStatus.Font = new Font("Segoe UI", 8.5F);
             lblStatus.ForeColor = Color.FromArgb(22, 163, 74);
-            lblStatus.Location = new Point(20, 72);
+            lblStatus.Location = new Point(20, 90);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(320, 22);
+            lblStatus.Size = new Size(330, 18);
             lblStatus.TabIndex = 15;
             // 
             // pnlGrid
             // 
-            pnlGrid.BackColor = Color.FromArgb(245, 247, 250);
+            pnlGrid.BackColor = Color.White;
             pnlGrid.Controls.Add(dgvResults);
             pnlGrid.Controls.Add(pnlGridHeader);
             pnlGrid.Dock = DockStyle.Fill;
             pnlGrid.Location = new Point(0, 214);
             pnlGrid.Name = "pnlGrid";
-            pnlGrid.Padding = new Padding(12, 0, 12, 12);
+            pnlGrid.Padding = new Padding(12, 0, 12, 8);
             pnlGrid.Size = new Size(1034, 427);
-            pnlGrid.TabIndex = 0;
+            pnlGrid.TabIndex = 2;
             // 
             // dgvResults
             // 
             dgvResults.AllowUserToAddRows = false;
             dgvResults.AllowUserToDeleteRows = false;
             dgvResults.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(241, 245, 249);
-            dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(248, 250, 252);
+            dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             dgvResults.BackgroundColor = Color.White;
             dgvResults.BorderStyle = BorderStyle.None;
             dgvResults.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgvResults.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = Color.FromArgb(30, 58, 138);
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(241, 245, 249);
             dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            dataGridViewCellStyle2.ForeColor = Color.White;
-            dataGridViewCellStyle2.Padding = new Padding(8, 0, 0, 0);
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.ForeColor = Color.FromArgb(51, 65, 85);
+            dataGridViewCellStyle2.Padding = new Padding(4, 0, 0, 0);
+            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(241, 245, 249);
+            dataGridViewCellStyle2.SelectionForeColor = Color.FromArgb(51, 65, 85);
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
             dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            dgvResults.ColumnHeadersHeight = 38;
+            dgvResults.ColumnHeadersHeight = 36;
             dgvResults.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = SystemColors.Window;
+            dataGridViewCellStyle3.BackColor = Color.White;
             dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.5F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle3.Padding = new Padding(8, 2, 4, 2);
-            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(191, 219, 254);
-            dataGridViewCellStyle3.SelectionForeColor = Color.FromArgb(15, 23, 42);
+            dataGridViewCellStyle3.ForeColor = Color.FromArgb(15, 23, 42);
+            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(219, 234, 254);
+            dataGridViewCellStyle3.SelectionForeColor = Color.FromArgb(30, 58, 138);
             dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
             dgvResults.DefaultCellStyle = dataGridViewCellStyle3;
             dgvResults.Dock = DockStyle.Fill;
@@ -486,30 +477,6 @@ namespace EODSettingsApp.Forms
             mnuItemHistory.Text = "📋 History";
             mnuItemHistory.Click += MnuItemHistoricalData_Click;
             // 
-            // tsToolBar
-            // 
-            tsToolBar.BackColor = Color.FromArgb(30, 58, 138);
-            tsToolBar.Dock = DockStyle.None;
-            tsToolBar.GripStyle = ToolStripGripStyle.Hidden;
-            tsToolBar.Items.AddRange(new ToolStripItem[] { tsBtnRunNow });
-            tsToolBar.Location = new Point(800, 0);
-            tsToolBar.Name = "tsToolBar";
-            tsToolBar.RenderMode = ToolStripRenderMode.System;
-            tsToolBar.Size = new Size(106, 25);
-            tsToolBar.TabIndex = 5;
-            // 
-            // tsBtnRunNow
-            // 
-            tsBtnRunNow.BackColor = Color.FromArgb(16, 185, 129);
-            tsBtnRunNow.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            tsBtnRunNow.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            tsBtnRunNow.ForeColor = Color.White;
-            tsBtnRunNow.Name = "tsBtnRunNow";
-            tsBtnRunNow.Size = new Size(103, 22);
-            tsBtnRunNow.Text = "▶ Run EOD Now";
-            tsBtnRunNow.ToolTipText = "Manually trigger an immediate EOD data import";
-            tsBtnRunNow.Click += TsBtnRunNow_Click;
-            // 
             // SettingsForm
             // 
             BackColor = Color.FromArgb(245, 247, 250);
@@ -519,7 +486,6 @@ namespace EODSettingsApp.Forms
             Controls.Add(pnlControls);
             Controls.Add(pnlHeader);
             Controls.Add(mnuMain);
-            Controls.Add(tsToolBar);
             Font = new Font("Segoe UI", 9.5F);
             MainMenuStrip = mnuMain;
             MinimumSize = new Size(800, 650);
@@ -535,8 +501,6 @@ namespace EODSettingsApp.Forms
             pnlLogs.ResumeLayout(false);
             mnuMain.ResumeLayout(false);
             mnuMain.PerformLayout();
-            tsToolBar.ResumeLayout(false);
-            tsToolBar.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }

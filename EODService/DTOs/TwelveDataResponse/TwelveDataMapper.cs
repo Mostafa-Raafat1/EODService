@@ -38,7 +38,7 @@ namespace EODService.DTOs.TwelveDataResponse
                 {
                     Id = Id,
                     Name = Name,
-                    Date = parsedDate,
+                    Date = parsedDate.Date,
                     Open = parsedOpen,
                     High = parsedHigh,
                     Low = parsedLow,
