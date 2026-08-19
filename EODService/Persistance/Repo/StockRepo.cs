@@ -14,6 +14,7 @@ namespace EODService.Persistance.Repo
         {
             this.dbContext = dbContext;
         }
+        // delegegate func here will be implemented in the future for more generic code, but for now we will have two separate methods for YahooFinance and TwelveData
         public async Task<SymbolSettings> GetSymbolAndTickerIDForYahooFinance()
         {
             var stocks = await dbContext.Stock
