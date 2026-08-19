@@ -1,15 +1,18 @@
+using EODService.DTOs.EOD;
+using EODService.DTOs.Stock;
+using EODService.DTOs.SymbolSettings;
+using EODService.Models;
+using EODService.Models.Provider;
+using EODService.Persistance;
+using EODService.Persistance.Repo;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using EODService.Persistance;
-using EODService.DTOs.SymbolSettings;
-using EODService.Persistance.Repo;
-using EODService.DTOs.EOD;
-using EODService.Models.Provider;
 
 namespace EODService.Services
 {
@@ -124,20 +127,17 @@ namespace EODService.Services
             logger?.LogInformation("✔ Database save completed successfully.");
         }
 
-
-        // Later will be enhanced using delegates to be more flexible
-        public static async Task<SymbolSettings?> GetSymbolsForYahooFinance(AppDbContext dbContext)
+        //delegated func
+        public static async Task<SymbolSettings?> GetSymbols(
+            AppDbContext dbContext,
+            Expression<Func<Stock, bool>> existsCondition,
+            Func<Stock, string?> tickerSelector)
         {
             IStock repo = new StockRepo(dbContext);
-            var stocks = await repo.GetSymbolAndTickerIDForYahooFinance();
-            return stocks;
-        }
 
-        public static async Task<SymbolSettings?> GetSymbolsForTwelveData(AppDbContext dbContext)
-        {
-            IStock repo = new StockRepo(dbContext);
-            var stocks = await repo.GetSymbolAndTickerIDForTwelveData();
-            return stocks;
+            return await repo.GetSymbolAndTickerIDAsync(
+                existsCondition,
+                tickerSelector);
         }
 
         public static async Task<Provider?> GetProviderById(AppDbContext dbContext, int providerId)
@@ -146,6 +146,8 @@ namespace EODService.Services
             var provider = await repo.GetProviderByIdAsync(providerId);
             return provider;
         }
+
+
 
         public static async Task UpdateProvider(AppDbContext dbContext, int providerId, string name, string baseUrl, string endPoint, string? apiKey, string? parameters = null)
         {
