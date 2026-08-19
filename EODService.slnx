@@ -1,10 +1,7 @@
 <Solution>
   <Project Path="EODInstaller/EODInstaller.vdproj" Type="Installer">
-    <Build Solution="Debug|*" />
-  </Project>
-  <Project Path="EODService/EODService.csproj" />
-  <Project Path="EODServiceInstaller/EODServiceInstaller.vdproj" Type="Installer">
     <Build />
   </Project>
+  <Project Path="EODService/EODService.csproj" />
   <Project Path="EODSettingsApp/EODSettingsApp.csproj" />
 </Solution>

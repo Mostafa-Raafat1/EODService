@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -67,24 +67,29 @@ namespace EODSettingsApp.Services
                 info.HasRun = true;
 
                 // Find the latest RUN STARTED banner
+                int lastRunStartIndex = 0;
                 for (int i = lines.Length - 1; i >= 0; i--)
                 {
                     var match = RunBannerRegex.Match(lines[i]);
                     if (match.Success && DateTime.TryParse(match.Groups[1].Value, out var dt))
                     {
                         info.Timestamp = dt;
+                        lastRunStartIndex = i;
                         break;
                     }
                 }
 
                 info.Timestamp ??= latestLogFile.LastWriteTime;
 
-                // Scan lines after the last run start for success / record count / error indicators
+                // Scan only lines for the latest run
                 bool hasCompleted = false;
                 bool hasError = false;
+                bool hasWarning = false;
 
-                foreach (var line in lines)
+                for (int i = lastRunStartIndex; i < lines.Length; i++)
                 {
+                    var line = lines[i];
+
                     if (line.Contains("Database save completed successfully", StringComparison.OrdinalIgnoreCase) ||
                         line.Contains("EOD import complete", StringComparison.OrdinalIgnoreCase))
                     {
@@ -96,6 +101,12 @@ namespace EODSettingsApp.Services
                         line.Contains("Exception", StringComparison.OrdinalIgnoreCase))
                     {
                         hasError = true;
+                    }
+
+                    if (line.Contains("WARN  ", StringComparison.OrdinalIgnoreCase) ||
+                        line.Contains("WARNING", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasWarning = true;
                     }
 
                     var countMatch = RecordCountRegex.Match(line);
@@ -111,7 +122,7 @@ namespace EODSettingsApp.Services
                     }
                 }
 
-                info.IsSuccess = hasCompleted && !hasError;
+                info.IsSuccess = hasCompleted && !hasError && !hasWarning;
 
                 var timeStr = info.Timestamp.Value.Date == DateTime.Today
                     ? $"Today at {info.Timestamp.Value:HH:mm:ss}"
@@ -121,7 +132,7 @@ namespace EODSettingsApp.Services
                 {
                     info.SummaryText = $"🟢 Last Run: {timeStr} — ✔ Success ({info.RecordCount} record(s) synced)";
                 }
-                else if (hasCompleted && hasError)
+                else if (hasCompleted && (hasError || hasWarning))
                 {
                     info.SummaryText = $"🟡 Last Run: {timeStr} — Completed with Warnings ({info.RecordCount} records)";
                 }
