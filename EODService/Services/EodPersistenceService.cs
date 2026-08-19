@@ -9,6 +9,7 @@ using EODService.Persistance;
 using EODService.DTOs.SymbolSettings;
 using EODService.Persistance.Repo;
 using EODService.DTOs.EOD;
+using EODService.Models;
 using EODService.Models.Provider;
 
 namespace EODService.Services
@@ -125,20 +126,17 @@ namespace EODService.Services
         }
 
 
-        // Later will be enhanced using delegates to be more flexible
-        public static async Task<SymbolSettings?> GetSymbolsForYahooFinance(AppDbContext dbContext)
+        public static async Task<SymbolSettings?> GetSymbolsByProviderId(AppDbContext dbContext, int providerId)
         {
             IStock repo = new StockRepo(dbContext);
-            var stocks = await repo.GetSymbolAndTickerIDForYahooFinance();
-            return stocks;
+            return await repo.GetSymbolsByProviderIdAsync(providerId);
         }
 
-        public static async Task<SymbolSettings?> GetSymbolsForTwelveData(AppDbContext dbContext)
-        {
-            IStock repo = new StockRepo(dbContext);
-            var stocks = await repo.GetSymbolAndTickerIDForTwelveData();
-            return stocks;
-        }
+        public static Task<SymbolSettings?> GetSymbolsForYahooFinance(AppDbContext dbContext) =>
+            GetSymbolsByProviderId(dbContext, (int)ProviderIds.Yahoo);
+
+        public static Task<SymbolSettings?> GetSymbolsForTwelveData(AppDbContext dbContext) =>
+            GetSymbolsByProviderId(dbContext, (int)ProviderIds.TwelveData);
 
         public static async Task<Provider?> GetProviderById(AppDbContext dbContext, int providerId)
         {
