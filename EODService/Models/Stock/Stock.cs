@@ -12,9 +12,11 @@ namespace EODService.DTOs.Stock
 
         public string? YahooFinanceID { get; set; }
         public string? TwelveDataID { get; set; }
+        public string? ReuterID { get; set; }
 
         public bool YahooFinanceExists { get; set; }
         public bool TwelveDataExists { get; set; }
+        public bool ReuterExists { get; set; }
 
         public string? StockExchange { get; set; }
         public string ISIN { get; set; } = string.Empty;

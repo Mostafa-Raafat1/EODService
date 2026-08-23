@@ -144,9 +144,20 @@ namespace EODService.Persistance
                     .HasColumnName("T_DATA")
                     .HasMaxLength(100);
 
+                entity.Property(e => e.ReuterID)
+                    .HasColumnName("LSEG")
+                    .HasMaxLength(100);
+
                 entity.Property(e => e.YahooFinanceExists)
                     .IsRequired()
                     .HasColumnName("YF_FLAG")
+                    .HasConversion(
+                        v => v ? "Y" : "N",
+                        v => v == "Y");
+
+                entity.Property(e => e.ReuterExists)
+                    .IsRequired()
+                    .HasColumnName("LSEG_FLAG")
                     .HasConversion(
                         v => v ? "Y" : "N",
                         v => v == "Y");
