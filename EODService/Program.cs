@@ -74,17 +74,66 @@ var providers = await ProviderRepo.GetProviderByIdAsync(providerSettings.ActiveP
 var ProviderDTO = ProviderMapper.Map(providers);
 
 
-// Validate active provider config and load symbols from database
-if (ProviderDTO == null || string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) || string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
+switch (providerSettings.ActiveProvider)
 {
-    logger.LogError("Provider config (BaseUrl or Endpoint) could not be loaded. Ensure a row with ID={ProviderId} exists in the PROVIDER table.", providerSettings.ActiveProvider);
-    return;
+    case (int)ProviderIds.Yahoo:
+
+        if (ProviderDTO == null ||
+            string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) ||
+            string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
+        {
+            logger.LogError(
+                "Yahoo provider config (BaseUrl or Endpoint) could not be loaded. " +
+                "Ensure a row with ID={ProviderId} exists in the PROVIDER table.",
+                ProviderDTO?.Id);
+
+            return;
+        }
+
+        symbolSettings = await EodPersistenceService.GetSymbols(
+            dbContext!,
+            s => s.YahooFinanceExists && s.YahooFinanceID != null,
+            s => s.YahooFinanceID
+        ) ?? new SymbolSettings();
+
+        break;
+
+
+    case (int)ProviderIds.TwelveData:
+
+        if (ProviderDTO == null ||
+            string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) ||
+            string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
+        {
+            logger.LogError(
+                "TwelveData provider config (BaseUrl or Endpoint) could not be loaded. " +
+                "Ensure a row with ID={ProviderId} exists in the PROVIDER table.",
+                ProviderDTO?.Id);
+
+            return;
+        }
+
+        symbolSettings = await EodPersistenceService.GetSymbols(
+            dbContext!,
+            s => s.TwelveDataExists && s.TwelveDataID != null,
+            s => s.TwelveDataID
+        ) ?? new SymbolSettings();
+
+        break;
+
+
+    default:
+
+        logger.LogError(
+            "Unsupported provider ID: {ProviderId}",
+            providerSettings.ActiveProvider);
+
+        return;
 }
 
-symbolSettings = await EodPersistenceService.GetSymbolsByProviderId(dbContext!, providerSettings.ActiveProvider) ?? new SymbolSettings();
 foreach (var symbol in symbolSettings.Symbols)
 {
-    logger.LogInformation($"Processing symbol: {symbol}");
+    logger.LogInformation("Processing symbol: {Symbol}", symbol);
 }
 
 
