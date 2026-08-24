@@ -1,4 +1,4 @@
-﻿using EODService.DTOs.Stock;
+using EODService.DTOs.Stock;
 using EODService.DTOs.SymbolSettings;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,11 +10,11 @@ namespace EODService.Persistance.Repo
 {
     public class StockRepo : IStock
     {
-        private readonly AppDbContext dbContext;
+        private readonly AppDbContext _dbContext;
 
         public StockRepo(AppDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
         // delegate function to get symbols based of the given column no redundant code
         public async Task<SymbolSettings> GetSymbolAndTickerIDAsync(

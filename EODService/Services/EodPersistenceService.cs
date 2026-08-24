@@ -13,6 +13,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using EODService.Persistance;
+using EODService.DTOs.SymbolSettings;
+using EODService.Persistance.Repo;
+using EODService.DTOs.EOD;
+using EODService.Models.Provider;
 
 namespace EODService.Services
 {
