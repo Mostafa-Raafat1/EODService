@@ -491,7 +491,7 @@ namespace EODSettingsApp.Forms
             MinimumSize = new Size(800, 650);
             Name = "SettingsForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "EOD Data Service — Settings & Schedule";
+            Text = "TICKR";
             pnlHeader.ResumeLayout(false);
             pnlControls.ResumeLayout(false);
             pnlControls.PerformLayout();

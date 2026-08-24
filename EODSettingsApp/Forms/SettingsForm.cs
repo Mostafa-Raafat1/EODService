@@ -39,6 +39,7 @@ namespace EODSettingsApp.Forms
         public SettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
 
             SetupGridColumns();
 

@@ -23,6 +23,7 @@ namespace EODSettingsApp.Forms
         public SymbolSettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
             SetupGridColumns();
             Load += async (_, _) => await LoadStockSettingsAsync();
         }

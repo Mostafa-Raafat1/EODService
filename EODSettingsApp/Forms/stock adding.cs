@@ -13,6 +13,7 @@ namespace EODSettingsApp.Forms
         public StockAddingForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
         }
 
         private async void BtnAdd_Click(object? sender, EventArgs e)

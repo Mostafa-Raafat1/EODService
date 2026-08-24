@@ -11,6 +11,7 @@ namespace EODSettingsApp.Forms
         public HierarchicalSettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
             InitializeCategories();
         }
 
