@@ -16,6 +16,7 @@ namespace EODSettingsApp.Forms
         private TabControl tabProviders;
         private TabPage    tabPageYahoo;
         private TabPage    tabPageTwelveData;
+        private TabPage    tabPageReuters;
 
         // Yahoo tab
         private Label   lblYahooBaseUrl;
@@ -37,6 +38,16 @@ namespace EODSettingsApp.Forms
         private Label   lblTwelveParameters;
         private TextBox txtTwelveParameters;
 
+        // Reuters tab
+        private Label   lblReutersBaseUrl;
+        private TextBox txtReutersBaseUrl;
+        private Label   lblReutersEndpoint;
+        private TextBox txtReutersEndpoint;
+        private Label   lblReutersApiKey;
+        private TextBox txtReutersApiKey;
+        private Label   lblReutersParameters;
+        private TextBox txtReutersParameters;
+
         // Footer
         private Panel  pnlFooter;
         private Button btnSaveProviderSettings;
@@ -57,6 +68,7 @@ namespace EODSettingsApp.Forms
             tabProviders              = new TabControl();
             tabPageYahoo              = new TabPage();
             tabPageTwelveData         = new TabPage();
+            tabPageReuters            = new TabPage();
             lblYahooBaseUrl           = new Label();
             txtYahooBaseUrl           = new TextBox();
             lblYahooEndpoint          = new Label();
@@ -73,6 +85,14 @@ namespace EODSettingsApp.Forms
             txtTwelveApiKey           = new TextBox();
             lblTwelveParameters       = new Label();
             txtTwelveParameters       = new TextBox();
+            lblReutersBaseUrl         = new Label();
+            txtReutersBaseUrl         = new TextBox();
+            lblReutersEndpoint        = new Label();
+            txtReutersEndpoint        = new TextBox();
+            lblReutersApiKey          = new Label();
+            txtReutersApiKey          = new TextBox();
+            lblReutersParameters      = new Label();
+            txtReutersParameters      = new TextBox();
             pnlFooter                 = new Panel();
             btnSaveProviderSettings   = new Button();
             lblProviderSettingsStatus = new Label();
@@ -82,6 +102,7 @@ namespace EODSettingsApp.Forms
             tabProviders.SuspendLayout();
             tabPageYahoo.SuspendLayout();
             tabPageTwelveData.SuspendLayout();
+            tabPageReuters.SuspendLayout();
             pnlFooter.SuspendLayout();
 
             // ── pnlHeader ─────────────────────────────────────────────────────────
@@ -107,14 +128,15 @@ namespace EODSettingsApp.Forms
             lblSubtitle.Name      = "lblSubtitle";
             lblSubtitle.Size      = new Size(380, 20);
             lblSubtitle.TabIndex  = 1;
-            lblSubtitle.Text      = "Edit Yahoo Finance and TwelveData API settings and JSON parameters";
+            lblSubtitle.Text      = "Edit Yahoo, TwelveData, and Reuters settings and JSON parameters";
 
             // ── tabProviders (fill between header and footer) ─────────────────────
             tabProviders.Controls.Add(tabPageYahoo);
             tabProviders.Controls.Add(tabPageTwelveData);
+            tabProviders.Controls.Add(tabPageReuters);
             tabProviders.Dock          = DockStyle.Fill;
             tabProviders.Font          = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            tabProviders.ItemSize      = new Size(120, 26);
+            tabProviders.ItemSize      = new Size(110, 26);
             tabProviders.Name          = "tabProviders";
             tabProviders.SelectedIndex = 0;
             tabProviders.Size          = new Size(460, 350);
@@ -165,6 +187,29 @@ namespace EODSettingsApp.Forms
             ConfigureFieldBox  (txtTwelveApiKey,     "txtTwelveApiKey",                          14, 134);
             ConfigureFieldLabel(lblTwelveParameters, "lblTwelveParameters", "Parameters (JSON)", 14, 164, 200);
             ConfigureJsonBox   (txtTwelveParameters, "txtTwelveParameters",                      14, 186);
+
+            // ── tabPageReuters ───────────────────────────────────────────────────
+            tabPageReuters.BackColor = Color.FromArgb(248, 250, 252);
+            tabPageReuters.Controls.Add(lblReutersBaseUrl);
+            tabPageReuters.Controls.Add(txtReutersBaseUrl);
+            tabPageReuters.Controls.Add(lblReutersEndpoint);
+            tabPageReuters.Controls.Add(txtReutersEndpoint);
+            tabPageReuters.Controls.Add(lblReutersApiKey);
+            tabPageReuters.Controls.Add(txtReutersApiKey);
+            tabPageReuters.Controls.Add(lblReutersParameters);
+            tabPageReuters.Controls.Add(txtReutersParameters);
+            tabPageReuters.Name    = "tabPageReuters";
+            tabPageReuters.Padding = new Padding(3);
+            tabPageReuters.Text    = "  Reuters (LSEG)  ";
+
+            ConfigureFieldLabel(lblReutersBaseUrl,    "lblReutersBaseUrl",    "Base URL (ws://...)", 14,  14, 150);
+            ConfigureFieldBox  (txtReutersBaseUrl,    "txtReutersBaseUrl",                           14,  34);
+            ConfigureFieldLabel(lblReutersEndpoint,   "lblReutersEndpoint",   "Endpoint",            14,  64);
+            ConfigureFieldBox  (txtReutersEndpoint,   "txtReutersEndpoint",                          14,  84);
+            ConfigureFieldLabel(lblReutersApiKey,     "lblReutersApiKey",     "API Key (Optional)",   14, 114, 140);
+            ConfigureFieldBox  (txtReutersApiKey,     "txtReutersApiKey",                            14, 134);
+            ConfigureFieldLabel(lblReutersParameters, "lblReutersParameters", "Parameters (JSON)",   14, 164, 200);
+            ConfigureJsonBox   (txtReutersParameters, "txtReutersParameters",                        14, 186);
 
             // ── pnlFooter ─────────────────────────────────────────────────────────
             pnlFooter.BackColor = Color.FromArgb(226, 232, 240);

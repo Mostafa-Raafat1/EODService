@@ -10,6 +10,7 @@ namespace EODService.Config
         public string AppSettingsPath { get; set; } = "AppSettings.json";
         /// <summary>Root folder where all log sub-folders (by month) and daily log files will be created.</summary>
         public string LogFolderPath { get; set; } = "EODConfig/Logs";
+        public string EODServicePath { get; set; } = "EODService.exe";
     }
 
     /// <summary>
@@ -31,6 +32,18 @@ namespace EODService.Config
         public static string AppSettingsFileName => Current.AppSettingsPath;
 
         public static string LogFolderPath => ResolveFullPath(Current.LogFolderPath);
+
+        public static string EODServicePath
+        {
+            get
+            {
+                var raw = Current.EODServicePath;
+                if (string.IsNullOrWhiteSpace(raw))
+                    return string.Empty;
+
+                return ResolveFullPath(raw);
+            }
+        }
 
         private static string GetCanonicalBaseDirectory()
         {
@@ -58,6 +71,10 @@ namespace EODService.Config
 
             if (Path.IsPathRooted(path))
                 return path;
+
+            var localPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, path));
+            if (File.Exists(localPath) || Directory.Exists(localPath))
+                return localPath;
 
             return Path.GetFullPath(Path.Combine(GetCanonicalBaseDirectory(), path));
         }
@@ -162,5 +179,6 @@ namespace EODService.Config
         public static string ActiveProviderFolderPath => PathsConfig.ActiveProviderFolderPath;
         public static string AppSettingsFileName => PathsConfig.AppSettingsFileName;
         public static string LogFolderPath => PathsConfig.LogFolderPath;
+        public static string EODServicePath => PathsConfig.EODServicePath;
     }
 }

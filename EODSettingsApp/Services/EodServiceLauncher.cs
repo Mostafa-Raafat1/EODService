@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using EODService.Config;
 
 namespace EODSettingsApp.Services
 {
@@ -11,15 +12,16 @@ namespace EODSettingsApp.Services
     public static class EodServiceLauncher
     {
         /// <summary>
-        /// Name of the EODService executable (without path).
+        /// Default name of the EODService executable (without path).
         /// </summary>
-        private const string ExeName = "EODService.exe";
+        private const string DefaultExeName = "EODService.exe";
 
         /// <summary>
         /// Resolves the full path to EODService.exe.
         /// Resolution order:
-        ///   1. Same directory as this application's executable.
-        ///   2. Sibling project's Debug output (useful during development).
+        ///   1. Path configured in PathesConfig.json (via PathsConfig.EODServicePath).
+        ///   2. Same directory as this application's executable.
+        ///   3. Sibling project's Debug / Release output (useful during development).
         /// </summary>
         /// <returns>Full path to EODService.exe.</returns>
         /// <exception cref="FileNotFoundException">
@@ -27,28 +29,76 @@ namespace EODSettingsApp.Services
         /// </exception>
         public static string ResolveExePath()
         {
-            // 1. Next to the running WinForms app (production / published layout)
+            var rawConfigPath = PathsConfig.Current?.EODServicePath;
+
+            // 1. If EODServicePath in PathesConfig.json is explicitly blank or whitespace, fail fast
+            if (string.IsNullOrWhiteSpace(rawConfigPath))
+            {
+                throw new InvalidOperationException(
+                    "EODServicePath is blank or missing in PathesConfig.json. " +
+                    "Please configure the path to EODService.exe in PathesConfig.json (e.g., \"EODServicePath\": \"EODService.exe\").");
+            }
+
+            // 2. Check direct candidate in application running directory (highest priority for relative config paths)
             var appDir = AppContext.BaseDirectory;
-            var candidate = Path.Combine(appDir, ExeName);
-            if (File.Exists(candidate))
-                return candidate;
+            var localCandidate = Path.GetFullPath(Path.Combine(appDir, rawConfigPath));
+            if (File.Exists(localCandidate))
+            {
+                return localCandidate;
+            }
 
-            // 2. Sibling project's Debug output (development layout inside solution)
-            //    …\EODSettingsApp\bin\Debug\net10.0-windows  →  up 4 levels  →  solution root
-            //    then down into EODService\bin\Debug\net10.0\EODService.exe
-            var solutionRoot = Path.GetFullPath(Path.Combine(appDir, "..", "..", "..", ".."));
-            var devCandidate = Path.Combine(
-                solutionRoot, "EODService", "bin", "Debug", "net10.0", ExeName);
+            // 3. Resolve configured path via PathsConfig
+            var configuredPath = PathsConfig.EODServicePath;
+            if (!string.IsNullOrWhiteSpace(configuredPath) && File.Exists(configuredPath))
+            {
+                return configuredPath;
+            }
 
-            if (File.Exists(devCandidate))
-                return devCandidate;
+            // 4. Development fallback: Dynamically search parent folders for the solution root to locate sibling project output
+            var solutionRoot = FindSolutionRoot(appDir);
+
+            var candidates = new[]
+            {
+                Path.Combine(solutionRoot, "EODService", "bin", "Debug", "net10.0", "win-x64", DefaultExeName),
+                Path.Combine(solutionRoot, "EODService", "bin", "Debug", "net10.0", DefaultExeName),
+                Path.Combine(solutionRoot, "EODService", "bin", "Release", "net10.0", "win-x64", DefaultExeName),
+                Path.Combine(solutionRoot, "EODService", "bin", "Release", "net10.0", DefaultExeName)
+            };
+
+            foreach (var devCandidate in candidates)
+            {
+                if (File.Exists(devCandidate))
+                    return devCandidate;
+            }
 
             throw new FileNotFoundException(
-                $"Could not locate '{ExeName}'.\n\n" +
-                $"Searched:\n  {candidate}\n  {devCandidate}\n\n" +
-                "Please build the EODService project first, or place the executable " +
-                "next to EODSettingsApp.exe.",
-                ExeName);
+                $"Could not locate EODService executable specified in PathesConfig.json ('{rawConfigPath}').\n\n" +
+                $"Resolved location: {configuredPath}\n" +
+                $"Dev search locations:\n  {string.Join("\n  ", candidates)}\n\n" +
+                "Please verify the EODServicePath setting in PathesConfig.json or build EODService.csproj.",
+                configuredPath);
+        }
+
+        private static string FindSolutionRoot(string startDir)
+        {
+            var current = new DirectoryInfo(startDir);
+            while (current != null)
+            {
+                if (File.Exists(Path.Combine(current.FullName, "EODService.sln")) ||
+                    File.Exists(Path.Combine(current.FullName, "EODService.slnx")))
+                {
+                    return current.FullName;
+                }
+
+                var eodSubFolder = Path.Combine(current.FullName, "EODService");
+                if (Directory.Exists(eodSubFolder) && File.Exists(Path.Combine(eodSubFolder, "EODService.csproj")))
+                {
+                    return current.FullName;
+                }
+
+                current = current.Parent;
+            }
+            return startDir;
         }
 
         /// <summary>

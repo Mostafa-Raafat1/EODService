@@ -30,6 +30,7 @@ namespace EODSettingsApp.Forms
             var providerNode = new TreeNode("Provider Settings") { Tag = "PROVIDER" };
             providerNode.Nodes.Add(new TreeNode("Yahoo Finance") { Tag = "PROVIDER_YAHOO" });
             providerNode.Nodes.Add(new TreeNode("TwelveData") { Tag = "PROVIDER_TWELVE" });
+            providerNode.Nodes.Add(new TreeNode("Reuters") { Tag = "PROVIDER_REUTERS" });
 
             // Create child nodes
             rootNode.Nodes.Add(providerNode);
@@ -86,6 +87,9 @@ namespace EODSettingsApp.Forms
                     break;
                 case "PROVIDER_TWELVE":
                     ShowChildForm(new ProviderSettingsForm(1));
+                    break;
+                case "PROVIDER_REUTERS":
+                    ShowChildForm(new ProviderSettingsForm(2));
                     break;
                 case "SYMBOL":
                     ShowChildForm(new SymbolSettingsForm());

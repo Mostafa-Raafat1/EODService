@@ -1,4 +1,7 @@
 <Solution>
   <Project Path="EODService/EODService.csproj" />
   <Project Path="EODSettingsApp/EODSettingsApp.csproj" />
+  <Project Path="TICKR_Installer/TICKR_Installer.vdproj" Type="Installer">
+    <Build />
+  </Project>
 </Solution>
