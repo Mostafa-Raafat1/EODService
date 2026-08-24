@@ -99,7 +99,7 @@ namespace EODSettingsApp.Forms
                     ShowChildForm(new DatabaseSettingsForm());
                     break;
                 case "ADD_STOCK":
-                    ShowChildForm(new StockAddingForm());
+                    ShowChildForm(new AddStockForm());
                     break;
                 default:
                     // ROOT and PROVIDER nodes are expansion toggle items and do not change form views
