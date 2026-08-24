@@ -1,6 +1,16 @@
+using EODService.DTOs.EOD;
+using EODService.DTOs.Stock;
+using EODService.DTOs.SymbolSettings;
+using EODService.Models;
+using EODService.Models.Provider;
+using EODService.Persistance;
+using EODService.Persistance.Repo;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -45,14 +55,24 @@ namespace EODService.Services
             try
             {
                 var symbols = cleanResults.Select(r => r.Id).Distinct().ToList();
+                var minDate = cleanResults.Min(r => r.Date);
+                var maxDate = cleanResults.Max(r => r.Date);
 
-                // 1. Fetch matching EodDaily rows as NoTracking
-                var dailyRows = await dbContext.EodDaily
-                    .AsNoTracking()
-                    .Where(e => symbols.Contains(e.Id))
-                    .ToListAsync(ct);
+                // 1. Fetch matching EodDaily rows in chunks of 500 to respect Oracle's 1000 IN-clause limit (ORA-01795)
+                var existingDailyIds = new HashSet<int>();
+                foreach (var chunk in symbols.Chunk(500))
+                {
+                    var chunkIds = await dbContext.EodDaily
+                        .AsNoTracking()
+                        .Where(e => chunk.Contains(e.Id))
+                        .Select(e => e.Id)
+                        .ToListAsync(ct);
 
-                var existingDailyIds = dailyRows.Select(e => e.Id).ToHashSet();
+                    foreach (var id in chunkIds)
+                    {
+                        existingDailyIds.Add(id);
+                    }
+                }
 
                 foreach (var result in cleanResults)
                 {
@@ -67,16 +87,21 @@ namespace EODService.Services
                     }
                 }
 
-                // 2. Fetch existing history dates as NoTracking (normalized to Date component)
-                var historyRows = await dbContext.EodHistory
-                    .AsNoTracking()
-                    .Where(e => symbols.Contains(e.Id))
-                    .Select(e => new { e.Id, e.Date })
-                    .ToListAsync(ct);
+                // 2. Fetch existing history rows bounded by minDate & maxDate in chunks of 500
+                var existingHistoryKeys = new HashSet<(int Id, DateTime Date)>();
+                foreach (var chunk in symbols.Chunk(500))
+                {
+                    var chunkHistoryRows = await dbContext.EodHistory
+                        .AsNoTracking()
+                        .Where(e => chunk.Contains(e.Id) && e.Date >= minDate && e.Date <= maxDate)
+                        .Select(e => new { e.Id, e.Date })
+                        .ToListAsync(ct);
 
-                var existingHistoryKeys = historyRows
-                    .Select(x => (x.Id, x.Date.Date))
-                    .ToHashSet();
+                    foreach (var row in chunkHistoryRows)
+                    {
+                        existingHistoryKeys.Add((row.Id, row.Date.Date));
+                    }
+                }
 
                 foreach (var result in cleanResults)
                 {
@@ -109,20 +134,17 @@ namespace EODService.Services
             logger?.LogInformation("✔ Database save completed successfully.");
         }
 
-
-        // Later will be enhanced using delegates to be more flexible
-        public static async Task<SymbolSettings?> GetSymbolsForYahooFinance(AppDbContext dbContext)
+        //delegated func
+        public static async Task<SymbolSettings?> GetSymbols(
+            AppDbContext dbContext,
+            Expression<Func<Stock, bool>> existsCondition,
+            Func<Stock, string?> tickerSelector)
         {
             IStock repo = new StockRepo(dbContext);
-            var stocks = await repo.GetSymbolAndTickerIDForYahooFinance();
-            return stocks;
-        }
 
-        public static async Task<SymbolSettings?> GetSymbolsForTwelveData(AppDbContext dbContext)
-        {
-            IStock repo = new StockRepo(dbContext);
-            var stocks = await repo.GetSymbolAndTickerIDForTwelveData();
-            return stocks;
+            return await repo.GetSymbolAndTickerIDAsync(
+                existsCondition,
+                tickerSelector);
         }
 
         public static async Task<Provider?> GetProviderById(AppDbContext dbContext, int providerId)
@@ -131,6 +153,8 @@ namespace EODService.Services
             var provider = await repo.GetProviderByIdAsync(providerId);
             return provider;
         }
+
+
 
         public static async Task UpdateProvider(AppDbContext dbContext, int providerId, string name, string baseUrl, string endPoint, string? apiKey, string? parameters = null)
         {

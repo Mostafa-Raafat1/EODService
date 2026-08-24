@@ -197,7 +197,7 @@ namespace EODSettingsApp.Forms
 
             stock.StockName = name;
             stock.SC_Comp_Id = compId;
-            stock.ISIN = string.IsNullOrWhiteSpace(isin) ? null : isin;
+            stock.ISIN = string.IsNullOrWhiteSpace(isin) ? string.Empty : isin;
             stock.YahooFinanceID = string.IsNullOrWhiteSpace(yahooId) ? null : yahooId;
             stock.YahooFinanceExists = chkYahooActive.Checked;
             stock.TwelveDataID = string.IsNullOrWhiteSpace(twelveDataId) ? null : twelveDataId;

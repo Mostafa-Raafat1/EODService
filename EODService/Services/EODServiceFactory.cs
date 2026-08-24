@@ -41,6 +41,12 @@ namespace EODService.Services
                         httpClient,
                         loggerFactory.CreateLogger<TwelveDataEODService>());
 
+                case (int)ProviderIds.Reuters:
+                    return new ReutersEODService(
+                        provider,
+                        symbolSettings,
+                        loggerFactory.CreateLogger<ReutersEODService>());
+
                 default:
                     throw new ArgumentException(
                         $"The provider '{provider.Id}' is not supported. " +

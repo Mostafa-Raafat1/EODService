@@ -22,6 +22,9 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 
 var logger = loggerFactory.CreateLogger("Program");
 
+// Ensure runtime folders (C:\EODConfig, C:\EODConfig\Logs) exist on fresh machines
+EODService.Config.PathsConfig.EnsureDirectoriesExist();
+
 // Write a banner to the log file so each run is clearly separated
 EODService.Logging.FileLoggerProvider.WriteRunBanner();
 
@@ -40,6 +43,7 @@ logger.LogInformation("Connecting to Database...");
 try
 {
     dbContext = AppDbContextFactory.Create(connectionString);
+
 }
 catch (Exception ex)
 {
@@ -70,35 +74,89 @@ var providers = await ProviderRepo.GetProviderByIdAsync(providerSettings.ActiveP
 var ProviderDTO = ProviderMapper.Map(providers);
 
 
-// Validate Yahoo settings if it's the active provider and get symbols from database
-if (providerSettings.ActiveProvider == (int)ProviderIds.Yahoo)
+switch (providerSettings.ActiveProvider)
 {
-    if (ProviderDTO == null || string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) || string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
-    {
-        logger.LogError("Yahoo provider config (BaseUrl or Endpoint) could not be loaded. Ensure a row with ID={YahooId} exists in the PROVIDER table.", ProviderDTO?.Id);
+    case (int)ProviderIds.Yahoo:
+
+        if (ProviderDTO == null ||
+            string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) ||
+            string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
+        {
+            logger.LogError(
+                "Yahoo provider config (BaseUrl or Endpoint) could not be loaded. " +
+                "Ensure a row with ID={ProviderId} exists in the PROVIDER table.",
+                ProviderDTO?.Id);
+
+            return;
+        }
+
+        symbolSettings = await EodPersistenceService.GetSymbols(
+            dbContext!,
+            s => s.YahooFinanceExists && s.YahooFinanceID != null,
+            s => s.YahooFinanceID
+        ) ?? new SymbolSettings();
+
+        break;
+
+
+    case (int)ProviderIds.TwelveData:
+
+        if (ProviderDTO == null ||
+            string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) ||
+            string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
+        {
+            logger.LogError(
+                "TwelveData provider config (BaseUrl or Endpoint) could not be loaded. " +
+                "Ensure a row with ID={ProviderId} exists in the PROVIDER table.",
+                ProviderDTO?.Id);
+
+            return;
+        }
+
+        symbolSettings = await EodPersistenceService.GetSymbols(
+            dbContext!,
+            s => s.TwelveDataExists && s.TwelveDataID != null,
+            s => s.TwelveDataID
+        ) ?? new SymbolSettings();
+
+        break;
+
+
+    case (int)ProviderIds.Reuters:
+
+        if (ProviderDTO == null ||
+            string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) ||
+            string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
+        {
+            logger.LogError(
+                "Reuters provider config (BaseUrl or Endpoint) could not be loaded. " +
+                "Ensure a row with ID={ProviderId} exists in the PROVIDER table.",
+                ProviderDTO?.Id);
+
+            return;
+        }
+
+        symbolSettings = await EodPersistenceService.GetSymbols(
+            dbContext!,
+            s => s.ReuterExists && s.ReuterID != null,
+            s => s.ReuterID
+        ) ?? new SymbolSettings();
+
+        break;
+
+
+    default:
+
+        logger.LogError(
+            "Unsupported provider ID: {ProviderId}",
+            providerSettings.ActiveProvider);
+
         return;
-    }
-    symbolSettings = await EodPersistenceService.GetSymbolsForYahooFinance(dbContext!) ?? new SymbolSettings();
-    foreach(var symbol in symbolSettings.Symbols)
-    {
-        logger.LogInformation($"Processing symbol: {symbol}");
-    }
 }
 
-
-// Validate TwelveData settings if it's the active provider and get symbols from database
-if (providerSettings.ActiveProvider == (int)ProviderIds.TwelveData)
+foreach (var symbol in symbolSettings.Symbols)
 {
-    if (ProviderDTO == null || string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) || string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
-    {
-        logger.LogError("TwelveData provider config (BaseUrl or Endpoint) could not be loaded. Ensure a row with ID={ProviderDTO?.Id} exists in the PROVIDER table.", ProviderDTO?.Id);
-        return;
-    }
-    symbolSettings = await EodPersistenceService.GetSymbolsForTwelveData(dbContext!) ?? new SymbolSettings();
-    foreach (var symbol in symbolSettings.Symbols)
-    {
-        logger.LogInformation($"Processing symbol: {symbol}");
-    }
+    logger.LogInformation("Processing symbol: {Symbol}", symbol);
 }
 
 
