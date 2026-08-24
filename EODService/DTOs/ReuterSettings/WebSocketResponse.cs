@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -81,5 +81,11 @@ namespace EODService.DTOs.ReuterSettings
 
         [JsonPropertyName("OFF_CLOSE")]
         public decimal? Close { get; set; }
+
+        [JsonPropertyName("HST_CLOSE")]
+        public decimal? HstClose { get; set; }
+
+        [JsonPropertyName("TRDPRC_1")]
+        public decimal? LastPrice { get; set; }
     }
 }

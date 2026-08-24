@@ -3,6 +3,8 @@ using EODService.DTOs.Provider;
 using EODService.DTOs.ReuterSettings;
 using EODService.DTOs.SymbolSettings;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -218,6 +220,8 @@ namespace EODService.Services
                             "HIGH_1",
                             "LOW_1",
                             "OFF_CLOSE",
+                            "HST_CLOSE",
+                            "TRDPRC_1",
                             "ADJUST_CLS",
                             "ACVOL_1"
                         }
@@ -270,9 +274,10 @@ namespace EODService.Services
                             if (string.Equals(type, "Refresh", StringComparison.OrdinalIgnoreCase))
                             {
                                 _logger.LogInformation(
-                                    "EOD SNAPSHOT RECEIVED for {Symbol} (ID={RequestId}).",
+                                    "EOD SNAPSHOT RECEIVED for {Symbol} (ID={RequestId}): {Json}",
                                     symbol,
-                                    requestId);
+                                    requestId,
+                                    message.GetRawText());
 
                                 WebSocketResponse? response = null;
 
@@ -301,7 +306,7 @@ namespace EODService.Services
                                     break;
                                 }
 
-                                var eodData = ReuterMapper.Map(response, id, name);
+                                var eodData = ReuterMapper.Map(response, id, name, msg => _logger.LogWarning("{Warning}", msg));
 
                                 if (eodData == null)
                                 {
@@ -314,8 +319,14 @@ namespace EODService.Services
                                     results.Add(eodData);
 
                                     _logger.LogInformation(
-                                        "Successfully mapped Reuters EOD data for {Symbol}.",
-                                        symbol);
+                                        "Successfully mapped Reuters EOD data for {Symbol}: Date={Date:yyyy-MM-dd}, Open={Open}, High={High}, Low={Low}, Close={Close}, Vol={Volume}",
+                                        symbol,
+                                        eodData.Date,
+                                        eodData.Open,
+                                        eodData.High,
+                                        eodData.Low,
+                                        eodData.Close,
+                                        eodData.Volume);
                                 }
 
                                 snapshotReceived = true;

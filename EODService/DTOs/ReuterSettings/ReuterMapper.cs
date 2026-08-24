@@ -8,58 +8,76 @@ namespace EODService.DTOs.ReuterSettings
 {
     public static class ReuterMapper
     {
+        private static readonly string[] DateFormats = new[]
+        {
+            "yyyy-MM-dd",
+            "dd MMM yyyy",
+            "d MMM yyyy",
+            "dd-MMM-yyyy",
+            "d-MMM-yyyy",
+            "dd/MM/yyyy",
+            "d/M/yyyy",
+            "MM/dd/yyyy",
+            "yyyyMMdd",
+            "yyyy/MM/dd",
+            "dd.MM.yyyy"
+        };
+
         public static EodData? Map(
             WebSocketResponse response,
             int Id,
-            string Name)
+            string Name,
+            Action<string>? logWarning = null)
         {
             // Validate response
-            if (response == null ||
-                response.Fields == null)
+            if (response == null || response.Fields == null)
             {
+                logWarning?.Invoke($"Response or Fields object was null for ID={Id} Name={Name}");
                 return null;
             }
 
             var fields = response.Fields;
 
-            // Validate required fields
-            if (fields.TradeDate == null ||
-                fields.Open == null ||
-                fields.High == null ||
-                fields.Low == null ||
-                fields.Close == null)
+            // Resolve Close price:
+            // 1. OFF_CLOSE: Official closing auction price (available after market close)
+            // 2. TRDPRC_1: Last traded transaction price of the day
+            // 3. HST_CLOSE / ADJUST_CLS: Previous close as safety fallback
+            decimal? effectiveClose = fields.Close ?? fields.LastPrice ?? fields.HstClose ?? fields.AdjustedClose;
+
+            // Validate that we at least have a valid Close/Price
+            if (effectiveClose == null || effectiveClose.Value <= 0)
             {
+                logWarning?.Invoke($"No valid Close price (OFF_CLOSE, HST_CLOSE, TRDPRC_1) for ID={Id} Name={Name}");
                 return null;
             }
 
             // Parse date
-            if (!DateTime.TryParseExact(
-                    fields.TradeDate,
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out var parsedDate) &&
-                !DateTime.TryParse(
-                    fields.TradeDate,
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out parsedDate))
+            DateTime parsedDate = DateTime.Today;
+            if (!string.IsNullOrWhiteSpace(fields.TradeDate))
             {
-                return null;
+                if (!DateTime.TryParseExact(
+                        fields.TradeDate.Trim(),
+                        DateFormats,
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.AllowWhiteSpaces,
+                        out parsedDate) &&
+                    !DateTime.TryParse(
+                        fields.TradeDate.Trim(),
+                        new CultureInfo("en-US"),
+                        DateTimeStyles.None,
+                        out parsedDate))
+                {
+                    logWarning?.Invoke($"Could not parse TRADE_DATE '{fields.TradeDate}' for ID={Id} Name={Name}. Using Today's date.");
+                    parsedDate = DateTime.Today;
+                }
             }
 
-            decimal parsedOpen = fields.Open.Value;
-            decimal parsedHigh = fields.High.Value;
-            decimal parsedLow = fields.Low.Value;
-            decimal parsedClose = fields.Close.Value;
-            long parsedVolume = fields.Volume ?? 0;
+            decimal parsedClose = effectiveClose.Value;
 
-            // Financial sanity checks
-            if (parsedHigh < parsedLow ||
-                parsedOpen < 0 ||
-                parsedClose <= 0 ||
-                parsedVolume < 0)
+            // Financial Sanity Check: If High and Low both exist, High cannot be less than Low
+            if (fields.High.HasValue && fields.Low.HasValue && fields.High.Value < fields.Low.Value)
             {
+                logWarning?.Invoke($"HIGH_1 ({fields.High.Value}) < LOW_1 ({fields.Low.Value}) for ID={Id} Name={Name}");
                 return null;
             }
 
@@ -69,14 +87,14 @@ namespace EODService.DTOs.ReuterSettings
                 Name = Name,
                 Date = parsedDate.Date,
 
-                Open = parsedOpen,
-                High = parsedHigh,
-                Low = parsedLow,
+                // Keep real values as returned by Reuters (can be null if untraded)
+                Open = fields.Open,
+                High = fields.High,
+                Low = fields.Low,
                 Close = parsedClose,
 
                 AdjustedClose = fields.AdjustedClose ?? parsedClose,
-
-                Volume = parsedVolume
+                Volume = fields.Volume ?? 0
             };
         }
     }
