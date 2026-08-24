@@ -1,8 +1,8 @@
 <Solution>
   <Project Path="EODService/EODService.csproj">
-    <BuildType Project="Release" />
+    <BuildType Project="Debug" />
   </Project>
   <Project Path="EODSettingsApp/EODSettingsApp.csproj">
-    <BuildType Project="Release" />
+    <BuildType Project="Debug" />
   </Project>
 </Solution>
