@@ -51,8 +51,10 @@ namespace EODSettingsApp.Forms
                     StockExchange = string.IsNullOrWhiteSpace(txtExchange.Text) ? null : txtExchange.Text.Trim(),
                     TwelveDataExists = rdoTdYes.Checked,
                     YahooFinanceExists = rdoYfYes.Checked,
+                    ReuterExists = rdoLsegYes.Checked,
                     TwelveDataID = string.IsNullOrWhiteSpace(txtTdSymbol.Text) ? null : txtTdSymbol.Text.Trim(),
                     YahooFinanceID = string.IsNullOrWhiteSpace(txtYfSymbol.Text) ? null : txtYfSymbol.Text.Trim(),
+                    ReuterID = string.IsNullOrWhiteSpace(txtLsegSymbol.Text) ? null : txtLsegSymbol.Text.Trim(),
                     ISIN = string.IsNullOrWhiteSpace(txtIsin.Text) ? string.Empty : txtIsin.Text.Trim()
                 };
 
@@ -90,8 +92,10 @@ namespace EODSettingsApp.Forms
             txtExchange.Clear();
             rdoTdYes.Checked = true;
             rdoYfYes.Checked = true;
+            rdoLsegYes.Checked = true;
             txtTdSymbol.Clear();
             txtYfSymbol.Clear();
+            txtLsegSymbol.Clear();
             txtIsin.Clear();
             txtStockName.Focus();
         }
@@ -105,3 +109,4 @@ namespace EODSettingsApp.Forms
         }
     }
 }
+

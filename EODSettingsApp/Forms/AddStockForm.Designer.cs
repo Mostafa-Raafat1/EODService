@@ -39,6 +39,13 @@ namespace EODSettingsApp.Forms
         private Label       lblYfSymbolLabel;
         private TextBox     txtYfSymbol;
 
+        // LSEG Tradable & LSEG Symbol
+        private Label       lblLsegTradable;
+        private GroupBox    grpLsegTradable;
+        private RadioButton rdoLsegYes;
+        private RadioButton rdoLsegNo;
+        private Label       lblLsegSymbolLabel;
+        private TextBox     txtLsegSymbol;
         // ISIN
         private Label       lblIsinLabel;
         private TextBox     txtIsin;
@@ -84,6 +91,12 @@ namespace EODSettingsApp.Forms
             lblYfSymbolLabel = new Label();
             txtYfSymbol = new TextBox();
 
+            lblLsegTradable = new Label();
+            grpLsegTradable = new GroupBox();
+            rdoLsegYes = new RadioButton();
+            rdoLsegNo = new RadioButton();
+            lblLsegSymbolLabel = new Label();
+            txtLsegSymbol = new TextBox();
             lblIsinLabel = new Label();
             txtIsin = new TextBox();
 
@@ -96,6 +109,7 @@ namespace EODSettingsApp.Forms
             pnlMain.SuspendLayout();
             grpTdTradable.SuspendLayout();
             grpYfTradable.SuspendLayout();
+            grpLsegTradable.SuspendLayout();
             pnlFooter.SuspendLayout();
             SuspendLayout();
 
@@ -139,12 +153,15 @@ namespace EODSettingsApp.Forms
             pnlMain.Controls.Add(grpYfTradable);
             pnlMain.Controls.Add(lblYfSymbolLabel);
             pnlMain.Controls.Add(txtYfSymbol);
-            pnlMain.Controls.Add(lblIsinLabel);
+            pnlMain.Controls.Add(lblLsegTradable);
+            pnlMain.Controls.Add(grpLsegTradable);
+            pnlMain.Controls.Add(lblLsegSymbolLabel);
+            pnlMain.Controls.Add(txtLsegSymbol);            pnlMain.Controls.Add(lblIsinLabel);
             pnlMain.Controls.Add(txtIsin);
             pnlMain.Dock = DockStyle.Fill;
             pnlMain.Location = new Point(0, 70);
             pnlMain.Name = "pnlMain";
-            pnlMain.Size = new Size(460, 350);
+            pnlMain.Size = new Size(460, 390);
             pnlMain.TabIndex = 1;
 
             // 
@@ -202,12 +219,12 @@ namespace EODSettingsApp.Forms
             txtExchange.TabIndex = 5;
 
             // 
-            // Row 3: TD Tradable (left) | YF Tradable (right)
+            // Row 3: Yahoo Finance
             // 
             lblTdTradable.AutoSize = true;
             lblTdTradable.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
             lblTdTradable.ForeColor = Color.FromArgb(51, 65, 85);
-            lblTdTradable.Location = new Point(20, 134);
+            lblTdTradable.Location = new Point(240, 194);
             lblTdTradable.Name = "lblTdTradable";
             lblTdTradable.Size = new Size(73, 15);
             lblTdTradable.TabIndex = 6;
@@ -219,7 +236,7 @@ namespace EODSettingsApp.Forms
             grpTdTradable.FlatStyle = FlatStyle.Flat;
             grpTdTradable.Font = new Font("Segoe UI", 8.5F);
             grpTdTradable.ForeColor = Color.FromArgb(100, 116, 139);
-            grpTdTradable.Location = new Point(16, 150);
+            grpTdTradable.Location = new Point(236, 210);
             grpTdTradable.Name = "grpTdTradable";
             grpTdTradable.Size = new Size(200, 44);
             grpTdTradable.TabIndex = 7;
@@ -291,12 +308,12 @@ namespace EODSettingsApp.Forms
             rdoYfNo.UseVisualStyleBackColor = true;
 
             // 
-            // Row 4: TD Symbol (left) | YF Symbol (right)
+            // Row 4: Twelve Data
             // 
             lblTdSymbolLabel.AutoSize = true;
             lblTdSymbolLabel.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
             lblTdSymbolLabel.ForeColor = Color.FromArgb(51, 65, 85);
-            lblTdSymbolLabel.Location = new Point(20, 204);
+            lblTdSymbolLabel.Location = new Point(20, 194);
             lblTdSymbolLabel.Name = "lblTdSymbolLabel";
             lblTdSymbolLabel.Size = new Size(67, 15);
             lblTdSymbolLabel.TabIndex = 10;
@@ -304,15 +321,15 @@ namespace EODSettingsApp.Forms
 
             txtTdSymbol.BorderStyle = BorderStyle.FixedSingle;
             txtTdSymbol.Font = new Font("Segoe UI", 9.5F);
-            txtTdSymbol.Location = new Point(20, 222);
+            txtTdSymbol.Location = new Point(20, 212);
             txtTdSymbol.Name = "txtTdSymbol";
-            txtTdSymbol.Size = new Size(190, 24);
+            txtTdSymbol.Size = new Size(200, 24);
             txtTdSymbol.TabIndex = 11;
 
             lblYfSymbolLabel.AutoSize = true;
             lblYfSymbolLabel.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
             lblYfSymbolLabel.ForeColor = Color.FromArgb(51, 65, 85);
-            lblYfSymbolLabel.Location = new Point(240, 204);
+            lblYfSymbolLabel.Location = new Point(20, 134);
             lblYfSymbolLabel.Name = "lblYfSymbolLabel";
             lblYfSymbolLabel.Size = new Size(64, 15);
             lblYfSymbolLabel.TabIndex = 12;
@@ -320,29 +337,89 @@ namespace EODSettingsApp.Forms
 
             txtYfSymbol.BorderStyle = BorderStyle.FixedSingle;
             txtYfSymbol.Font = new Font("Segoe UI", 9.5F);
-            txtYfSymbol.Location = new Point(240, 222);
+            txtYfSymbol.Location = new Point(20, 152);
             txtYfSymbol.Name = "txtYfSymbol";
             txtYfSymbol.Size = new Size(200, 24);
             txtYfSymbol.TabIndex = 13;
 
             // 
-            // Row 5: ISIN
+            // Row 5: LSEG
+            // 
+            lblLsegTradable.AutoSize = true;
+            lblLsegTradable.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+            lblLsegTradable.ForeColor = Color.FromArgb(51, 65, 85);
+            lblLsegTradable.Location = new Point(240, 254);
+            lblLsegTradable.Name = "lblLsegTradable";
+            lblLsegTradable.Size = new Size(89, 15);
+            lblLsegTradable.TabIndex = 14;
+            lblLsegTradable.Text = "LSEG Tradable";
+
+            grpLsegTradable.BackColor = Color.FromArgb(248, 250, 252);
+            grpLsegTradable.Controls.Add(rdoLsegYes);
+            grpLsegTradable.Controls.Add(rdoLsegNo);
+            grpLsegTradable.FlatStyle = FlatStyle.Flat;
+            grpLsegTradable.Font = new Font("Segoe UI", 8.5F);
+            grpLsegTradable.ForeColor = Color.FromArgb(100, 116, 139);
+            grpLsegTradable.Location = new Point(236, 270);
+            grpLsegTradable.Name = "grpLsegTradable";
+            grpLsegTradable.Size = new Size(200, 44);
+            grpLsegTradable.TabIndex = 15;
+            grpLsegTradable.TabStop = false;
+
+            rdoLsegYes.AutoSize = true;
+            rdoLsegYes.Checked = true;
+            rdoLsegYes.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            rdoLsegYes.ForeColor = Color.FromArgb(22, 163, 74);
+            rdoLsegYes.Location = new Point(10, 12);
+            rdoLsegYes.Name = "rdoLsegYes";
+            rdoLsegYes.Size = new Size(46, 21);
+            rdoLsegYes.TabIndex = 0;
+            rdoLsegYes.TabStop = true;
+            rdoLsegYes.Text = "Yes";
+            rdoLsegYes.UseVisualStyleBackColor = true;
+
+            rdoLsegNo.AutoSize = true;
+            rdoLsegNo.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            rdoLsegNo.ForeColor = Color.FromArgb(185, 28, 28);
+            rdoLsegNo.Location = new Point(90, 12);
+            rdoLsegNo.Name = "rdoLsegNo";
+            rdoLsegNo.Size = new Size(44, 21);
+            rdoLsegNo.TabIndex = 1;
+            rdoLsegNo.Text = "No";
+            rdoLsegNo.UseVisualStyleBackColor = true;
+
+            lblLsegSymbolLabel.AutoSize = true;
+            lblLsegSymbolLabel.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+            lblLsegSymbolLabel.ForeColor = Color.FromArgb(51, 65, 85);
+            lblLsegSymbolLabel.Location = new Point(20, 254);
+            lblLsegSymbolLabel.Name = "lblLsegSymbolLabel";
+            lblLsegSymbolLabel.Size = new Size(80, 15);
+            lblLsegSymbolLabel.TabIndex = 16;
+            lblLsegSymbolLabel.Text = "LSEG Symbol";
+
+            txtLsegSymbol.BorderStyle = BorderStyle.FixedSingle;
+            txtLsegSymbol.Font = new Font("Segoe UI", 9.5F);
+            txtLsegSymbol.Location = new Point(20, 272);
+            txtLsegSymbol.Name = "txtLsegSymbol";
+            txtLsegSymbol.Size = new Size(200, 24);
+            txtLsegSymbol.TabIndex = 17;
+            // `r`n            // Row 6: ISIN
             // 
             lblIsinLabel.AutoSize = true;
             lblIsinLabel.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
             lblIsinLabel.ForeColor = Color.FromArgb(51, 65, 85);
-            lblIsinLabel.Location = new Point(20, 262);
+            lblIsinLabel.Location = new Point(20, 314);
             lblIsinLabel.Name = "lblIsinLabel";
             lblIsinLabel.Size = new Size(33, 15);
-            lblIsinLabel.TabIndex = 14;
+            lblIsinLabel.TabIndex = 18;
             lblIsinLabel.Text = "ISIN";
 
             txtIsin.BorderStyle = BorderStyle.FixedSingle;
             txtIsin.Font = new Font("Segoe UI", 9.5F);
-            txtIsin.Location = new Point(20, 280);
+            txtIsin.Location = new Point(20, 332);
             txtIsin.Name = "txtIsin";
             txtIsin.Size = new Size(420, 24);
-            txtIsin.TabIndex = 15;
+            txtIsin.TabIndex = 19;
 
             // 
             // pnlFooter
@@ -352,7 +429,7 @@ namespace EODSettingsApp.Forms
             pnlFooter.Controls.Add(btnClear);
             pnlFooter.Controls.Add(lblStatus);
             pnlFooter.Dock = DockStyle.Bottom;
-            pnlFooter.Location = new Point(0, 390);
+            pnlFooter.Location = new Point(0, 460);
             pnlFooter.Name = "pnlFooter";
             pnlFooter.Size = new Size(460, 60);
             pnlFooter.TabIndex = 2;
@@ -406,15 +483,15 @@ namespace EODSettingsApp.Forms
             // stockadd
             // 
             BackColor = Color.FromArgb(245, 247, 250);
-            ClientSize = new Size(460, 450);
+            ClientSize = new Size(460, 520);
             Controls.Add(pnlMain);
             Controls.Add(pnlFooter);
             Controls.Add(pnlHeader);
             Font = new Font("Segoe UI", 9.5F);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            MaximumSize = new Size(476, 489);
-            MinimumSize = new Size(476, 489);
+            MaximumSize = new Size(476, 559);
+            MinimumSize = new Size(476, 559);
             Name = "stockadd";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Add New Stock";
@@ -425,8 +502,11 @@ namespace EODSettingsApp.Forms
             grpTdTradable.PerformLayout();
             grpYfTradable.ResumeLayout(false);
             grpYfTradable.PerformLayout();
+            grpLsegTradable.ResumeLayout(false);
+            grpLsegTradable.PerformLayout();
             pnlFooter.ResumeLayout(false);
             ResumeLayout(false);
         }
     }
 }
+

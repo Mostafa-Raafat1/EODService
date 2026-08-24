@@ -123,8 +123,14 @@ namespace EODSettingsApp.Forms
 
                 if (providers != null)
                 {
+                    // Only show providers that are supported by the service (defined in ProviderIds enum).
+                    // This prevents legacy or internal-only DB rows from appearing in the selector.
+                    var supportedIds = Enum.GetValues<EODService.Models.ProviderIds>()
+                                          .Select(id => (int)id)
+                                          .ToHashSet();
+
                     providers = providers
-                        .Where(p => p.Name != null && !p.Name.Contains("LSEG", StringComparison.OrdinalIgnoreCase))
+                        .Where(p => supportedIds.Contains(p.Id))
                         .ToList();
                 }
 

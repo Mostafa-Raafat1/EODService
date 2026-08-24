@@ -1,8 +1,4 @@
 <Solution>
-  <Project Path="EODService/EODService.csproj">
-    <BuildType Project="Release" />
-  </Project>
-  <Project Path="EODSettingsApp/EODSettingsApp.csproj">
-    <BuildType Project="Release" />
-  </Project>
+  <Project Path="EODService/EODService.csproj" />
+  <Project Path="EODSettingsApp/EODSettingsApp.csproj" />
 </Solution>
