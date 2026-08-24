@@ -140,6 +140,13 @@ namespace EODSettingsApp.Forms
                 var providers =
                     await _providerRepo.GetAllProvidersAsync();
 
+                if (providers != null)
+                {
+                    providers = providers
+                        .Where(p => p.Name != null && !p.Name.Contains("LSEG", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
                 if (providers == null || !providers.Any())
                 {
                     cmbProvider.DataSource = null;

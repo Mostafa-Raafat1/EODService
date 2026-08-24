@@ -1,4 +1,4 @@
-﻿using EODService.DTOs.SymbolSettings;
+using EODService.DTOs.SymbolSettings;
 using System;
 using System.Collections.Generic;
 using System.Text;
