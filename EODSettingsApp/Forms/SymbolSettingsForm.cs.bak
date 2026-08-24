@@ -23,7 +23,6 @@ namespace EODSettingsApp.Forms
         public SymbolSettingsForm()
         {
             InitializeComponent();
-            AppIconHelper.ApplyAppIconAndTitle(this);
             SetupGridColumns();
             Load += async (_, _) => await LoadStockSettingsAsync();
         }
@@ -31,17 +30,15 @@ namespace EODSettingsApp.Forms
         private void SetupGridColumns()
         {
             dgvStocks.Columns.Clear();
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", DataPropertyName = "Id", FillWeight = 22 });
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "SC_Comp_Id", HeaderText = "Comp ID", DataPropertyName = "SC_Comp_Id", FillWeight = 30 });
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "StockName", HeaderText = "Stock Name", DataPropertyName = "StockName", FillWeight = 120 });
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "Isin", HeaderText = "ISIN", DataPropertyName = "Isin", FillWeight = 50 });
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "YahooFinanceID", HeaderText = "Yahoo Ticker", DataPropertyName = "YahooFinanceID", FillWeight = 55 });
-            dgvStocks.Columns.Add(new DataGridViewCheckBoxColumn { Name = "YahooFinanceExists", HeaderText = "YF", DataPropertyName = "YahooFinanceExists", FillWeight = 25 });
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "TwelveDataID", HeaderText = "TD Ticker", DataPropertyName = "TwelveDataID", FillWeight = 55 });
-            dgvStocks.Columns.Add(new DataGridViewCheckBoxColumn { Name = "TwelveDataExists", HeaderText = "TD", DataPropertyName = "TwelveDataExists", FillWeight = 25 });
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "ReuterID", HeaderText = "Reuters Ticker", DataPropertyName = "ReuterID", FillWeight = 55 });
-            dgvStocks.Columns.Add(new DataGridViewCheckBoxColumn { Name = "ReuterExists", HeaderText = "LSEG", DataPropertyName = "ReuterExists", FillWeight = 25 });
-            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "StockExchange", HeaderText = "Exchange", DataPropertyName = "StockExchange", FillWeight = 45 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", DataPropertyName = "Id", FillWeight = 25 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "SC_Comp_Id", HeaderText = "Comp ID", DataPropertyName = "SC_Comp_Id", FillWeight = 35 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "StockName", HeaderText = "Stock Name", DataPropertyName = "StockName", FillWeight = 135 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "Isin", HeaderText = "ISIN", DataPropertyName = "Isin", FillWeight = 60 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "YahooFinanceID", HeaderText = "Yahoo Ticker", DataPropertyName = "YahooFinanceID", FillWeight = 70 });
+            dgvStocks.Columns.Add(new DataGridViewCheckBoxColumn { Name = "YahooFinanceExists", HeaderText = "YF Active", DataPropertyName = "YahooFinanceExists", FillWeight = 45 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "TwelveDataID", HeaderText = "Twelve Data Ticker", DataPropertyName = "TwelveDataID", FillWeight = 70 });
+            dgvStocks.Columns.Add(new DataGridViewCheckBoxColumn { Name = "TwelveDataExists", HeaderText = "TD Active", DataPropertyName = "TwelveDataExists", FillWeight = 45 });
+            dgvStocks.Columns.Add(new DataGridViewTextBoxColumn { Name = "StockExchange", HeaderText = "Exchange", DataPropertyName = "StockExchange", FillWeight = 50 });
         }
 
         private async Task LoadStockSettingsAsync()
@@ -91,8 +88,6 @@ namespace EODSettingsApp.Forms
                     s.YahooFinanceExists,
                     s.TwelveDataID ?? "-",
                     s.TwelveDataExists,
-                    s.ReuterID ?? "-",
-                    s.ReuterExists,
                     s.StockExchange ?? "-"
                 );
             }
@@ -122,8 +117,6 @@ namespace EODSettingsApp.Forms
                 chkYahooActive.Checked = stock.YahooFinanceExists;
                 txtTwelveDataId.Text = stock.TwelveDataID ?? "";
                 chkTwelveDataActive.Checked = stock.TwelveDataExists;
-                txtReuterId.Text = stock.ReuterID ?? "";
-                chkReuterActive.Checked = stock.ReuterExists;
                 txtExchange.Text = stock.StockExchange ?? "";
 
                 UpdateProviderControlsState();
@@ -146,20 +139,12 @@ namespace EODSettingsApp.Forms
             txtTwelveDataId.BackColor = chkTwelveDataActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
         }
 
-        private void ChkReuterActive_CheckedChanged(object? sender, EventArgs e)
-        {
-            txtReuterId.Enabled = chkReuterActive.Checked;
-            txtReuterId.BackColor = chkReuterActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
-        }
-
         private void UpdateProviderControlsState()
         {
             txtYahooId.Enabled = chkYahooActive.Checked;
             txtYahooId.BackColor = chkYahooActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
             txtTwelveDataId.Enabled = chkTwelveDataActive.Checked;
             txtTwelveDataId.BackColor = chkTwelveDataActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
-            txtReuterId.Enabled = chkReuterActive.Checked;
-            txtReuterId.BackColor = chkReuterActive.Checked ? Color.White : Color.FromArgb(241, 245, 249);
         }
 
         private void BtnUpdateStock_Click(object? sender, EventArgs e)
@@ -178,7 +163,6 @@ namespace EODSettingsApp.Forms
             var isin = txtIsin.Text.Trim().ToUpperInvariant();
             var yahooId = txtYahooId.Text.Trim().ToUpperInvariant();
             var twelveDataId = txtTwelveDataId.Text.Trim().ToUpperInvariant();
-            var reuterId = txtReuterId.Text.Trim().ToUpperInvariant();
             var exchange = txtExchange.Text.Trim().ToUpperInvariant();
 
             if (string.IsNullOrWhiteSpace(name))
@@ -193,9 +177,9 @@ namespace EODSettingsApp.Forms
                 return;
             }
 
-            if (!chkYahooActive.Checked && !chkTwelveDataActive.Checked && !chkReuterActive.Checked)
+            if (!chkYahooActive.Checked && !chkTwelveDataActive.Checked)
             {
-                SetStatus(success: false, "✘ At least one provider (Yahoo, Twelve Data, or Reuters) must be enabled.");
+                SetStatus(success: false, "✘ At least one provider (Yahoo Finance or Twelve Data) must be enabled.");
                 return;
             }
 
@@ -211,12 +195,6 @@ namespace EODSettingsApp.Forms
                 return;
             }
 
-            if (chkReuterActive.Checked && string.IsNullOrWhiteSpace(reuterId))
-            {
-                SetStatus(success: false, "✘ Reuters / LSEG Ticker is required when LSEG Active is enabled.");
-                return;
-            }
-
             stock.StockName = name;
             stock.SC_Comp_Id = compId;
             stock.ISIN = string.IsNullOrWhiteSpace(isin) ? string.Empty : isin;
@@ -224,8 +202,6 @@ namespace EODSettingsApp.Forms
             stock.YahooFinanceExists = chkYahooActive.Checked;
             stock.TwelveDataID = string.IsNullOrWhiteSpace(twelveDataId) ? null : twelveDataId;
             stock.TwelveDataExists = chkTwelveDataActive.Checked;
-            stock.ReuterID = string.IsNullOrWhiteSpace(reuterId) ? null : reuterId;
-            stock.ReuterExists = chkReuterActive.Checked;
             stock.StockExchange = string.IsNullOrWhiteSpace(exchange) ? null : exchange;
 
             PopulateGrid();
@@ -301,8 +277,6 @@ namespace EODSettingsApp.Forms
                         existing.YahooFinanceExists = s.YahooFinanceExists;
                         existing.TwelveDataID = s.TwelveDataID;
                         existing.TwelveDataExists = s.TwelveDataExists;
-                        existing.ReuterID = s.ReuterID;
-                        existing.ReuterExists = s.ReuterExists;
                         existing.StockExchange = s.StockExchange;
                     }
                 }
@@ -351,8 +325,6 @@ namespace EODSettingsApp.Forms
             chkYahooActive.Checked = false;
             txtTwelveDataId.Clear();
             chkTwelveDataActive.Checked = false;
-            txtReuterId.Clear();
-            chkReuterActive.Checked = false;
             txtExchange.Clear();
 
             grpEditStock.Enabled = false;
