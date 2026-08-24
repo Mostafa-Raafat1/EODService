@@ -46,6 +46,12 @@ namespace EODSettingsApp.Forms
                 lblTitle.Text = "TwelveData Settings";
                 lblSubtitle.Text = "Configure TwelveData API key and JSON parameters";
             }
+            else if (activeTab == 2)
+            {
+                tabProviders.SelectedIndex = 2;
+                lblTitle.Text = "Reuters (LSEG) Settings";
+                lblSubtitle.Text = "Configure Reuters WebSocket Base URL, Endpoint, and JSON parameters";
+            }
         }
 
         // ── Load ─────────────────────────────────────────────────────────────────
@@ -62,7 +68,7 @@ namespace EODSettingsApp.Forms
                 var connectionString = ConnectionStringResolver.Get();
                 if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
-                    LoadFromAppSettingsFallback("Database connection string is missing or invalid. Loaded from AppSettings.json.");
+                    LoadFromAppSettingsFallback("Database connection string is missing or invalid. Loaded defaults.");
                     return;
                 }
 
@@ -92,6 +98,32 @@ namespace EODSettingsApp.Forms
                     txtTwelveEndpoint.Text   = twelveProvider.EndPoint ?? string.Empty;
                     txtTwelveApiKey.Text     = twelveProvider.ApiKey ?? string.Empty;
                     txtTwelveParameters.Text = FormatJsonString(twelveProvider.Parameters);
+                }
+
+                var reutersProvider = providers.FirstOrDefault(p => p.Id == (int)ProviderIds.Reuters || p.Name.Contains("Reuter", StringComparison.OrdinalIgnoreCase));
+                if (reutersProvider != null)
+                {
+                    txtReutersBaseUrl.Text    = reutersProvider.BaseUrl ?? "ws://10.110.221.99:15000";
+                    txtReutersEndpoint.Text   = reutersProvider.EndPoint ?? "/WebSocket";
+                    txtReutersApiKey.Text     = reutersProvider.ApiKey ?? string.Empty;
+                    txtReutersParameters.Text = FormatJsonString(reutersProvider.Parameters ?? JsonSerializer.Serialize(new
+                    {
+                        DacsUser = "EODService",
+                        ApplicationId = "256",
+                        ServiceName = "ELEKTRON_DD"
+                    }));
+                }
+                else
+                {
+                    txtReutersBaseUrl.Text    = "ws://10.110.221.99:15000";
+                    txtReutersEndpoint.Text   = "/WebSocket";
+                    txtReutersApiKey.Text     = string.Empty;
+                    txtReutersParameters.Text = FormatJsonString(JsonSerializer.Serialize(new
+                    {
+                        DacsUser = "EODService",
+                        ApplicationId = "256",
+                        ServiceName = "ELEKTRON_DD"
+                    }));
                 }
 
                 SetStatus(success: true, "✔ Loaded provider settings from database (PROVIDER).");
@@ -124,6 +156,16 @@ namespace EODSettingsApp.Forms
                 {
                     interval = model.TwelveDataSettings.Interval,
                     outputsize = model.TwelveDataSettings.OutputSize
+                }));
+
+                txtReutersBaseUrl.Text    = "ws://10.110.221.99:15000";
+                txtReutersEndpoint.Text   = "/WebSocket";
+                txtReutersApiKey.Text     = string.Empty;
+                txtReutersParameters.Text = FormatJsonString(JsonSerializer.Serialize(new
+                {
+                    DacsUser = "EODService",
+                    ApplicationId = "256",
+                    ServiceName = "ELEKTRON_DD"
                 }));
 
                 SetStatus(success: false, statusMessage);
@@ -169,6 +211,20 @@ namespace EODSettingsApp.Forms
                 return;
             }
 
+            // 3. Validate Reuters Parameters JSON
+            if (!TryValidateJson(txtReutersParameters.Text, out var reutersNormalizedJson, out var reutersError))
+            {
+                SetStatus(success: false, $"✘ Reuters JSON Error: {reutersError}");
+                tabProviders.SelectedIndex = 2;
+                txtReutersParameters.Focus();
+                MessageBox.Show(
+                    $"Reuters Parameters contains invalid JSON:\n\n{reutersError}\n\nPlease fix the JSON format before saving.",
+                    "JSON Validation Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 btnSaveProviderSettings.Enabled = false;
@@ -195,6 +251,15 @@ namespace EODSettingsApp.Forms
                     endPoint: txtTwelveEndpoint.Text.Trim(),
                     apiKey: string.IsNullOrWhiteSpace(txtTwelveApiKey.Text) ? null : txtTwelveApiKey.Text.Trim(),
                     parameters: twelveNormalizedJson);
+
+                // Update Reuters (ID = 3)
+                await providerRepo.UpdateProvider(
+                    providerId: 3,
+                    name: "Reuters",
+                    baseUrl: txtReutersBaseUrl.Text.Trim(),
+                    endPoint: txtReutersEndpoint.Text.Trim(),
+                    apiKey: string.IsNullOrWhiteSpace(txtReutersApiKey.Text) ? null : txtReutersApiKey.Text.Trim(),
+                    parameters: reutersNormalizedJson);
 
                 // Update AppSettings.json for fallback synchronization
                 try

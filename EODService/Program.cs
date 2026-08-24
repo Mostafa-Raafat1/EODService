@@ -122,6 +122,29 @@ switch (providerSettings.ActiveProvider)
         break;
 
 
+    case (int)ProviderIds.Reuters:
+
+        if (ProviderDTO == null ||
+            string.IsNullOrWhiteSpace(ProviderDTO.BaseUrl) ||
+            string.IsNullOrWhiteSpace(ProviderDTO.EndPoint))
+        {
+            logger.LogError(
+                "Reuters provider config (BaseUrl or Endpoint) could not be loaded. " +
+                "Ensure a row with ID={ProviderId} exists in the PROVIDER table.",
+                ProviderDTO?.Id);
+
+            return;
+        }
+
+        symbolSettings = await EodPersistenceService.GetSymbols(
+            dbContext!,
+            s => s.ReuterExists && s.ReuterID != null,
+            s => s.ReuterID
+        ) ?? new SymbolSettings();
+
+        break;
+
+
     default:
 
         logger.LogError(

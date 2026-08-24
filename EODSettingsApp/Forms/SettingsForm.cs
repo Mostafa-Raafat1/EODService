@@ -635,8 +635,32 @@ namespace EODSettingsApp.Forms
 
             if (File.Exists(logPath))
             {
-                _lastLogFilePosition =
-                    new FileInfo(logPath).Length;
+                try
+                {
+                    using var fs = new FileStream(
+                        logPath,
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.ReadWrite);
+
+                    using var reader = new StreamReader(fs);
+                    string initialContent = reader.ReadToEnd();
+
+                    if (!string.IsNullOrWhiteSpace(initialContent))
+                    {
+                        AppendLog(initialContent.TrimEnd());
+                    }
+
+                    _lastLogFilePosition = fs.Length;
+                }
+                catch
+                {
+                    _lastLogFilePosition = 0;
+                }
+            }
+            else
+            {
+                _lastLogFilePosition = 0;
             }
 
             _logPollTimer.Interval = 2000;
