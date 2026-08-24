@@ -21,7 +21,7 @@ namespace EODService.Persistance.Repo
                                             Expression<Func<Stock, bool>> existsCondition,
                                             Func<Stock, string?> tickerSelector)
         {
-            var stocks = await dbContext.Stock
+            var stocks = await _dbContext.Stock
                 .Where(existsCondition)
                 .ToListAsync();
 

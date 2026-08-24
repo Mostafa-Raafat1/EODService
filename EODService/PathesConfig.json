@@ -1,5 +1,6 @@
 {
   "ActiveProviderSettingsPath": "EODConfig/settings.json",
   "AppSettingsPath": "AppSettings.json",
-  "LogFolderPath": "EODConfig/Logs"
+  "LogFolderPath": "EODConfig/Logs",
+  "EODServicePath": "C:\\Users\\mostafa.raafat.inter\\source\\repos\\EODService\\EODService\\bin\\Debug\\net10.0\\win-x64\\EODService.exe"
 }

@@ -1,5 +1,6 @@
 {
   "ActiveProviderSettingsPath": "EODConfig/settings.json",
   "AppSettingsPath": "AppSettings.json",
-  "LogFolderPath": "EODConfig/Logs"
+  "LogFolderPath": "EODConfig/Logs",
+  "EODServicePath": "EODService.exe"
 }

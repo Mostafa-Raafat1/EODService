@@ -1,4 +1,4 @@
-﻿using EODService.DTOs.EOD;
+using EODService.DTOs.EOD;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,8 +27,7 @@ namespace EODService.DTOs.ReuterSettings
                 fields.Open == null ||
                 fields.High == null ||
                 fields.Low == null ||
-                fields.Close == null ||
-                fields.Volume == null)
+                fields.Close == null)
             {
                 return null;
             }
@@ -39,7 +38,12 @@ namespace EODService.DTOs.ReuterSettings
                     "yyyy-MM-dd",
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.None,
-                    out var parsedDate))
+                    out var parsedDate) &&
+                !DateTime.TryParse(
+                    fields.TradeDate,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out parsedDate))
             {
                 return null;
             }
@@ -48,7 +52,7 @@ namespace EODService.DTOs.ReuterSettings
             decimal parsedHigh = fields.High.Value;
             decimal parsedLow = fields.Low.Value;
             decimal parsedClose = fields.Close.Value;
-            long parsedVolume = fields.Volume.Value;
+            long parsedVolume = fields.Volume ?? 0;
 
             // Financial sanity checks
             if (parsedHigh < parsedLow ||
