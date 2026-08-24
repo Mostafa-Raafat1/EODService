@@ -35,6 +35,9 @@ namespace EODSettingsApp.Forms
         private Label lblTwelveDataId;
         private TextBox txtTwelveDataId;
         private CheckBox chkTwelveDataActive;
+        private Label lblReuterId;
+        private TextBox txtReuterId;
+        private CheckBox chkReuterActive;
 
         // Buttons
         private Button btnUpdateStock;
@@ -82,6 +85,9 @@ namespace EODSettingsApp.Forms
             lblTwelveDataId = new Label();
             txtTwelveDataId = new TextBox();
             chkTwelveDataActive = new CheckBox();
+            lblReuterId = new Label();
+            txtReuterId = new TextBox();
+            chkReuterActive = new CheckBox();
             btnUpdateStock = new Button();
             btnRemoveSymbol = new Button();
             pnlFooter = new Panel();
@@ -102,14 +108,14 @@ namespace EODSettingsApp.Forms
             pnlHeader.Dock = DockStyle.Top;
             pnlHeader.Location = new Point(0, 0);
             pnlHeader.Name = "pnlHeader";
-            pnlHeader.Size = new Size(760, 70);
+            pnlHeader.Size = new Size(860, 70);
             pnlHeader.TabIndex = 0;
 
             lblTitle.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Location = new Point(20, 10);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(600, 28);
+            lblTitle.Size = new Size(700, 28);
             lblTitle.TabIndex = 0;
             lblTitle.Text = "Stock & Symbol Manager (Oracle EOD_STOCKS)";
 
@@ -117,9 +123,9 @@ namespace EODSettingsApp.Forms
             lblSubtitle.ForeColor = Color.FromArgb(180, 210, 255);
             lblSubtitle.Location = new Point(22, 42);
             lblSubtitle.Name = "lblSubtitle";
-            lblSubtitle.Size = new Size(600, 20);
+            lblSubtitle.Size = new Size(700, 20);
             lblSubtitle.TabIndex = 1;
-            lblSubtitle.Text = "Select a stock to update parameters, active provider flags, or delete from database";
+            lblSubtitle.Text = "Select a stock to update parameters, active provider flags (Yahoo, Twelve Data, Reuters/LSEG), or delete from database";
 
             // ── pnlMain ───────────────────────────────────────────────────────────
             pnlMain.BackColor = Color.FromArgb(248, 250, 252);
@@ -130,7 +136,7 @@ namespace EODSettingsApp.Forms
             pnlMain.Location = new Point(0, 70);
             pnlMain.Name = "pnlMain";
             pnlMain.Padding = new Padding(16);
-            pnlMain.Size = new Size(760, 410);
+            pnlMain.Size = new Size(860, 480);
             pnlMain.TabIndex = 1;
 
             lblCurrentSymbols.AutoSize = true;
@@ -174,7 +180,7 @@ namespace EODSettingsApp.Forms
             dgvStocks.ReadOnly = true;
             dgvStocks.RowHeadersVisible = false;
             dgvStocks.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvStocks.Size = new Size(726, 175);
+            dgvStocks.Size = new Size(826, 210);
             dgvStocks.TabIndex = 1;
             dgvStocks.SelectionChanged += DgvStocks_SelectionChanged;
 
@@ -195,13 +201,16 @@ namespace EODSettingsApp.Forms
             grpEditStock.Controls.Add(lblTwelveDataId);
             grpEditStock.Controls.Add(txtTwelveDataId);
             grpEditStock.Controls.Add(chkTwelveDataActive);
+            grpEditStock.Controls.Add(lblReuterId);
+            grpEditStock.Controls.Add(txtReuterId);
+            grpEditStock.Controls.Add(chkReuterActive);
             grpEditStock.Controls.Add(btnUpdateStock);
             grpEditStock.Controls.Add(btnRemoveSymbol);
             grpEditStock.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
             grpEditStock.ForeColor = Color.FromArgb(30, 58, 138);
-            grpEditStock.Location = new Point(16, 215);
+            grpEditStock.Location = new Point(16, 252);
             grpEditStock.Name = "grpEditStock";
-            grpEditStock.Size = new Size(726, 185);
+            grpEditStock.Size = new Size(826, 215);
             grpEditStock.TabIndex = 2;
             grpEditStock.TabStop = false;
             grpEditStock.Text = "Edit Selected Stock Details";
@@ -209,16 +218,16 @@ namespace EODSettingsApp.Forms
             // Stock ID (ReadOnly)
             lblStockId.AutoSize = true;
             lblStockId.ForeColor = Color.FromArgb(51, 65, 85);
-            lblStockId.Location = new Point(16, 26);
+            lblStockId.Location = new Point(16, 24);
             lblStockId.Name = "lblStockId";
             lblStockId.Text = "Stock ID:";
 
             txtStockId.BorderStyle = BorderStyle.FixedSingle;
             txtStockId.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            txtStockId.Location = new Point(16, 44);
+            txtStockId.Location = new Point(16, 42);
             txtStockId.Name = "txtStockId";
             txtStockId.ReadOnly = true;
-            txtStockId.Size = new Size(50, 23);
+            txtStockId.Size = new Size(55, 23);
             txtStockId.TabIndex = 0;
             txtStockId.TextAlign = HorizontalAlignment.Center;
             txtStockId.BackColor = Color.FromArgb(241, 245, 249);
@@ -226,105 +235,129 @@ namespace EODSettingsApp.Forms
             // Company ID
             lblCompId.AutoSize = true;
             lblCompId.ForeColor = Color.FromArgb(51, 65, 85);
-            lblCompId.Location = new Point(74, 26);
+            lblCompId.Location = new Point(79, 24);
             lblCompId.Name = "lblCompId";
             lblCompId.Text = "Comp ID:";
 
             txtCompId.BorderStyle = BorderStyle.FixedSingle;
             txtCompId.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            txtCompId.Location = new Point(74, 44);
+            txtCompId.Location = new Point(79, 42);
             txtCompId.Name = "txtCompId";
-            txtCompId.Size = new Size(65, 23);
+            txtCompId.Size = new Size(70, 23);
             txtCompId.TabIndex = 1;
             txtCompId.TextAlign = HorizontalAlignment.Center;
 
             // Stock Name
             lblStockName.AutoSize = true;
             lblStockName.ForeColor = Color.FromArgb(51, 65, 85);
-            lblStockName.Location = new Point(147, 26);
+            lblStockName.Location = new Point(157, 24);
             lblStockName.Name = "lblStockName";
             lblStockName.Text = "Stock Name:";
 
             txtStockName.BorderStyle = BorderStyle.FixedSingle;
             txtStockName.Font = new Font("Segoe UI", 9F);
-            txtStockName.Location = new Point(147, 44);
+            txtStockName.Location = new Point(157, 42);
             txtStockName.Name = "txtStockName";
-            txtStockName.Size = new Size(220, 23);
+            txtStockName.Size = new Size(270, 23);
             txtStockName.TabIndex = 2;
 
             // ISIN Code
             lblIsin.AutoSize = true;
             lblIsin.ForeColor = Color.FromArgb(51, 65, 85);
-            lblIsin.Location = new Point(375, 26);
+            lblIsin.Location = new Point(435, 24);
             lblIsin.Name = "lblIsin";
             lblIsin.Text = "ISIN Code:";
 
             txtIsin.BorderStyle = BorderStyle.FixedSingle;
             txtIsin.Font = new Font("Segoe UI", 9F);
-            txtIsin.Location = new Point(375, 44);
+            txtIsin.Location = new Point(435, 42);
             txtIsin.Name = "txtIsin";
-            txtIsin.Size = new Size(130, 23);
+            txtIsin.Size = new Size(170, 23);
             txtIsin.TabIndex = 3;
 
             // Exchange
             lblExchange.AutoSize = true;
             lblExchange.ForeColor = Color.FromArgb(51, 65, 85);
-            lblExchange.Location = new Point(513, 26);
+            lblExchange.Location = new Point(613, 24);
             lblExchange.Name = "lblExchange";
             lblExchange.Text = "Exchange:";
 
             txtExchange.BorderStyle = BorderStyle.FixedSingle;
             txtExchange.Font = new Font("Segoe UI", 9F);
-            txtExchange.Location = new Point(513, 44);
+            txtExchange.Location = new Point(613, 42);
             txtExchange.Name = "txtExchange";
-            txtExchange.Size = new Size(100, 23);
+            txtExchange.Size = new Size(195, 23);
             txtExchange.TabIndex = 4;
 
-            // Yahoo Ticker & Flag
+            // Row 2: 3 Providers side by side
+            // 1. Yahoo Finance
             lblYahooId.AutoSize = true;
             lblYahooId.ForeColor = Color.FromArgb(51, 65, 85);
-            lblYahooId.Location = new Point(16, 78);
+            lblYahooId.Location = new Point(16, 76);
             lblYahooId.Name = "lblYahooId";
             lblYahooId.Text = "Yahoo Finance Ticker:";
 
             txtYahooId.BorderStyle = BorderStyle.FixedSingle;
             txtYahooId.Font = new Font("Segoe UI", 9F);
-            txtYahooId.Location = new Point(16, 96);
+            txtYahooId.Location = new Point(16, 94);
             txtYahooId.Name = "txtYahooId";
-            txtYahooId.Size = new Size(200, 23);
-            txtYahooId.TabIndex = 3;
+            txtYahooId.Size = new Size(145, 23);
+            txtYahooId.TabIndex = 5;
 
             chkYahooActive.AutoSize = true;
             chkYahooActive.Checked = true;
             chkYahooActive.ForeColor = Color.FromArgb(51, 65, 85);
-            chkYahooActive.Location = new Point(224, 98);
+            chkYahooActive.Location = new Point(167, 96);
             chkYahooActive.Name = "chkYahooActive";
-            chkYahooActive.Text = "Yahoo Active";
-            chkYahooActive.TabIndex = 4;
+            chkYahooActive.Text = "YF Active";
+            chkYahooActive.TabIndex = 6;
             chkYahooActive.CheckedChanged += ChkYahooActive_CheckedChanged;
 
-            // TwelveData Ticker & Flag
+            // 2. Twelve Data
             lblTwelveDataId.AutoSize = true;
             lblTwelveDataId.ForeColor = Color.FromArgb(51, 65, 85);
-            lblTwelveDataId.Location = new Point(340, 78);
+            lblTwelveDataId.Location = new Point(285, 76);
             lblTwelveDataId.Name = "lblTwelveDataId";
             lblTwelveDataId.Text = "Twelve Data Ticker:";
 
             txtTwelveDataId.BorderStyle = BorderStyle.FixedSingle;
             txtTwelveDataId.Font = new Font("Segoe UI", 9F);
-            txtTwelveDataId.Location = new Point(340, 96);
+            txtTwelveDataId.Location = new Point(285, 94);
             txtTwelveDataId.Name = "txtTwelveDataId";
-            txtTwelveDataId.Size = new Size(200, 23);
-            txtTwelveDataId.TabIndex = 5;
+            txtTwelveDataId.Size = new Size(145, 23);
+            txtTwelveDataId.TabIndex = 7;
 
             chkTwelveDataActive.AutoSize = true;
             chkTwelveDataActive.Checked = true;
             chkTwelveDataActive.ForeColor = Color.FromArgb(51, 65, 85);
-            chkTwelveDataActive.Location = new Point(548, 98);
+            chkTwelveDataActive.Location = new Point(436, 96);
             chkTwelveDataActive.Name = "chkTwelveDataActive";
             chkTwelveDataActive.Text = "TD Active";
-            chkTwelveDataActive.TabIndex = 6;
+            chkTwelveDataActive.TabIndex = 8;
             chkTwelveDataActive.CheckedChanged += ChkTwelveDataActive_CheckedChanged;
+
+            // 3. Reuters / LSEG
+            lblReuterId.AutoSize = true;
+            lblReuterId.ForeColor = Color.FromArgb(51, 65, 85);
+            lblReuterId.Location = new Point(555, 76);
+            lblReuterId.Name = "lblReuterId";
+            lblReuterId.Text = "Reuters / LSEG Ticker:";
+
+            txtReuterId.BorderStyle = BorderStyle.FixedSingle;
+            txtReuterId.Font = new Font("Segoe UI", 9F);
+            txtReuterId.Location = new Point(555, 94);
+            txtReuterId.Name = "txtReuterId";
+            txtReuterId.Size = new Size(145, 23);
+            txtReuterId.TabIndex = 9;
+
+            chkReuterActive.AutoSize = true;
+            chkReuterActive.Checked = true;
+            chkReuterActive.ForeColor = Color.FromArgb(51, 65, 85);
+            chkReuterActive.Location = new Point(706, 96);
+            chkReuterActive.Name = "chkReuterActive";
+            chkReuterActive.Text = "LSEG Active";
+            chkReuterActive.TabIndex = 10;
+            chkReuterActive.CheckedChanged += ChkReuterActive_CheckedChanged;
 
             // Action Buttons inside Card
             btnUpdateStock.BackColor = Color.FromArgb(16, 185, 129); // Emerald Green
@@ -333,10 +366,10 @@ namespace EODSettingsApp.Forms
             btnUpdateStock.FlatStyle = FlatStyle.Flat;
             btnUpdateStock.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnUpdateStock.ForeColor = Color.White;
-            btnUpdateStock.Location = new Point(16, 134);
+            btnUpdateStock.Location = new Point(16, 150);
             btnUpdateStock.Name = "btnUpdateStock";
-            btnUpdateStock.Size = new Size(160, 34);
-            btnUpdateStock.TabIndex = 7;
+            btnUpdateStock.Size = new Size(160, 36);
+            btnUpdateStock.TabIndex = 11;
             btnUpdateStock.Text = "💾 Apply Updates";
             btnUpdateStock.UseVisualStyleBackColor = false;
             btnUpdateStock.Click += BtnUpdateStock_Click;
@@ -347,10 +380,10 @@ namespace EODSettingsApp.Forms
             btnRemoveSymbol.FlatStyle = FlatStyle.Flat;
             btnRemoveSymbol.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnRemoveSymbol.ForeColor = Color.White;
-            btnRemoveSymbol.Location = new Point(190, 134);
+            btnRemoveSymbol.Location = new Point(190, 150);
             btnRemoveSymbol.Name = "btnRemoveSymbol";
-            btnRemoveSymbol.Size = new Size(160, 34);
-            btnRemoveSymbol.TabIndex = 8;
+            btnRemoveSymbol.Size = new Size(160, 36);
+            btnRemoveSymbol.TabIndex = 12;
             btnRemoveSymbol.Text = "🗑 Delete Stock";
             btnRemoveSymbol.UseVisualStyleBackColor = false;
             btnRemoveSymbol.Click += BtnRemoveSymbol_Click;
@@ -360,9 +393,9 @@ namespace EODSettingsApp.Forms
             pnlFooter.Controls.Add(btnSaveSymbolSettings);
             pnlFooter.Controls.Add(lblSymbolSettingsStatus);
             pnlFooter.Dock = DockStyle.Bottom;
-            pnlFooter.Location = new Point(0, 480);
+            pnlFooter.Location = new Point(0, 550);
             pnlFooter.Name = "pnlFooter";
-            pnlFooter.Size = new Size(760, 60);
+            pnlFooter.Size = new Size(860, 60);
             pnlFooter.TabIndex = 2;
 
             btnSaveSymbolSettings.BackColor = Color.FromArgb(30, 58, 138);
@@ -371,9 +404,9 @@ namespace EODSettingsApp.Forms
             btnSaveSymbolSettings.FlatStyle = FlatStyle.Flat;
             btnSaveSymbolSettings.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             btnSaveSymbolSettings.ForeColor = Color.White;
-            btnSaveSymbolSettings.Location = new Point(520, 12);
+            btnSaveSymbolSettings.Location = new Point(610, 12);
             btnSaveSymbolSettings.Name = "btnSaveSymbolSettings";
-            btnSaveSymbolSettings.Size = new Size(220, 36);
+            btnSaveSymbolSettings.Size = new Size(232, 36);
             btnSaveSymbolSettings.TabIndex = 0;
             btnSaveSymbolSettings.Text = "💾 Save Database Changes";
             btnSaveSymbolSettings.UseVisualStyleBackColor = false;
@@ -383,20 +416,20 @@ namespace EODSettingsApp.Forms
             lblSymbolSettingsStatus.ForeColor = Color.FromArgb(22, 163, 74);
             lblSymbolSettingsStatus.Location = new Point(14, 20);
             lblSymbolSettingsStatus.Name = "lblSymbolSettingsStatus";
-            lblSymbolSettingsStatus.Size = new Size(490, 22);
+            lblSymbolSettingsStatus.Size = new Size(580, 22);
             lblSymbolSettingsStatus.TabIndex = 1;
 
             // ── SymbolSettingsForm ────────────────────────────────────────────────
             BackColor = Color.FromArgb(245, 247, 250);
-            ClientSize = new Size(760, 540);
+            ClientSize = new Size(860, 610);
             Controls.Add(pnlMain);
             Controls.Add(pnlFooter);
             Controls.Add(pnlHeader);
             Font = new Font("Segoe UI", 9.5F);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            MaximumSize = new Size(776, 579);
-            MinimumSize = new Size(776, 579);
+            MaximumSize = new Size(876, 649);
+            MinimumSize = new Size(876, 649);
             Name = "SymbolSettingsForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Stock & Symbol Manager (EOD_STOCKS)";
