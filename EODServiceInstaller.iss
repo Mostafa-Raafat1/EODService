@@ -15,12 +15,14 @@ OutputBaseFilename=EODServiceManager_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+CloseApplications=yes
+RestartApplications=no
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; Package the Windows Forms app (EODServiceManager)
+; Package the Windows Forms app (EODServiceManager) + EODService console app
 Source: "publish_forms\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
