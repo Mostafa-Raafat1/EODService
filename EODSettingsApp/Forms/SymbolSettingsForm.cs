@@ -175,11 +175,11 @@ namespace EODSettingsApp.Forms
 
             var name = txtStockName.Text.Trim();
             var compIdText = txtCompId.Text.Trim();
-            var isin = txtIsin.Text.Trim().ToUpperInvariant();
-            var yahooId = txtYahooId.Text.Trim().ToUpperInvariant();
-            var twelveDataId = txtTwelveDataId.Text.Trim().ToUpperInvariant();
-            var reuterId = txtReuterId.Text.Trim().ToUpperInvariant();
-            var exchange = txtExchange.Text.Trim().ToUpperInvariant();
+            var isin = txtIsin.Text.Trim();
+            var yahooId = txtYahooId.Text.Trim();
+            var twelveDataId = txtTwelveDataId.Text.Trim();
+            var reuterId = txtReuterId.Text.Trim();
+            var exchange = txtExchange.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(name))
             {

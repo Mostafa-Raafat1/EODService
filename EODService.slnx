@@ -1,8 +1,13 @@
 <Solution>
   <Project Path="EODService/EODService.csproj">
-    <BuildType Project="Debug" />
+    <BuildType Solution="Debug|*" Project="Release" />
+    <BuildType Solution="Release|*" Project="Debug" />
   </Project>
   <Project Path="EODSettingsApp/EODSettingsApp.csproj">
-    <BuildType Project="Debug" />
+    <BuildType Solution="Debug|*" Project="Release" />
+    <BuildType Solution="Release|*" Project="Debug" />
+  </Project>
+  <Project Path="TICKR_Installer/TICKR_Installer.vdproj" Type="Installer">
+    <BuildType Project="Release" />
   </Project>
 </Solution>

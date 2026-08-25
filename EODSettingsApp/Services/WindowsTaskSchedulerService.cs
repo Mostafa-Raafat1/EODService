@@ -38,6 +38,9 @@ namespace EODSettingsApp.Services
                 // Use standard user level (LUA) so no admin elevation is required
                 td.Principal.RunLevel = TaskRunLevel.LUA;
 
+                // Hide task window so CMD prompt does not pop up when scheduled task runs
+                td.Settings.Hidden = true;
+
                 // Parse run time (default: 18:00:00)
                 if (!TimeSpan.TryParse(settings.RunTime, out var runTime))
                 {
