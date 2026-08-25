@@ -432,7 +432,7 @@ namespace EODSettingsApp.Forms
             MinimumSize = new Size(876, 649);
             Name = "SymbolSettingsForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "Stock & Symbol Manager (EOD_STOCKS)";
+            Text = "TICKR";
 
             pnlHeader.ResumeLayout(false);
             pnlMain.ResumeLayout(false);

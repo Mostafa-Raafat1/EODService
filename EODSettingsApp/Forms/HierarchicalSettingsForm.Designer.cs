@@ -98,7 +98,7 @@ namespace EODSettingsApp.Forms
             MinimumSize = new Size(400, 300);
             Name = "HierarchicalSettingsForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "Settings Manager";
+            Text = "TICKR";
             Load += HierarchicalSettingsForm_Load;
             pnlSidebar.ResumeLayout(false);
             ResumeLayout(false);

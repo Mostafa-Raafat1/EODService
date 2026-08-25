@@ -39,6 +39,7 @@ namespace EODSettingsApp.Forms
         public SettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
 
             SetupGridColumns();
 
@@ -120,6 +121,19 @@ namespace EODSettingsApp.Forms
             {
                 var providers =
                     await _providerRepo.GetAllProvidersAsync();
+
+                if (providers != null)
+                {
+                    // Only show providers that are supported by the service (defined in ProviderIds enum).
+                    // This prevents legacy or internal-only DB rows from appearing in the selector.
+                    var supportedIds = Enum.GetValues<EODService.Models.ProviderIds>()
+                                          .Select(id => (int)id)
+                                          .ToHashSet();
+
+                    providers = providers
+                        .Where(p => supportedIds.Contains(p.Id))
+                        .ToList();
+                }
 
                 if (providers == null || !providers.Any())
                 {

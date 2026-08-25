@@ -22,6 +22,7 @@ namespace EODSettingsApp.Forms
         public HistoricalDataForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
             SetupGridColumns();
             InitializeFilters();
             _ = LoadSymbolsAsync();

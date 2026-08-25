@@ -20,6 +20,7 @@ namespace EODSettingsApp.Forms
         public DatabaseSettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
             LoadDatabaseSettings();
         }
 
