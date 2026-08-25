@@ -209,5 +209,4 @@ catch (Exception ex)
         logger.LogError(ex, "Error occurred while processing database save operation.");
 }
 
-Console.WriteLine("\nPress Enter to exit...");
-Console.ReadLine();
+// EODService finished execution successfully
