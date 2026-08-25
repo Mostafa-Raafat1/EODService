@@ -1,5 +1,5 @@
-using System;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace EODSettingsApp.Logging
 {
@@ -31,7 +31,7 @@ namespace EODSettingsApp.Logging
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             var message = formatter(state, exception);
-            
+
             // Format to look like console output
             string prefix = logLevel switch
             {
@@ -42,7 +42,7 @@ namespace EODSettingsApp.Logging
             };
 
             var fullMessage = $"{prefix}{message}";
-            
+
             _provider.OnLog?.Invoke(fullMessage);
         }
     }
