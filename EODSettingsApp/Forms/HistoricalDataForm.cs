@@ -277,19 +277,110 @@ namespace EODSettingsApp.Forms
 
         private void ExportToExcel(string filePath)
         {
-            using var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8);
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
 
-            // Write CSV Header
-            var headers = dgvHistory.Columns.Cast<DataGridViewColumn>().Select(c => EscapeCsv(c.HeaderText));
-            writer.WriteLine(string.Join(",", headers));
+            using var fs = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
+            using var archive = new System.IO.Compression.ZipArchive(fs, System.IO.Compression.ZipArchiveMode.Create);
 
-            // Write Data Rows
-            foreach (DataGridViewRow row in dgvHistory.Rows)
+            // 1. [Content_Types].xml
+            var entryContentTypes = archive.CreateEntry("[Content_Types].xml");
+            using (var writer = new System.IO.StreamWriter(entryContentTypes.Open(), System.Text.Encoding.UTF8))
             {
-                if (row.IsNewRow) continue;
-                var cells = row.Cells.Cast<DataGridViewCell>().Select(c => EscapeCsv(c.Value?.ToString() ?? ""));
-                writer.WriteLine(string.Join(",", cells));
+                writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                             "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
+                             "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>" +
+                             "<Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
+                             "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
+                             "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
+                             "</Types>");
             }
+
+            // 2. _rels/.rels
+            var entryRels = archive.CreateEntry("_rels/.rels");
+            using (var writer = new System.IO.StreamWriter(entryRels.Open(), System.Text.Encoding.UTF8))
+            {
+                writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                             "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+                             "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>" +
+                             "</Relationships>");
+            }
+
+            // 3. xl/_rels/workbook.xml.rels
+            var entryWbRels = archive.CreateEntry("xl/_rels/workbook.xml.rels");
+            using (var writer = new System.IO.StreamWriter(entryWbRels.Open(), System.Text.Encoding.UTF8))
+            {
+                writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                             "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+                             "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
+                             "</Relationships>");
+            }
+
+            // 4. xl/workbook.xml
+            var entryWorkbook = archive.CreateEntry("xl/workbook.xml");
+            using (var writer = new System.IO.StreamWriter(entryWorkbook.Open(), System.Text.Encoding.UTF8))
+            {
+                writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
+                             "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
+                             "<sheets><sheet name=\"EOD Historical Data\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
+                             "</workbook>");
+            }
+
+            // 5. xl/worksheets/sheet1.xml
+            var entrySheet = archive.CreateEntry("xl/worksheets/sheet1.xml");
+            using (var writer = new System.IO.StreamWriter(entrySheet.Open(), System.Text.Encoding.UTF8))
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+                sb.Append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">");
+                sb.Append("<sheetData>");
+
+                // Header Row
+                sb.Append("<row r=\"1\">");
+                int colIdx = 1;
+                foreach (DataGridViewColumn col in dgvHistory.Columns)
+                {
+                    var colLetter = GetExcelColumnName(colIdx++);
+                    var title = System.Security.SecurityElement.Escape(col.HeaderText ?? "");
+                    sb.Append($"<c r=\"{colLetter}1\" t=\"inlineStr\"><is><t>{title}</t></is></c>");
+                }
+                sb.Append("</row>");
+
+                // Data Rows
+                int rowIdx = 2;
+                foreach (DataGridViewRow row in dgvHistory.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    sb.Append($"<row r=\"{rowIdx}\">");
+                    colIdx = 1;
+                    foreach (DataGridViewCell cell in row.Cells)
+                    {
+                        var colLetter = GetExcelColumnName(colIdx++);
+                        var val = System.Security.SecurityElement.Escape(cell.Value?.ToString() ?? "");
+                        sb.Append($"<c r=\"{colLetter}{rowIdx}\" t=\"inlineStr\"><is><t>{val}</t></is></c>");
+                    }
+                    sb.Append("</row>");
+                    rowIdx++;
+                }
+
+                sb.Append("</sheetData>");
+                sb.Append("</worksheet>");
+
+                writer.Write(sb.ToString());
+            }
+        }
+
+        private static string GetExcelColumnName(int columnIndex)
+        {
+            int dividend = columnIndex;
+            string columnName = string.Empty;
+            while (dividend > 0)
+            {
+                int modulo = (dividend - 1) % 26;
+                columnName = Convert.ToChar(65 + modulo) + columnName;
+                dividend = (dividend - modulo) / 26;
+            }
+            return columnName;
         }
 
         private void ExportToCsv(string filePath)
@@ -319,67 +410,155 @@ namespace EODSettingsApp.Forms
                     pd.PrinterSettings.PrintToFile = true;
                     pd.PrinterSettings.PrintFileName = filePath;
                     pd.DefaultPageSettings.Landscape = true;
+                    pd.DefaultPageSettings.Margins = new System.Drawing.Printing.Margins(35, 35, 35, 35);
 
                     int rowIdx = 0;
+                    int pageNumber = 1;
+
                     pd.PrintPage += (s, e) =>
                     {
                         var g = e.Graphics;
                         if (g == null) return;
 
-                        using var fontTitle = new Font("Segoe UI", 13, FontStyle.Bold);
-                        using var fontHeader = new Font("Segoe UI", 9, FontStyle.Bold);
-                        using var fontBody = new Font("Segoe UI", 8.5f, FontStyle.Regular);
+                        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+                        int leftMargin = e.MarginBounds.Left;
+                        int topMargin = e.MarginBounds.Top;
+                        int printableWidth = e.MarginBounds.Width;
+                        int pageHeight = e.MarginBounds.Bottom;
+
+                        using var fontTitle = new Font("Segoe UI", 15, FontStyle.Bold);
+                        using var fontHeader = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+                        using var fontBody = new Font("Segoe UI", 9f, FontStyle.Regular);
                         using var fontSub = new Font("Segoe UI", 8.5f, FontStyle.Italic);
+                        using var fontFooter = new Font("Segoe UI", 8f, FontStyle.Regular);
 
-                        // Draw Header Banner
-                        g.FillRectangle(new SolidBrush(Color.FromArgb(30, 58, 138)), 40, 30, 760, 42);
-                        g.DrawString("EOD Historical Market Data Report", fontTitle, Brushes.White, 50, 36);
-                        g.DrawString($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss} | Total Records: {dgvHistory.Rows.Count:N0}", fontSub, Brushes.LightBlue, 50, 56);
+                        using var brushNavy = new SolidBrush(Color.FromArgb(30, 58, 138));
+                        using var brushAltRow = new SolidBrush(Color.FromArgb(245, 247, 250));
+                        using var penGrid = new Pen(Color.FromArgb(218, 224, 233));
+                        using var penBorder = new Pen(Color.FromArgb(148, 163, 184));
 
-                        // Draw Table Headers
-                        int y = 80;
-                        g.FillRectangle(new SolidBrush(Color.FromArgb(226, 232, 240)), 40, y, 760, 22);
-                        int[] colX = { 45, 110, 310, 385, 445, 505, 565, 635, 705 };
+                        // 1. Draw Professional Header Banner
+                        int bannerHeight = 44;
+                        g.FillRectangle(brushNavy, leftMargin, topMargin, printableWidth, bannerHeight);
+                        g.DrawString("EOD Historical Market Data Report", fontTitle, Brushes.White, leftMargin + 15, topMargin + 6);
+                        using var brushSub = new SolidBrush(Color.FromArgb(191, 219, 254));
+                        g.DrawString($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}  │  Total Records: {dgvHistory.Rows.Count:N0}", fontSub, brushSub, leftMargin + 16, topMargin + 26);
 
-                        for (int c = 0; c < dgvHistory.Columns.Count && c < colX.Length; c++)
+                        // 2. Define Proportional Column Ratios (Sum = 1.0)
+                        float[] colRatios = { 0.06f, 0.26f, 0.11f, 0.09f, 0.09f, 0.09f, 0.09f, 0.09f, 0.12f };
+                        StringAlignment[] colAlignments = {
+                            StringAlignment.Near,   // Stock ID
+                            StringAlignment.Near,   // Stock Name
+                            StringAlignment.Center, // Date
+                            StringAlignment.Far,    // Open
+                            StringAlignment.Far,    // High
+                            StringAlignment.Far,    // Low
+                            StringAlignment.Far,    // Close
+                            StringAlignment.Far,    // Adj Close
+                            StringAlignment.Far     // Volume
+                        };
+
+                        float[] colWidths = new float[colRatios.Length];
+                        float[] colXPos = new float[colRatios.Length];
+                        float currentX = leftMargin;
+
+                        for (int i = 0; i < colRatios.Length; i++)
                         {
-                            g.DrawString(dgvHistory.Columns[c].HeaderText, fontHeader, Brushes.Navy, colX[c], y + 3);
+                            colWidths[i] = printableWidth * colRatios[i];
+                            colXPos[i] = currentX;
+                            currentX += colWidths[i];
                         }
 
-                        // Draw Table Rows
-                        y += 24;
-                        int pageHeight = 510;
+                        // 3. Draw Table Header Row (Dark navy background with bold white text)
+                        int y = topMargin + bannerHeight + 12;
+                        int headerHeight = 28;
+                        int dataRowHeight = 28;
 
+                        g.FillRectangle(brushNavy, leftMargin, y, printableWidth, headerHeight);
+
+                        for (int c = 0; c < dgvHistory.Columns.Count && c < colRatios.Length; c++)
+                        {
+                            var format = new StringFormat
+                            {
+                                Alignment = colAlignments[c],
+                                LineAlignment = StringAlignment.Center,
+                                Trimming = StringTrimming.EllipsisCharacter
+                            };
+                            var rect = new RectangleF(colXPos[c] + 6, y, colWidths[c] - 12, headerHeight);
+                            g.DrawString(dgvHistory.Columns[c].HeaderText, fontHeader, Brushes.White, rect, format);
+
+                            // Draw vertical column divider in header
+                            if (c > 0)
+                            {
+                                g.DrawLine(new Pen(Color.FromArgb(59, 130, 246)), colXPos[c], y, colXPos[c], y + headerHeight);
+                            }
+                        }
+
+                        int tableStartY = y;
+                        y += headerHeight;
+
+                        // 4. Draw Data Rows with Zebra Striping & Vertical Gridlines
                         while (rowIdx < dgvHistory.Rows.Count)
                         {
                             var row = dgvHistory.Rows[rowIdx];
                             if (!row.IsNewRow)
                             {
+                                // Alternating Row Fill
                                 if (rowIdx % 2 == 1)
                                 {
-                                    g.FillRectangle(new SolidBrush(Color.FromArgb(248, 250, 252)), 40, y - 2, 760, 18);
+                                    g.FillRectangle(brushAltRow, leftMargin, y, printableWidth, dataRowHeight);
                                 }
-
-                                for (int c = 0; c < row.Cells.Count && c < colX.Length; c++)
+                                else
                                 {
-                                    var txt = row.Cells[c].Value?.ToString() ?? "";
-                                    if (txt.Length > 28) txt = txt.Substring(0, 25) + "...";
-                                    g.DrawString(txt, fontBody, Brushes.Black, colX[c], y);
+                                    g.FillRectangle(Brushes.White, leftMargin, y, printableWidth, dataRowHeight);
                                 }
 
-                                g.DrawLine(new Pen(Color.FromArgb(226, 232, 240)), 40, y + 16, 800, y + 16);
-                                y += 18;
+                                // Cell Contents & Vertical Gridlines
+                                for (int c = 0; c < row.Cells.Count && c < colRatios.Length; c++)
+                                {
+                                    var txt = row.Cells[c].Value?.ToString() ?? "-";
+                                    var format = new StringFormat
+                                    {
+                                        Alignment = colAlignments[c],
+                                        LineAlignment = StringAlignment.Center,
+                                        Trimming = StringTrimming.EllipsisCharacter
+                                    };
+                                    var rect = new RectangleF(colXPos[c] + 6, y, colWidths[c] - 12, dataRowHeight);
+                                    g.DrawString(txt, fontBody, Brushes.Black, rect, format);
+
+                                    // Vertical Gridline between columns
+                                    if (c > 0)
+                                    {
+                                        g.DrawLine(penGrid, colXPos[c], y, colXPos[c], y + dataRowHeight);
+                                    }
+                                }
+
+                                // Horizontal Bottom Gridline
+                                g.DrawLine(penGrid, leftMargin, y + dataRowHeight, leftMargin + printableWidth, y + dataRowHeight);
+                                y += dataRowHeight;
                             }
 
                             rowIdx++;
 
-                            if (y > pageHeight && rowIdx < dgvHistory.Rows.Count)
+                            // Page Break Check
+                            if (y + dataRowHeight + 35 > pageHeight && rowIdx < dgvHistory.Rows.Count)
                             {
+                                // Draw Outer Frame for the table on this page
+                                g.DrawRectangle(penBorder, leftMargin, tableStartY, printableWidth, y - tableStartY);
+
+                                DrawFooter(g, fontFooter, penGrid, leftMargin, pageHeight, printableWidth, pageNumber++);
                                 e.HasMorePages = true;
                                 return;
                             }
                         }
 
+                        // Draw Outer Table Border Frame
+                        g.DrawRectangle(penBorder, leftMargin, tableStartY, printableWidth, y - tableStartY);
+
+                        // Draw Final Page Footer
+                        DrawFooter(g, fontFooter, penGrid, leftMargin, pageHeight, printableWidth, pageNumber);
                         e.HasMorePages = false;
                     };
 
@@ -397,6 +576,15 @@ namespace EODSettingsApp.Forms
                 // Fallback if Microsoft Print to PDF is not installed
                 ExportToCsv(filePath);
             }
+        }
+
+        private static void DrawFooter(Graphics g, Font font, Pen pen, int left, int bottom, int width, int pageNum)
+        {
+            g.DrawLine(pen, left, bottom - 20, left + width, bottom - 20);
+            g.DrawString("CONFIDENTIAL  │  TICKR EOD Financial Data Service", font, Brushes.Gray, left, bottom - 16);
+            var pageStr = $"Page {pageNum}";
+            var size = g.MeasureString(pageStr, font);
+            g.DrawString(pageStr, font, Brushes.Gray, left + width - size.Width, bottom - 16);
         }
 
         private static string EscapeCsv(string text)
