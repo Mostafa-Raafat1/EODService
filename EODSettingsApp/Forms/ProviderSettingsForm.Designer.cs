@@ -255,7 +255,7 @@ namespace EODSettingsApp.Forms
             MinimumSize     = new Size(476, 519);
             Name            = "ProviderSettingsForm";
             StartPosition   = FormStartPosition.CenterParent;
-            Text            = "Provider Settings";
+            Text            = "TICKR";
 
             tabPageYahoo.ResumeLayout(false);
             tabPageYahoo.PerformLayout();

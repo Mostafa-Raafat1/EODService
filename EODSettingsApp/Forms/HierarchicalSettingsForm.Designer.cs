@@ -81,24 +81,26 @@ namespace EODSettingsApp.Forms
             // 
             // pnlContent
             // 
+            pnlContent.AutoScroll = true;
             pnlContent.BackColor = Color.FromArgb(248, 250, 252);
             pnlContent.Dock = DockStyle.Fill;
             pnlContent.Location = new Point(220, 0);
             pnlContent.Name = "pnlContent";
-            pnlContent.Size = new Size(600, 600);
+            pnlContent.Size = new Size(840, 650);
             pnlContent.TabIndex = 1;
             // 
             // HierarchicalSettingsForm
             // 
             BackColor = Color.FromArgb(248, 250, 252);
-            ClientSize = new Size(820, 600);
+            ClientSize = new Size(1060, 650);
             Controls.Add(pnlContent);
             Controls.Add(pnlSidebar);
             Font = new Font("Segoe UI", 9.5F);
-            MinimumSize = new Size(400, 300);
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MinimumSize = new Size(700, 500);
             Name = "HierarchicalSettingsForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "Settings Manager";
+            Text = "TICKR";
             Load += HierarchicalSettingsForm_Load;
             pnlSidebar.ResumeLayout(false);
             ResumeLayout(false);

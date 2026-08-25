@@ -39,6 +39,7 @@ namespace EODSettingsApp.Forms
         public SettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
 
             SetupGridColumns();
 
@@ -537,6 +538,43 @@ namespace EODSettingsApp.Forms
             }
         }
 
+        // ── Instant Manual Run ──────────────────────────────────────────────────
+
+        private async void BtnRunNow_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                btnRunNow.Enabled = false;
+                btnRunNow.Text = "⏳ Running...";
+
+                SetStatus("Launching instant EOD service data import...", success: true);
+                AppendLog("================================================================================");
+                AppendLog($"[Manual Run] Instant EOD import execution requested at {DateTime.Now:HH:mm:ss}");
+
+                var exePath = EodServiceLauncher.ResolveExePath();
+                var process = EodServiceLauncher.Launch(exePath);
+
+                SetStatus("⚡ Instant EOD import running in background...", success: true);
+                AppendLog($"[Manual Run] Launched process ID: {process.Id}");
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"✘ Instant run failed: {ex.Message}", success: false);
+                AppendLogError($"Manual run error: {ex.Message}");
+                MessageBox.Show(
+                    $"Could not launch instant EOD data import:\n\n{ex.Message}",
+                    "Execution Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                await Task.Delay(2500);
+                btnRunNow.Text = "⚡ Run Now";
+                btnRunNow.Enabled = true;
+            }
+        }
+
 
         // ── Run Now ─────────────────────────────────────────────────────────────
 
@@ -1024,6 +1062,14 @@ namespace EODSettingsApp.Forms
             // BtnSaveSchedule is clicked.
         }
 
+
+        // ── Navigation Event Handlers ──────────────────────────────────────────
+
+        private void MnuItemUserGuide_Click(object? sender, EventArgs e)
+        {
+            using var userGuide = new UserGuideForm();
+            userGuide.ShowDialog(this);
+        }
 
         // ── Cleanup ─────────────────────────────────────────────────────────────
 

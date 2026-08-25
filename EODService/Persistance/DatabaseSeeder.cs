@@ -85,11 +85,53 @@ namespace EODService.Persistance
 
                         await command.ExecuteNonQueryAsync();
                     }
+
+
+                }
+
+                // Check LSEG
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText =
+                        "SELECT COUNT(*) FROM PROVIDER WHERE ID = 3";
+
+                    var count = Convert.ToInt32(
+                        await command.ExecuteScalarAsync());
+
+                    if (count == 0)
+                    {
+                        command.CommandText = @"
+                    INSERT INTO PROVIDER
+                    (
+                        ID,
+                        PROVIDER,
+                        API_KEY,
+                        BASE_URL,
+                        ENDPOINT,
+                        PARAMETERS
+                    )
+                    VALUES
+                    (
+                        3,
+                        'LSEG',
+                        '11349f3a5b504e98bd5e85b6620fe21f4acb21b1',
+                        'ws://10.110.221.99:15000',
+                        '/WebSocket',
+                        '{""DacsUser"":""EODService"",""ServiceId"":27,""ServiceName"":""ELEKTRON_DD"",""ApplicationId"":""256""}'
+                    )";
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+
+
                 }
             }
+
+
             finally
             {
                 await connection.CloseAsync();
+
             }
         }
     }

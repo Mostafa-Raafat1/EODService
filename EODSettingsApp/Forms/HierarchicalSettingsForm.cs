@@ -11,7 +11,17 @@ namespace EODSettingsApp.Forms
         public HierarchicalSettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
             InitializeCategories();
+
+            // Keep active child form sized to the content panel when user resizes the window
+            pnlContent.Resize += (_, _) =>
+            {
+                if (_activeForm == null) return;
+                int availW = pnlContent.ClientSize.Width  - pnlContent.Padding.Horizontal;
+                int availH = pnlContent.ClientSize.Height - pnlContent.Padding.Vertical;
+                _activeForm.Size = new Size(Math.Max(availW, 1), Math.Max(availH, 1));
+            };
         }
 
         private void InitializeCategories()
@@ -117,25 +127,31 @@ namespace EODSettingsApp.Forms
 
             _activeForm = childForm;
 
-            // Configure child form for embedding
-            childForm.TopLevel = false;
-            childForm.FormBorderStyle = FormBorderStyle.None;
-            childForm.Dock = DockStyle.Fill;
+            // Remove fixed-size constraints so the child can be embedded freely
+            childForm.TopLevel          = false;
+            childForm.FormBorderStyle   = FormBorderStyle.None;
+            childForm.MaximumSize       = Size.Empty;   // clear any fixed MaximumSize
+            childForm.MinimumSize       = Size.Empty;   // clear any fixed MinimumSize
 
-            // Add margin padding to create breathing room between the tree and the form content
-            pnlContent.Padding = new Padding(12);
-            pnlContent.BackColor = Color.FromArgb(241, 245, 249); // Matches sidebar for a clean, unified outer border
+            pnlContent.Padding   = new Padding(8);
+            pnlContent.BackColor = Color.FromArgb(241, 245, 249);
 
-            // Calculate parent size to fit child form exactly + the content padding
-            int targetWidth = pnlSidebar.Width + childForm.Width + pnlContent.Padding.Horizontal;
-            int targetHeight = Math.Max(520, childForm.Height + pnlContent.Padding.Vertical);
+            // --- Fixed window: child fills the stable content panel ---
+            // The window size never changes between navigations.
+            // If the child is smaller than the panel it is centred; if larger it scrolls.
+            childForm.Dock = DockStyle.None;
 
-            // Dynamically resize parent window
-            this.ClientSize = new Size(targetWidth, targetHeight);
+            // Size the child to fill the available content area (minus padding)
+            int availW = pnlContent.ClientSize.Width  - pnlContent.Padding.Horizontal;
+            int availH = pnlContent.ClientSize.Height - pnlContent.Padding.Vertical;
+            childForm.Size     = new Size(Math.Max(availW, childForm.MinimumSize.Width),
+                                          Math.Max(availH, childForm.MinimumSize.Height));
+            childForm.Location = new Point(pnlContent.Padding.Left, pnlContent.Padding.Top);
+            childForm.Anchor   = AnchorStyles.Top | AnchorStyles.Left
+                                 | AnchorStyles.Right | AnchorStyles.Bottom;
 
             pnlContent.Controls.Clear();
             pnlContent.Controls.Add(childForm);
-            
             childForm.Show();
         }
 

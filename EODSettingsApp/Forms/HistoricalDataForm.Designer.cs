@@ -279,7 +279,7 @@ namespace EODSettingsApp.Forms
             MaximumSize = new Size(856, 579);
             Name = "HistoricalDataForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "Historical Data Explorer";
+            Text = "TICKR";
 
             pnlHeader.ResumeLayout(false);
             pnlFilter.ResumeLayout(false);

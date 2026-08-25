@@ -329,7 +329,7 @@ namespace EODSettingsApp.Forms
             MinimumSize = new Size(560, 579);
             Name = "DatabaseSettingsForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "Database Connection Settings";
+            Text = "TICKR";
             pnlHeader.ResumeLayout(false);
             pnlMain.ResumeLayout(false);
             pnlMain.PerformLayout();

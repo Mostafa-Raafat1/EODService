@@ -24,6 +24,7 @@ namespace EODSettingsApp.Forms
         public ProviderSettingsForm()
         {
             InitializeComponent();
+            AppIconHelper.ApplyAppIconAndTitle(this);
             _ = LoadProviderSettingsAsync();
         }
 

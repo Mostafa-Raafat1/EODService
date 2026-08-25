@@ -3,6 +3,8 @@ using EODService.DTOs.Provider;
 using EODService.DTOs.ReuterSettings;
 using EODService.DTOs.SymbolSettings;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -100,9 +102,7 @@ namespace EODService.Services
 
                 await SendJsonAsync(socket, loginRequest);
 
-                _logger.LogInformation(
-                    "LOGIN REQUEST: {Json}",
-                    JsonSerializer.Serialize(loginRequest));
+                _logger.LogDebug("LOGIN REQUEST: {Json}", JsonSerializer.Serialize(loginRequest));
 
                 // =====================================================
                 // 3. WAIT FOR LOGIN RESPONSE
@@ -129,17 +129,17 @@ namespace EODService.Services
 
                         if (domain == "Login" && string.Equals(type, "Refresh", StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.LogInformation("LOGIN RESPONSE RECEIVED.");
-
                             if (message.TryGetProperty("State", out var state))
                             {
                                 var data = GetString(state, "Data");
 
-                                _logger.LogInformation("Login state: {State}", data);
-
                                 if (string.Equals(data, "Ok", StringComparison.OrdinalIgnoreCase))
                                 {
                                     loginSuccessful = true;
+                                }
+                                else
+                                {
+                                    _logger.LogWarning("Reuters DACS login state: {State}", data);
                                 }
                             }
 
@@ -147,8 +147,6 @@ namespace EODService.Services
                         }
                         else if (domain == "Login" && string.Equals(type, "Status", StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.LogWarning("LOGIN STATUS RECEIVED.");
-
                             if (message.TryGetProperty("State", out var state))
                             {
                                 var data = GetString(state, "Data");
@@ -180,11 +178,11 @@ namespace EODService.Services
 
                 if (!loginSuccessful)
                 {
-                    _logger.LogError("Reuters login was not successful.");
+                    _logger.LogError("Reuters DACS authentication failed.");
                     return results;
                 }
 
-                _logger.LogInformation("Reuters login successful.");
+                _logger.LogInformation("Reuters DACS login successful.");
 
                 // =====================================================
                 // 5. REQUEST SNAPSHOT FOR EACH SYMBOL
@@ -218,6 +216,8 @@ namespace EODService.Services
                             "HIGH_1",
                             "LOW_1",
                             "OFF_CLOSE",
+                            "HST_CLOSE",
+                            "TRDPRC_1",
                             "ADJUST_CLS",
                             "ACVOL_1"
                         }
@@ -225,7 +225,7 @@ namespace EODService.Services
 
                     await SendJsonAsync(socket, marketPriceRequest);
 
-                    _logger.LogInformation(
+                    _logger.LogDebug(
                         "MARKET PRICE REQUEST (ID={RequestId}): {Json}",
                         requestId,
                         JsonSerializer.Serialize(marketPriceRequest));
@@ -269,10 +269,11 @@ namespace EODService.Services
 
                             if (string.Equals(type, "Refresh", StringComparison.OrdinalIgnoreCase))
                             {
-                                _logger.LogInformation(
-                                    "EOD SNAPSHOT RECEIVED for {Symbol} (ID={RequestId}).",
+                                _logger.LogDebug(
+                                    "EOD SNAPSHOT RECEIVED for {Symbol} (ID={RequestId}): {Json}",
                                     symbol,
-                                    requestId);
+                                    requestId,
+                                    message.GetRawText());
 
                                 WebSocketResponse? response = null;
 
@@ -301,7 +302,7 @@ namespace EODService.Services
                                     break;
                                 }
 
-                                var eodData = ReuterMapper.Map(response, id, name);
+                                var eodData = ReuterMapper.Map(response, id, name, msg => _logger.LogWarning("{Warning}", msg));
 
                                 if (eodData == null)
                                 {
@@ -313,9 +314,21 @@ namespace EODService.Services
                                 {
                                     results.Add(eodData);
 
+                                    var openStr  = eodData.Open.HasValue  ? eodData.Open.Value.ToString("F4").PadLeft(9)  : "        -";
+                                    var highStr  = eodData.High.HasValue  ? eodData.High.Value.ToString("F4").PadLeft(9)  : "        -";
+                                    var lowStr   = eodData.Low.HasValue   ? eodData.Low.Value.ToString("F4").PadLeft(9)   : "        -";
+                                    var closeStr = eodData.Close.HasValue ? eodData.Close.Value.ToString("F4").PadLeft(9) : "        -";
+                                    var volStr   = eodData.Volume.HasValue ? eodData.Volume.Value.ToString("N0").PadLeft(12) : "           -";
+
                                     _logger.LogInformation(
-                                        "Successfully mapped Reuters EOD data for {Symbol}.",
-                                        symbol);
+                                        "✔ {Symbol,-12} │ Date: {Date:yyyy-MM-dd} │ Open:{Open} │ High:{High} │ Low:{Low} │ Close:{Close} │ Vol:{Vol}",
+                                        symbol,
+                                        eodData.Date,
+                                        openStr,
+                                        highStr,
+                                        lowStr,
+                                        closeStr,
+                                        volStr);
                                 }
 
                                 snapshotReceived = true;

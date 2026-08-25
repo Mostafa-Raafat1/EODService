@@ -494,7 +494,7 @@ namespace EODSettingsApp.Forms
             MinimumSize = new Size(476, 559);
             Name = "stockadd";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "Add New Stock";
+            Text = "TICKR";
             pnlHeader.ResumeLayout(false);
             pnlMain.ResumeLayout(false);
             pnlMain.PerformLayout();
