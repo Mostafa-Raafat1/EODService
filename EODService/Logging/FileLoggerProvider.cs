@@ -38,14 +38,12 @@ namespace EODService.Logging
 
         /// <summary>
         /// Writes a prominent run-start banner to today's log file.
-        /// Call this once at the very beginning of Program.cs so each execution
-        /// is clearly separated from previous ones in the same daily file.
         /// </summary>
         public static void WriteRunBanner()
         {
             var now    = DateTime.Now;
-            var line   = "═══════════════════════════════════════════════════════════════";
-            var header = $"  RUN STARTED  │  {now:yyyy-MM-dd  HH:mm:ss}";
+            var line   = "================================================================================";
+            var header = $"  🚀 EOD SERVICE EXECUTION RUN  │  {now:yyyy-MM-dd  HH:mm:ss}";
 
             var banner = Environment.NewLine
                        + line                   + Environment.NewLine
@@ -64,16 +62,16 @@ namespace EODService.Logging
             return dot >= 0 ? categoryName[(dot + 1)..] : categoryName;
         }
 
-        /// <summary>Converts LogLevel to a short, fixed-width label.</summary>
+        /// <summary>Converts LogLevel to a short, fixed-width bracketed label.</summary>
         private static string LevelLabel(LogLevel level) => level switch
         {
-            LogLevel.Trace       => "TRACE  ",
-            LogLevel.Debug       => "DEBUG  ",
-            LogLevel.Information => "INFO   ",
-            LogLevel.Warning     => "WARNING",
-            LogLevel.Error       => "ERROR  ",
-            LogLevel.Critical    => "FATAL  ",
-            _                    => "OTHER  "
+            LogLevel.Trace       => "[TRACE]",
+            LogLevel.Debug       => "[DEBUG]",
+            LogLevel.Information => "[INFO ]",
+            LogLevel.Warning     => "[WARN ]",
+            LogLevel.Error       => "[ERROR]",
+            LogLevel.Critical    => "[FATAL]",
+            _                    => "[OTHER]"
         };
 
         private static void AppendToFile(string content)

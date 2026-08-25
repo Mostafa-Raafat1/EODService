@@ -969,6 +969,14 @@ namespace EODSettingsApp.Forms
         }
 
 
+        // ── Navigation Event Handlers ──────────────────────────────────────────
+
+        private void MnuItemUserGuide_Click(object? sender, EventArgs e)
+        {
+            using var userGuide = new UserGuideForm();
+            userGuide.ShowDialog(this);
+        }
+
         // ── Cleanup ─────────────────────────────────────────────────────────────
 
         protected override void OnFormClosed(

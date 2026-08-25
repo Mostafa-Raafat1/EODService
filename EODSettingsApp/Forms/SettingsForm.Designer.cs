@@ -42,6 +42,7 @@ namespace EODSettingsApp.Forms
         private MenuStrip         mnuMain;
         private ToolStripMenuItem mnuItemSettings;
         private ToolStripMenuItem mnuItemHistory;
+        private ToolStripMenuItem mnuItemUserGuide;
 
         protected override void Dispose(bool disposing)
         {
@@ -85,6 +86,7 @@ namespace EODSettingsApp.Forms
             mnuMain = new MenuStrip();
             mnuItemSettings = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
+            mnuItemUserGuide = new ToolStripMenuItem();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             pnlGrid.SuspendLayout();
@@ -455,7 +457,7 @@ namespace EODSettingsApp.Forms
             // 
             mnuMain.BackColor = Color.FromArgb(23, 48, 107);
             mnuMain.ForeColor = Color.White;
-            mnuMain.Items.AddRange(new ToolStripItem[] { mnuItemSettings, mnuItemHistory });
+            mnuMain.Items.AddRange(new ToolStripItem[] { mnuItemSettings, mnuItemHistory, mnuItemUserGuide });
             mnuMain.Location = new Point(0, 0);
             mnuMain.Name = "mnuMain";
             mnuMain.Size = new Size(1034, 24);
@@ -476,6 +478,14 @@ namespace EODSettingsApp.Forms
             mnuItemHistory.Size = new Size(72, 20);
             mnuItemHistory.Text = "📋 History";
             mnuItemHistory.Click += MnuItemHistoricalData_Click;
+            // 
+            // mnuItemUserGuide
+            // 
+            mnuItemUserGuide.ForeColor = Color.White;
+            mnuItemUserGuide.Name = "mnuItemUserGuide";
+            mnuItemUserGuide.Size = new Size(95, 20);
+            mnuItemUserGuide.Text = "📖 User Guide";
+            mnuItemUserGuide.Click += MnuItemUserGuide_Click;
             // 
             // SettingsForm
             // 
