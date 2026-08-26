@@ -22,16 +22,11 @@ namespace EODSettingsApp.Forms
 {
     public partial class SettingsForm : Form
     {
-        // ── Database ────────────────────────────────────────────────────────────
-
-        private AppDbContext? _dbContext;
-        private IProvider? _providerRepo;
-
-
         // ── Log Monitoring ──────────────────────────────────────────────────────
 
         private readonly System.Windows.Forms.Timer _logPollTimer = new();
         private long _lastLogFilePosition = 0;
+        private bool _isPollingLog = false;
 
 
         // ── Constructor ─────────────────────────────────────────────────────────
@@ -59,10 +54,6 @@ namespace EODSettingsApp.Forms
 
                 if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
                 {
-                    _dbContext?.Dispose();
-                    _dbContext = AppDbContextFactory.Create(connectionString);
-                    _providerRepo = new ProviderRepo(_dbContext);
-
                     // 1. Load all providers from database
                     await LoadProvidersAsync();
 
@@ -73,6 +64,8 @@ namespace EODSettingsApp.Forms
                 {
                     SetStatus("ℹ Database not yet configured. Click 'Settings' to enter Oracle connection details.", success: true);
                 }
+
+                if (IsDisposed) return;
 
                 // 2. Load active provider ID from external JSON
                 var extSettings =
@@ -114,13 +107,17 @@ namespace EODSettingsApp.Forms
 
         private async Task LoadProvidersAsync()
         {
-            if (_providerRepo == null)
+            var connectionString = ConnectionStringResolver.Get();
+            if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 return;
 
             try
             {
-                var providers =
-                    await _providerRepo.GetAllProvidersAsync();
+                using var dbContext = AppDbContextFactory.Create(connectionString);
+                var providerRepo = new ProviderRepo(dbContext);
+                var providers = await providerRepo.GetAllProvidersAsync();
+
+                if (IsDisposed) return;
 
                 if (providers != null)
                 {
@@ -764,14 +761,16 @@ namespace EODSettingsApp.Forms
 
         private async Task PollLogFileAndRefreshGridAsync()
         {
-            var logPath =
-                FileLoggerProvider.GetTodayLogFilePath();
-
-            if (!File.Exists(logPath))
-                return;
+            if (_isPollingLog) return;
+            _isPollingLog = true;
 
             try
             {
+                var logPath = FileLoggerProvider.GetTodayLogFilePath();
+
+                if (!File.Exists(logPath))
+                    return;
+
                 using var fs =
                     new FileStream(
                         logPath,
@@ -828,23 +827,30 @@ namespace EODSettingsApp.Forms
             {
                 // Best effort log reading
             }
+            finally
+            {
+                _isPollingLog = false;
+            }
         }
 
 
-        // ── Refresh Grid using Shared DbContext ─────────────────────────────────
+        // ── Refresh Grid using Short-Lived DbContext ────────────────────────────
 
         private async Task RefreshGridFromDatabaseAsync()
         {
-            if (_dbContext == null)
+            var connectionString = ConnectionStringResolver.Get();
+            if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 return;
 
             try
             {
+                using var dbContext = AppDbContextFactory.Create(connectionString);
                 var dailyRecords =
-                    await _dbContext.EodDaily
+                    await dbContext.EodDaily
                         .AsNoTracking()
                         .ToListAsync();
 
+                if (IsDisposed) return;
 
                 if (dailyRecords != null &&
                     dailyRecords.Any())
@@ -1033,15 +1039,9 @@ namespace EODSettingsApp.Forms
                     "Database connection string is not configured.");
             }
 
-            _dbContext =
-                AppDbContextFactory.Create(connectionString);
-
-            await _dbContext.Database.EnsureCreatedAsync();
-
-            await DatabaseSeeder.SeedAsync(_dbContext);
-
-            _providerRepo =
-                new ProviderRepo(_dbContext);
+            using var dbContext = AppDbContextFactory.Create(connectionString);
+            await dbContext.Database.EnsureCreatedAsync();
+            await DatabaseSeeder.SeedAsync(dbContext);
         }
 
         // ── Provider ComboBox ───────────────────────────────────────────────────
@@ -1072,8 +1072,6 @@ namespace EODSettingsApp.Forms
         {
             _logPollTimer.Stop();
             _logPollTimer.Dispose();
-
-            _dbContext?.Dispose();
 
             base.OnFormClosed(e);
         }

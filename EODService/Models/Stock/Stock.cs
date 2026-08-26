@@ -19,6 +19,6 @@ namespace EODService.DTOs.Stock
         public bool ReuterExists { get; set; }
 
         public string? StockExchange { get; set; }
-        public string ISIN { get; set; } = string.Empty;
+        public string? ISIN { get; set; }
     }
 }

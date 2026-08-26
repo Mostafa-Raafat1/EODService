@@ -52,32 +52,46 @@ namespace EODService.DTOs.ReuterSettings
             }
 
             // Parse date
-            DateTime parsedDate = DateTime.Today;
-            if (!string.IsNullOrWhiteSpace(fields.TradeDate))
+            if (string.IsNullOrWhiteSpace(fields.TradeDate))
             {
-                if (!DateTime.TryParseExact(
-                        fields.TradeDate.Trim(),
-                        DateFormats,
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.AllowWhiteSpaces,
-                        out parsedDate) &&
-                    !DateTime.TryParse(
-                        fields.TradeDate.Trim(),
-                        new CultureInfo("en-US"),
-                        DateTimeStyles.None,
-                        out parsedDate))
-                {
-                    logWarning?.Invoke($"Could not parse TRADE_DATE '{fields.TradeDate}' for ID={Id} Name={Name}. Using Today's date.");
-                    parsedDate = DateTime.Today;
-                }
+                logWarning?.Invoke($"TRADE_DATE is missing for ID={Id} Name={Name}. Skipping.");
+                return null;
+            }
+
+            if (!DateTime.TryParseExact(
+                    fields.TradeDate.Trim(),
+                    DateFormats,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AllowWhiteSpaces,
+                    out DateTime parsedDate) &&
+                !DateTime.TryParse(
+                    fields.TradeDate.Trim(),
+                    new CultureInfo("en-US"),
+                    DateTimeStyles.None,
+                    out parsedDate))
+            {
+                logWarning?.Invoke($"Could not parse TRADE_DATE '{fields.TradeDate}' for ID={Id} Name={Name}. Rejecting record.");
+                return null;
             }
 
             decimal parsedClose = effectiveClose.Value;
 
-            // Financial Sanity Check: If High and Low both exist, High cannot be less than Low
+            // Financial Sanity Checks
             if (fields.High.HasValue && fields.Low.HasValue && fields.High.Value < fields.Low.Value)
             {
                 logWarning?.Invoke($"HIGH_1 ({fields.High.Value}) < LOW_1 ({fields.Low.Value}) for ID={Id} Name={Name}");
+                return null;
+            }
+
+            if (fields.Open.HasValue && fields.Open.Value < 0)
+            {
+                logWarning?.Invoke($"OPEN_PRC ({fields.Open.Value}) < 0 for ID={Id} Name={Name}");
+                return null;
+            }
+
+            if (fields.Volume.HasValue && fields.Volume.Value < 0)
+            {
+                logWarning?.Invoke($"ACVOL_1 ({fields.Volume.Value}) < 0 for ID={Id} Name={Name}");
                 return null;
             }
 

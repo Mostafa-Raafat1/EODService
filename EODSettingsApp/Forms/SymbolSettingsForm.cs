@@ -58,6 +58,8 @@ namespace EODSettingsApp.Forms
                 using var dbContext = AppDbContextFactory.Create(connectionString);
                 _stocks = await dbContext.Stock.AsNoTracking().OrderBy(s => s.Id).ToListAsync();
 
+                if (IsDisposed) return;
+
                 PopulateGrid();
 
                 if (_stocks.Any())
@@ -219,7 +221,7 @@ namespace EODSettingsApp.Forms
 
             stock.StockName = name;
             stock.SC_Comp_Id = compId;
-            stock.ISIN = string.IsNullOrWhiteSpace(isin) ? string.Empty : isin;
+            stock.ISIN = string.IsNullOrWhiteSpace(isin) ? null : isin;
             stock.YahooFinanceID = string.IsNullOrWhiteSpace(yahooId) ? null : yahooId;
             stock.YahooFinanceExists = chkYahooActive.Checked;
             stock.TwelveDataID = string.IsNullOrWhiteSpace(twelveDataId) ? null : twelveDataId;
@@ -309,11 +311,29 @@ namespace EODSettingsApp.Forms
 
                 await dbContext.SaveChangesAsync();
 
-                // Keep AppSettings.json in sync for legacy compatibility
+                // Keep AppSettings.json in sync for legacy compatibility based on globally active provider
+                var extSettings = EODSettingsApp.ExternalConfig.ExternalSettingsService.Load();
+                int activeProviderId = extSettings.ProviderSettings.ActiveProvider;
+
+                List<string> activeSymbols = activeProviderId switch
+                {
+                    (int)EODService.Models.ProviderIds.Yahoo => _stocks
+                        .Where(s => s.YahooFinanceExists && !string.IsNullOrWhiteSpace(s.YahooFinanceID))
+                        .Select(s => s.YahooFinanceID!).ToList(),
+
+                    (int)EODService.Models.ProviderIds.Reuters => _stocks
+                        .Where(s => s.ReuterExists && !string.IsNullOrWhiteSpace(s.ReuterID))
+                        .Select(s => s.ReuterID!).ToList(),
+
+                    _ => _stocks
+                        .Where(s => s.TwelveDataExists && !string.IsNullOrWhiteSpace(s.TwelveDataID))
+                        .Select(s => s.TwelveDataID!).ToList()
+                };
+
                 var model = AppSettingsService.Load();
                 model.SymbolSettings = new SymbolSettingsSection
                 {
-                    Symbols = _stocks.Where(s => !string.IsNullOrWhiteSpace(s.TwelveDataID)).Select(s => s.TwelveDataID!).ToList()
+                    Symbols = activeSymbols
                 };
                 AppSettingsService.Save(model);
 
