@@ -541,8 +541,27 @@ namespace EODSettingsApp.Forms
 
         private async void BtnRunNow_Click(object? sender, EventArgs e)
         {
+            if (EodServiceLauncher.IsRunning())
+            {
+                MessageBox.Show(
+                    "An instance of EODService is already running. Please wait for it to complete before starting a new import.",
+                    "Service Currently Running",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
+                // Auto-save currently selected active provider prior to execution
+                if (cmbProvider.SelectedValue != null)
+                {
+                    var selectedProviderId = Convert.ToInt32(cmbProvider.SelectedValue);
+                    var externalSettings = ExternalSettingsService.Load();
+                    externalSettings.ProviderSettings.ActiveProvider = selectedProviderId;
+                    ExternalSettingsService.Save(externalSettings);
+                }
+
                 btnRunNow.Enabled = false;
                 btnRunNow.Text = "⏳ Running...";
 
@@ -553,8 +572,27 @@ namespace EODSettingsApp.Forms
                 var exePath = EodServiceLauncher.ResolveExePath();
                 var process = EodServiceLauncher.Launch(exePath);
 
-                SetStatus("⚡ Instant EOD import running in background...", success: true);
-                AppendLog($"[Manual Run] Launched process ID: {process.Id}");
+                SetStatus("⏳ Instant EOD import running in background...", success: true);
+                AppendLog($"[Manual Run] Launched process ID: {process.Id}. Waiting for completion...");
+
+                await process.WaitForExitAsync();
+
+                if (process.ExitCode == 0)
+                {
+                    SetStatus("✔ Instant EOD import completed successfully.", success: true);
+                    AppendLog($"[Manual Run] Process ID {process.Id} completed successfully with exit code 0.");
+                    await RefreshGridFromDatabaseAsync();
+                }
+                else
+                {
+                    SetStatus($"✘ Instant EOD import failed with exit code {process.ExitCode}.", success: false);
+                    AppendLogError($"[Manual Run] Process ID {process.Id} exited with error code {process.ExitCode}.");
+                    MessageBox.Show(
+                        $"EOD data import process exited with error code {process.ExitCode}. Please check the log view for details.",
+                        "Execution Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -568,7 +606,6 @@ namespace EODSettingsApp.Forms
             }
             finally
             {
-                await Task.Delay(2500);
                 btnRunNow.Text = "⚡ Run Now";
                 btnRunNow.Enabled = true;
             }
