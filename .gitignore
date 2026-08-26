@@ -9,6 +9,10 @@
 [oO]ut/
 [lL]og/
 [lL]ogs/
+[dD]ebug/
+[rR]elease/
+*.msi
+*.exe
 EODServiceApp/
 EODServiceApp*.zip
 

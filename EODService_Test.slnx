@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="EODService/EODService.csproj" />
+  <Project Path="EODSettingsApp/EODSettingsApp.csproj" />
+</Solution>
