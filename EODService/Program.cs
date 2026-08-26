@@ -52,7 +52,9 @@ AppDbContext dbContext;
 try
 {
     dbContext = AppDbContextFactory.Create(connectionString);
-}
+    await dbContext.Database.EnsureCreatedAsync();
+    await DatabaseSeeder.SeedAsync(dbContext);
+}   
 catch (Exception ex)
 {
     logger.LogError(ex, "Error occurred while connecting to the database.");

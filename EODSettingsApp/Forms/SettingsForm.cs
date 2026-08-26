@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Oracle.ManagedDataAccess.Client;
 
 namespace EODSettingsApp.Forms
 {
@@ -1039,9 +1040,65 @@ namespace EODSettingsApp.Forms
                     "Database connection string is not configured.");
             }
 
+            AppendLog("[Database] Creating DbContext...");
+
             using var dbContext = AppDbContextFactory.Create(connectionString);
-            await dbContext.Database.EnsureCreatedAsync();
-            await DatabaseSeeder.SeedAsync(dbContext);
+
+            try
+            {
+                // Get the actual Oracle user/schema
+                AppendLog("[Database] Checking Oracle user/schema...");
+
+                var connection = dbContext.Database.GetDbConnection();
+
+                await connection.OpenAsync();
+
+                try
+                {
+                    using var command = connection.CreateCommand();
+                    command.CommandText = "SELECT USER FROM DUAL";
+
+                    var currentUser = await command.ExecuteScalarAsync();
+
+                    AppendLog(
+                        $"[Database] Connected Oracle user/schema: {currentUser}");
+                }
+                finally
+                {
+                    await connection.CloseAsync();
+                }
+
+                // Ensure tables exist
+                AppendLog("[Database] Ensuring database schema exists...");
+
+                var created = await dbContext.Database.EnsureCreatedAsync();
+
+                if (created)
+                {
+                    AppendLog(
+                        "[Database] Database schema was created successfully.");
+                }
+                else
+                {
+                    AppendLog(
+                        "[Database] Database schema already exists.");
+                }
+
+                // Seed required data
+                AppendLog("[Database] Running database seeder...");
+
+                await DatabaseSeeder.SeedAsync(dbContext);
+
+                AppendLog(
+                    "[Database] Database initialization completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                AppendLogError(
+                    $"[Database] Initialization failed: {ex.Message}");
+
+                throw;
+            }
         }
 
         // ── Provider ComboBox ───────────────────────────────────────────────────
