@@ -148,7 +148,6 @@ namespace EODSettingsApp.Forms
             pnlControls.Controls.Add(dtpRunTime);
             pnlControls.Controls.Add(btnRunNow);
             pnlControls.Controls.Add(btnSaveSchedule);
-            pnlControls.Controls.Add(btnRunNow);
             pnlControls.Controls.Add(lblNextRunStatus);
             pnlControls.Controls.Add(lblStatus);
             pnlControls.Dock = DockStyle.Top;
@@ -161,9 +160,9 @@ namespace EODSettingsApp.Forms
             // 
             lblProviderLabel.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             lblProviderLabel.ForeColor = Color.FromArgb(30, 41, 59);
-            lblProviderLabel.Location = new Point(20, 16);
+            lblProviderLabel.Location = new Point(16, 14);
             lblProviderLabel.Name = "lblProviderLabel";
-            lblProviderLabel.Size = new Size(110, 22);
+            lblProviderLabel.Size = new Size(100, 22);
             lblProviderLabel.TabIndex = 0;
             lblProviderLabel.Text = "Active Provider:";
             // 
@@ -175,9 +174,9 @@ namespace EODSettingsApp.Forms
             cmbProvider.Font = new Font("Segoe UI", 9.5F);
             cmbProvider.ForeColor = Color.FromArgb(15, 23, 42);
             cmbProvider.Items.AddRange(new object[] { "TwelveData", "Yahoo" });
-            cmbProvider.Location = new Point(135, 13);
+            cmbProvider.Location = new Point(120, 11);
             cmbProvider.Name = "cmbProvider";
-            cmbProvider.Size = new Size(150, 25);
+            cmbProvider.Size = new Size(125, 25);
             cmbProvider.TabIndex = 0;
             cmbProvider.SelectedIndexChanged += cmbProvider_SelectedIndexChanged;
             // 
@@ -185,23 +184,22 @@ namespace EODSettingsApp.Forms
             // 
             lblProviderHint.Font = new Font("Segoe UI", 8F, FontStyle.Italic);
             lblProviderHint.ForeColor = Color.FromArgb(100, 116, 139);
-            lblProviderHint.Location = new Point(20, 48);
+            lblProviderHint.Location = new Point(16, 44);
             lblProviderHint.Name = "lblProviderHint";
-            lblProviderHint.Size = new Size(270, 18);
+            lblProviderHint.Size = new Size(230, 18);
             lblProviderHint.TabIndex = 1;
             lblProviderHint.Text = "Saves provider and updates execution.";
             // 
             // chkEnableSchedule
             // 
-            // Row 1, col 3: schedule toggle
             chkEnableSchedule.AutoSize = true;
             chkEnableSchedule.Checked = true;
             chkEnableSchedule.CheckState = CheckState.Checked;
             chkEnableSchedule.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             chkEnableSchedule.ForeColor = Color.FromArgb(30, 58, 138);
-            chkEnableSchedule.Location = new Point(360, 14);
+            chkEnableSchedule.Location = new Point(260, 14);
             chkEnableSchedule.Name = "chkEnableSchedule";
-            chkEnableSchedule.Size = new Size(182, 19);
+            chkEnableSchedule.Size = new Size(175, 19);
             chkEnableSchedule.TabIndex = 2;
             chkEnableSchedule.Text = "Enable Automated Schedule";
             chkEnableSchedule.UseVisualStyleBackColor = true;
@@ -209,12 +207,11 @@ namespace EODSettingsApp.Forms
             // 
             // lblWorkingDaysLabel
             // 
-            // Row 2: Working Days label
             lblWorkingDaysLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblWorkingDaysLabel.ForeColor = Color.FromArgb(51, 65, 85);
-            lblWorkingDaysLabel.Location = new Point(360, 42);
+            lblWorkingDaysLabel.Location = new Point(260, 43);
             lblWorkingDaysLabel.Name = "lblWorkingDaysLabel";
-            lblWorkingDaysLabel.Size = new Size(95, 20);
+            lblWorkingDaysLabel.Size = new Size(88, 20);
             lblWorkingDaysLabel.TabIndex = 3;
             lblWorkingDaysLabel.Text = "Working Days:";
             // 
@@ -223,9 +220,9 @@ namespace EODSettingsApp.Forms
             chkMon.AutoSize = true;
             chkMon.Checked = true;
             chkMon.CheckState = CheckState.Checked;
-            chkMon.Location = new Point(455, 42);
+            chkMon.Location = new Point(350, 42);
             chkMon.Name = "chkMon";
-            chkMon.Size = new Size(54, 21);
+            chkMon.Size = new Size(46, 21);
             chkMon.TabIndex = 4;
             chkMon.Text = "Mon";
             chkMon.UseVisualStyleBackColor = true;
@@ -235,9 +232,9 @@ namespace EODSettingsApp.Forms
             chkTue.AutoSize = true;
             chkTue.Checked = true;
             chkTue.CheckState = CheckState.Checked;
-            chkTue.Location = new Point(510, 42);
+            chkTue.Location = new Point(398, 42);
             chkTue.Name = "chkTue";
-            chkTue.Size = new Size(48, 21);
+            chkTue.Size = new Size(44, 21);
             chkTue.TabIndex = 5;
             chkTue.Text = "Tue";
             chkTue.UseVisualStyleBackColor = true;
@@ -247,9 +244,9 @@ namespace EODSettingsApp.Forms
             chkWed.AutoSize = true;
             chkWed.Checked = true;
             chkWed.CheckState = CheckState.Checked;
-            chkWed.Location = new Point(560, 42);
+            chkWed.Location = new Point(444, 42);
             chkWed.Name = "chkWed";
-            chkWed.Size = new Size(53, 21);
+            chkWed.Size = new Size(48, 21);
             chkWed.TabIndex = 6;
             chkWed.Text = "Wed";
             chkWed.UseVisualStyleBackColor = true;
@@ -259,9 +256,9 @@ namespace EODSettingsApp.Forms
             chkThu.AutoSize = true;
             chkThu.Checked = true;
             chkThu.CheckState = CheckState.Checked;
-            chkThu.Location = new Point(615, 42);
+            chkThu.Location = new Point(494, 42);
             chkThu.Name = "chkThu";
-            chkThu.Size = new Size(48, 21);
+            chkThu.Size = new Size(44, 21);
             chkThu.TabIndex = 7;
             chkThu.Text = "Thu";
             chkThu.UseVisualStyleBackColor = true;
@@ -271,7 +268,7 @@ namespace EODSettingsApp.Forms
             chkFri.AutoSize = true;
             chkFri.Checked = true;
             chkFri.CheckState = CheckState.Checked;
-            chkFri.Location = new Point(665, 42);
+            chkFri.Location = new Point(540, 42);
             chkFri.Name = "chkFri";
             chkFri.Size = new Size(41, 21);
             chkFri.TabIndex = 8;
@@ -281,9 +278,9 @@ namespace EODSettingsApp.Forms
             // chkSat
             // 
             chkSat.AutoSize = true;
-            chkSat.Location = new Point(710, 42);
+            chkSat.Location = new Point(584, 42);
             chkSat.Name = "chkSat";
-            chkSat.Size = new Size(45, 21);
+            chkSat.Size = new Size(44, 21);
             chkSat.TabIndex = 9;
             chkSat.Text = "Sat";
             chkSat.UseVisualStyleBackColor = true;
@@ -291,19 +288,18 @@ namespace EODSettingsApp.Forms
             // chkSun
             // 
             chkSun.AutoSize = true;
-            chkSun.Location = new Point(755, 42);
+            chkSun.Location = new Point(630, 42);
             chkSun.Name = "chkSun";
-            chkSun.Size = new Size(48, 21);
+            chkSun.Size = new Size(46, 21);
             chkSun.TabIndex = 10;
             chkSun.Text = "Sun";
             chkSun.UseVisualStyleBackColor = true;
             // 
             // lblTimeLabel
             // 
-            // Row 2: Run Time (right side of day checkboxes)
             lblTimeLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblTimeLabel.ForeColor = Color.FromArgb(51, 65, 85);
-            lblTimeLabel.Location = new Point(555, 14);
+            lblTimeLabel.Location = new Point(440, 14);
             lblTimeLabel.Name = "lblTimeLabel";
             lblTimeLabel.Size = new Size(65, 20);
             lblTimeLabel.TabIndex = 11;
@@ -313,15 +309,31 @@ namespace EODSettingsApp.Forms
             // 
             dtpRunTime.CustomFormat = "HH:mm";
             dtpRunTime.Format = DateTimePickerFormat.Custom;
-            dtpRunTime.Location = new Point(625, 11);
+            dtpRunTime.Location = new Point(508, 11);
             dtpRunTime.Name = "dtpRunTime";
             dtpRunTime.ShowUpDown = true;
-            dtpRunTime.Size = new Size(70, 24);
+            dtpRunTime.Size = new Size(68, 24);
             dtpRunTime.TabIndex = 12;
+            // 
+            // btnRunNow
+            // 
+            btnRunNow.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnRunNow.BackColor = Color.FromArgb(16, 185, 129);
+            btnRunNow.Cursor = Cursors.Hand;
+            btnRunNow.FlatAppearance.BorderSize = 0;
+            btnRunNow.FlatStyle = FlatStyle.Flat;
+            btnRunNow.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            btnRunNow.ForeColor = Color.White;
+            btnRunNow.Location = new Point(745, 12);
+            btnRunNow.Name = "btnRunNow";
+            btnRunNow.Size = new Size(125, 42);
+            btnRunNow.TabIndex = 13;
+            btnRunNow.Text = "⚡ Run Now";
+            btnRunNow.UseVisualStyleBackColor = false;
+            btnRunNow.Click += BtnRunNow_Click;
             // 
             // btnSaveSchedule
             // 
-            // Row 2: Save button (right-anchored)
             btnSaveSchedule.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnSaveSchedule.BackColor = Color.FromArgb(30, 58, 138);
             btnSaveSchedule.Cursor = Cursors.Hand;
@@ -329,34 +341,34 @@ namespace EODSettingsApp.Forms
             btnSaveSchedule.FlatStyle = FlatStyle.Flat;
             btnSaveSchedule.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             btnSaveSchedule.ForeColor = Color.White;
-            btnSaveSchedule.Location = new Point(870, 14);
+            btnSaveSchedule.Location = new Point(880, 12);
             btnSaveSchedule.Name = "btnSaveSchedule";
-            btnSaveSchedule.Size = new Size(150, 45);
-            btnSaveSchedule.TabIndex = 13;
+            btnSaveSchedule.Size = new Size(138, 42);
+            btnSaveSchedule.TabIndex = 14;
             btnSaveSchedule.Text = "Save Schedule";
             btnSaveSchedule.UseVisualStyleBackColor = false;
             btnSaveSchedule.Click += BtnSaveSchedule_Click;
             // 
             // lblNextRunStatus
             // 
-            // Row 3: status strip
+            lblNextRunStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblNextRunStatus.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblNextRunStatus.ForeColor = Color.FromArgb(30, 58, 138);
-            lblNextRunStatus.Location = new Point(360, 72);
+            lblNextRunStatus.Location = new Point(345, 74);
             lblNextRunStatus.Name = "lblNextRunStatus";
-            lblNextRunStatus.Size = new Size(650, 22);
-            lblNextRunStatus.TabIndex = 14;
+            lblNextRunStatus.Size = new Size(675, 22);
+            lblNextRunStatus.TabIndex = 15;
             lblNextRunStatus.Text = "🕒 Next Run: Calculating...";
             // 
             // lblStatus
             // 
             lblStatus.Font = new Font("Segoe UI", 8.5F);
             lblStatus.ForeColor = Color.FromArgb(22, 163, 74);
-            lblStatus.Location = new Point(20, 90);
+            lblStatus.Location = new Point(16, 74);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(330, 18);
-            lblStatus.TabIndex = 15;
-            lblStatus.TextAlign = ContentAlignment.MiddleRight;
+            lblStatus.Size = new Size(320, 22);
+            lblStatus.TabIndex = 16;
+            lblStatus.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // pnlGrid
             // 
@@ -500,7 +512,7 @@ namespace EODSettingsApp.Forms
             // SettingsForm
             // 
             BackColor = Color.FromArgb(245, 247, 250);
-            ClientSize = new Size(1034, 781);
+            ClientSize = new Size(1100, 780);
             Controls.Add(pnlGrid);
             Controls.Add(pnlLogs);
             Controls.Add(pnlControls);
@@ -508,10 +520,11 @@ namespace EODSettingsApp.Forms
             Controls.Add(mnuMain);
             Font = new Font("Segoe UI", 9.5F);
             MainMenuStrip = mnuMain;
-            MinimumSize = new Size(800, 650);
+            MinimumSize = new Size(1024, 680);
             Name = "SettingsForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "TICKR";
+            WindowState = FormWindowState.Maximized;
             pnlHeader.ResumeLayout(false);
             pnlControls.ResumeLayout(false);
             pnlControls.PerformLayout();

@@ -610,46 +610,6 @@ namespace EODSettingsApp.Forms
         }
 
 
-        // ── Run Now ─────────────────────────────────────────────────────────────
-
-        private void BtnRunNow_Click(object? sender, EventArgs e)
-        {
-            try
-            {
-                btnRunNow.Enabled = false;
-                btnRunNow.Text = "Running…";
-
-                var exePath = EodServiceLauncher.ResolveExePath();
-                EodServiceLauncher.Launch(exePath);
-
-                SetStatus("▶ EOD Service started — check the log panel for progress.", success: true);
-                AppendLog("[Run Now] EODService.exe launched manually.");
-            }
-            catch (Exception ex)
-            {
-                SetStatus($"✘ Failed to launch EOD Service: {ex.Message}", success: false);
-                AppendLogError($"[Run Now] Launch error: {ex.Message}");
-
-                MessageBox.Show(
-                    $"Could not launch EODService.exe:\n\n{ex.Message}",
-                    "Launch Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-            finally
-            {
-                // Re-enable button after a short delay so it doesn't feel instant
-                var t = new System.Windows.Forms.Timer { Interval = 2000 };
-                t.Tick += (_, _) =>
-                {
-                    btnRunNow.Text = "▶ Run Now";
-                    btnRunNow.Enabled = true;
-                    t.Stop();
-                    t.Dispose();
-                };
-                t.Start();
-            }
-        }
 
 
         // ── Next Run Calculation ────────────────────────────────────────────────
