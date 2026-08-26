@@ -102,6 +102,17 @@ namespace EODSettingsApp.Services
         }
 
         /// <summary>
+        /// Checks if an instance of EODService.exe is currently running.
+        /// </summary>
+        /// <returns>True if at least one EODService process is active, false otherwise.</returns>
+        public static bool IsRunning()
+        {
+            var processName = Path.GetFileNameWithoutExtension(DefaultExeName);
+            var processes = Process.GetProcessesByName(processName);
+            return processes.Length > 0;
+        }
+
+        /// <summary>
         /// Launches EODService.exe as a new, independent process and returns
         /// immediately without waiting for it to complete.
         /// </summary>

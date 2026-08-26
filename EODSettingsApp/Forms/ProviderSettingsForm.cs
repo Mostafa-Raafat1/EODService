@@ -25,7 +25,7 @@ namespace EODSettingsApp.Forms
         {
             InitializeComponent();
             AppIconHelper.ApplyAppIconAndTitle(this);
-            _ = LoadProviderSettingsAsync();
+            Load += async (_, _) => await LoadProviderSettingsAsync();
         }
 
         public ProviderSettingsForm(int activeTab) : this()
@@ -76,6 +76,8 @@ namespace EODSettingsApp.Forms
                 using var dbContext = AppDbContextFactory.Create(connectionString);
                 var providerRepo = new ProviderRepo(dbContext);
                 var providers = await providerRepo.GetAllProvidersAsync();
+
+                if (IsDisposed) return;
 
                 if (providers == null || !providers.Any())
                 {
@@ -223,6 +225,34 @@ namespace EODSettingsApp.Forms
                     "JSON Validation Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 4. Validate Base URLs format
+            if (!string.IsNullOrWhiteSpace(txtYahooBaseUrl.Text) && !Uri.TryCreate(txtYahooBaseUrl.Text.Trim(), UriKind.Absolute, out _))
+            {
+                SetStatus(success: false, "✘ Yahoo Base URL is not a valid absolute URL (e.g. https://query1.finance.yahoo.com).");
+                tabProviders.SelectedIndex = 0;
+                txtYahooBaseUrl.Focus();
+                MessageBox.Show("Yahoo Base URL must be a valid absolute URL.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtTwelveBaseUrl.Text) && !Uri.TryCreate(txtTwelveBaseUrl.Text.Trim(), UriKind.Absolute, out _))
+            {
+                SetStatus(success: false, "✘ TwelveData Base URL is not a valid absolute URL (e.g. https://api.twelvedata.com).");
+                tabProviders.SelectedIndex = 1;
+                txtTwelveBaseUrl.Focus();
+                MessageBox.Show("TwelveData Base URL must be a valid absolute URL.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtReutersBaseUrl.Text) && !Uri.TryCreate(txtReutersBaseUrl.Text.Trim(), UriKind.Absolute, out _))
+            {
+                SetStatus(success: false, "✘ Reuters Base URL is not a valid WebSocket URL (e.g. ws://10.110.221.99:15000).");
+                tabProviders.SelectedIndex = 2;
+                txtReutersBaseUrl.Focus();
+                MessageBox.Show("Reuters Base URL must be a valid WebSocket URL.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

@@ -63,7 +63,7 @@ namespace EODService.Services
                     _logger.LogInformation("Downloading EOD data for {Symbol}...", symbol);
 
                     var url = BuildUrl(symbol);
-                    var response = await _httpClient.GetAsync(url);
+                    using var response = await _httpClient.GetAsync(url);
                     response.EnsureSuccessStatusCode();
 
                     using var stream = await response.Content.ReadAsStreamAsync();
@@ -122,9 +122,11 @@ namespace EODService.Services
                         "Unexpected error while processing {Symbol}. Skipping.",
                         symbol);
                 }
-
-                // Respect Yahoo Finance rate limit — wait 0.2s between requests
-                await Task.Delay(200);
+                finally
+                {
+                    // Respect Yahoo Finance rate limit — wait 0.2s between requests (guaranteed execution)
+                    await Task.Delay(200);
+                }
             }
 
             _logger.LogInformation(

@@ -25,21 +25,17 @@ namespace EODService.Persistance.Repo
                 .Where(existsCondition)
                 .ToListAsync();
 
+            // Filter out items with null or whitespace tickers first to guarantee 1:1 index alignment across Symbols, Ids, and Names
+            var validStocks = stocks
+                .Select(s => new { Stock = s, Ticker = tickerSelector(s)?.Trim() })
+                .Where(x => !string.IsNullOrWhiteSpace(x.Ticker))
+                .ToList();
+
             return new SymbolSettings
             {
-                Symbols = stocks
-                    .Select(tickerSelector)
-                    .Where(ticker => ticker != null)
-                    .Select(ticker => ticker!)
-                    .ToList(),
-
-                Ids = stocks
-                    .Select(s => s.Id)
-                    .ToList(),
-
-                Names = stocks
-                    .Select(s => s.StockName)
-                    .ToList()
+                Symbols = validStocks.Select(x => x.Ticker!).ToList(),
+                Ids     = validStocks.Select(x => x.Stock.Id).ToList(),
+                Names   = validStocks.Select(x => x.Stock.StockName?.Trim() ?? string.Empty).ToList()
             };
         }
     }

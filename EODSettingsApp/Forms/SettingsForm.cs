@@ -22,16 +22,11 @@ namespace EODSettingsApp.Forms
 {
     public partial class SettingsForm : Form
     {
-        // ── Database ────────────────────────────────────────────────────────────
-
-        private AppDbContext? _dbContext;
-        private IProvider? _providerRepo;
-
-
         // ── Log Monitoring ──────────────────────────────────────────────────────
 
         private readonly System.Windows.Forms.Timer _logPollTimer = new();
         private long _lastLogFilePosition = 0;
+        private bool _isPollingLog = false;
 
 
         // ── Constructor ─────────────────────────────────────────────────────────
@@ -59,10 +54,6 @@ namespace EODSettingsApp.Forms
 
                 if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.Contains("YOUR_DB_USER"))
                 {
-                    _dbContext?.Dispose();
-                    _dbContext = AppDbContextFactory.Create(connectionString);
-                    _providerRepo = new ProviderRepo(_dbContext);
-
                     // 1. Load all providers from database
                     await LoadProvidersAsync();
 
@@ -73,6 +64,8 @@ namespace EODSettingsApp.Forms
                 {
                     SetStatus("ℹ Database not yet configured. Click 'Settings' to enter Oracle connection details.", success: true);
                 }
+
+                if (IsDisposed) return;
 
                 // 2. Load active provider ID from external JSON
                 var extSettings =
@@ -114,13 +107,17 @@ namespace EODSettingsApp.Forms
 
         private async Task LoadProvidersAsync()
         {
-            if (_providerRepo == null)
+            var connectionString = ConnectionStringResolver.Get();
+            if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 return;
 
             try
             {
-                var providers =
-                    await _providerRepo.GetAllProvidersAsync();
+                using var dbContext = AppDbContextFactory.Create(connectionString);
+                var providerRepo = new ProviderRepo(dbContext);
+                var providers = await providerRepo.GetAllProvidersAsync();
+
+                if (IsDisposed) return;
 
                 if (providers != null)
                 {
@@ -542,8 +539,27 @@ namespace EODSettingsApp.Forms
 
         private async void BtnRunNow_Click(object? sender, EventArgs e)
         {
+            if (EodServiceLauncher.IsRunning())
+            {
+                MessageBox.Show(
+                    "An instance of EODService is already running. Please wait for it to complete before starting a new import.",
+                    "Service Currently Running",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
+                // Auto-save currently selected active provider prior to execution
+                if (cmbProvider.SelectedValue != null)
+                {
+                    var selectedProviderId = Convert.ToInt32(cmbProvider.SelectedValue);
+                    var externalSettings = ExternalSettingsService.Load();
+                    externalSettings.ProviderSettings.ActiveProvider = selectedProviderId;
+                    ExternalSettingsService.Save(externalSettings);
+                }
+
                 btnRunNow.Enabled = false;
                 btnRunNow.Text = "⏳ Running...";
 
@@ -554,8 +570,27 @@ namespace EODSettingsApp.Forms
                 var exePath = EodServiceLauncher.ResolveExePath();
                 var process = EodServiceLauncher.Launch(exePath);
 
-                SetStatus("⚡ Instant EOD import running in background...", success: true);
-                AppendLog($"[Manual Run] Launched process ID: {process.Id}");
+                SetStatus("⏳ Instant EOD import running in background...", success: true);
+                AppendLog($"[Manual Run] Launched process ID: {process.Id}. Waiting for completion...");
+
+                await process.WaitForExitAsync();
+
+                if (process.ExitCode == 0)
+                {
+                    SetStatus("✔ Instant EOD import completed successfully.", success: true);
+                    AppendLog($"[Manual Run] Process ID {process.Id} completed successfully with exit code 0.");
+                    await RefreshGridFromDatabaseAsync();
+                }
+                else
+                {
+                    SetStatus($"✘ Instant EOD import failed with exit code {process.ExitCode}.", success: false);
+                    AppendLogError($"[Manual Run] Process ID {process.Id} exited with error code {process.ExitCode}.");
+                    MessageBox.Show(
+                        $"EOD data import process exited with error code {process.ExitCode}. Please check the log view for details.",
+                        "Execution Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -569,7 +604,6 @@ namespace EODSettingsApp.Forms
             }
             finally
             {
-                await Task.Delay(2500);
                 btnRunNow.Text = "⚡ Run Now";
                 btnRunNow.Enabled = true;
             }
@@ -770,14 +804,16 @@ namespace EODSettingsApp.Forms
 
         private async Task PollLogFileAndRefreshGridAsync()
         {
-            var logPath =
-                FileLoggerProvider.GetTodayLogFilePath();
-
-            if (!File.Exists(logPath))
-                return;
+            if (_isPollingLog) return;
+            _isPollingLog = true;
 
             try
             {
+                var logPath = FileLoggerProvider.GetTodayLogFilePath();
+
+                if (!File.Exists(logPath))
+                    return;
+
                 using var fs =
                     new FileStream(
                         logPath,
@@ -834,23 +870,30 @@ namespace EODSettingsApp.Forms
             {
                 // Best effort log reading
             }
+            finally
+            {
+                _isPollingLog = false;
+            }
         }
 
 
-        // ── Refresh Grid using Shared DbContext ─────────────────────────────────
+        // ── Refresh Grid using Short-Lived DbContext ────────────────────────────
 
         private async Task RefreshGridFromDatabaseAsync()
         {
-            if (_dbContext == null)
+            var connectionString = ConnectionStringResolver.Get();
+            if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 return;
 
             try
             {
+                using var dbContext = AppDbContextFactory.Create(connectionString);
                 var dailyRecords =
-                    await _dbContext.EodDaily
+                    await dbContext.EodDaily
                         .AsNoTracking()
                         .ToListAsync();
 
+                if (IsDisposed) return;
 
                 if (dailyRecords != null &&
                     dailyRecords.Any())
@@ -1039,15 +1082,9 @@ namespace EODSettingsApp.Forms
                     "Database connection string is not configured.");
             }
 
-            _dbContext =
-                AppDbContextFactory.Create(connectionString);
-
-            await _dbContext.Database.EnsureCreatedAsync();
-
-            await DatabaseSeeder.SeedAsync(_dbContext);
-
-            _providerRepo =
-                new ProviderRepo(_dbContext);
+            using var dbContext = AppDbContextFactory.Create(connectionString);
+            await dbContext.Database.EnsureCreatedAsync();
+            await DatabaseSeeder.SeedAsync(dbContext);
         }
 
         // ── Provider ComboBox ───────────────────────────────────────────────────
@@ -1078,8 +1115,6 @@ namespace EODSettingsApp.Forms
         {
             _logPollTimer.Stop();
             _logPollTimer.Dispose();
-
-            _dbContext?.Dispose();
 
             base.OnFormClosed(e);
         }

@@ -87,9 +87,10 @@ namespace EODService.Logging
 
                     File.AppendAllText(filePath, content);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Best-effort — do not crash the service on a logging failure.
+                    // Best-effort trace fallback — do not crash the service on a logging failure.
+                    System.Diagnostics.Trace.WriteLine($"[FileLoggerProvider] Logging to file failed: {ex.Message}");
                 }
             }
         }

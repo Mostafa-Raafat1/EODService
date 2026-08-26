@@ -58,14 +58,9 @@ namespace EODService.Services
                 {
                     _logger.LogInformation("Downloading EOD data for {Symbol} via Twelve Data...", symbol);
 
-                    var url      = BuildUrl(symbol);
-                    var response = await _httpClient.GetAsync(url);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var errorBody = await response.Content.ReadAsStringAsync();
-                        _logger.LogError("Twelve Data API returned HTTP {StatusCode} for {Symbol}: {ErrorBody}", response.StatusCode, symbol, errorBody);
-                        continue;
-                    }
+                    var url = BuildUrl(symbol);
+                    using var response = await _httpClient.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
 
                     using var stream = await response.Content.ReadAsStreamAsync();
 
@@ -118,9 +113,11 @@ namespace EODService.Services
                         "Unexpected error while processing {Symbol} via Twelve Data. Skipping.",
                         symbol);
                 }
-
-                // Respect Twelve Data rate limit — wait 0.2s between requests
-                await Task.Delay(200);
+                finally
+                {
+                    // Respect Twelve Data rate limit — wait 0.2s between requests (guaranteed execution)
+                    await Task.Delay(200);
+                }
             }
 
             _logger.LogInformation(
