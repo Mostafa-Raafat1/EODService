@@ -1,15 +1,12 @@
-using EODService.Config;
 using EODService.DTOs.EOD;
 using EODService.Logging;
 using EODService.Models.Provider;
 using EODService.Persistance;
 using EODService.Persistance.Repo;
-using EODService.Services;
 using EODSettingsApp.AppSettingsConfig;
 using EODSettingsApp.ExternalConfig;
 using EODSettingsApp.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -29,6 +26,8 @@ namespace EODSettingsApp.Forms
         private bool _isPollingLog = false;
 
 
+        private bool _isSplitterInitialized = false;
+
         // ── Constructor ─────────────────────────────────────────────────────────
 
         public SettingsForm()
@@ -41,6 +40,33 @@ namespace EODSettingsApp.Forms
             Load += async (_, _) => await SettingsForm_LoadAsync();
 
             InitializeBackgroundLogAndGridMonitoring();
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            InitializeSplitterDistance();
+        }
+
+        private void InitializeSplitterDistance()
+        {
+            if (_isSplitterInitialized) return;
+
+            if (splitMain != null && splitMain.Width > (splitMain.Panel1MinSize + splitMain.Panel2MinSize + splitMain.SplitterWidth))
+            {
+                int availableWidth = splitMain.Width;
+                int minimum = splitMain.Panel1MinSize;
+                int maximum = availableWidth - splitMain.Panel2MinSize - splitMain.SplitterWidth;
+                int desired = (int)(availableWidth * 0.29); // ~29% for Left Execution Logs panel
+
+                int targetDistance = Math.Max(minimum, Math.Min(desired, maximum));
+
+                if (targetDistance >= minimum && targetDistance <= maximum)
+                {
+                    splitMain.SplitterDistance = targetDistance;
+                    _isSplitterInitialized = true;
+                }
+            }
         }
 
 
