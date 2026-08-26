@@ -25,7 +25,7 @@ namespace EODSettingsApp.Forms
             AppIconHelper.ApplyAppIconAndTitle(this);
             SetupGridColumns();
             InitializeFilters();
-            _ = LoadSymbolsAsync();
+            Load += async (_, _) => await LoadSymbolsAsync();
         }
 
         // ── Initialization ───────────────────────────────────────────────────────
@@ -478,9 +478,11 @@ namespace EODSettingsApp.Forms
 
                         g.FillRectangle(brushNavy, leftMargin, y, printableWidth, headerHeight);
 
+                        using var penHeaderDivider = new Pen(Color.FromArgb(59, 130, 246));
+
                         for (int c = 0; c < dgvHistory.Columns.Count && c < colRatios.Length; c++)
                         {
-                            var format = new StringFormat
+                            using var format = new StringFormat
                             {
                                 Alignment = colAlignments[c],
                                 LineAlignment = StringAlignment.Center,
@@ -492,7 +494,7 @@ namespace EODSettingsApp.Forms
                             // Draw vertical column divider in header
                             if (c > 0)
                             {
-                                g.DrawLine(new Pen(Color.FromArgb(59, 130, 246)), colXPos[c], y, colXPos[c], y + headerHeight);
+                                g.DrawLine(penHeaderDivider, colXPos[c], y, colXPos[c], y + headerHeight);
                             }
                         }
 
@@ -519,7 +521,7 @@ namespace EODSettingsApp.Forms
                                 for (int c = 0; c < row.Cells.Count && c < colRatios.Length; c++)
                                 {
                                     var txt = row.Cells[c].Value?.ToString() ?? "-";
-                                    var format = new StringFormat
+                                    using var format = new StringFormat
                                     {
                                         Alignment = colAlignments[c],
                                         LineAlignment = StringAlignment.Center,

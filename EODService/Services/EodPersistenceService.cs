@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 namespace EODService.Services
 {
     /// <summary>
@@ -49,32 +50,60 @@ namespace EODService.Services
                 var minDate = cleanResults.Min(r => r.Date);
                 var maxDate = cleanResults.Max(r => r.Date);
 
-                // 1. Fetch matching EodDaily rows in chunks of 500 to respect Oracle's 1000 IN-clause limit (ORA-01795)
-                var existingDailyIds = new HashSet<int>();
+                // 1. Fetch matching EodDaily rows (Id and existing Date) in chunks of 500 to respect Oracle's 1000 IN-clause limit (ORA-01795)
+                var existingDailyMap = new Dictionary<int, DateTime>();
                 foreach (var chunk in symbols.Chunk(500))
                 {
-                    var chunkIds = await dbContext.EodDaily
+                    var chunkRows = await dbContext.EodDaily
                         .AsNoTracking()
                         .Where(e => chunk.Contains(e.Id))
-                        .Select(e => e.Id)
+                        .Select(e => new { e.Id, e.Date })
                         .ToListAsync(ct);
 
-                    foreach (var id in chunkIds)
+                    foreach (var row in chunkRows)
                     {
-                        existingDailyIds.Add(id);
+                        existingDailyMap[row.Id] = row.Date.Date;
                     }
                 }
 
-                foreach (var result in cleanResults)
+                // Group cleanResults by stock Id and take only the latest date record per stock for EodDaily
+                var latestPerStockDaily = cleanResults
+                    .GroupBy(r => r.Id)
+                    .Select(g => g.OrderByDescending(x => x.Date).First())
+                    .ToList();
+
+                foreach (var result in latestPerStockDaily)
                 {
                     var dailyEntity = result.ToDaily();
-                    if (existingDailyIds.Contains(result.Id))
+                    if (existingDailyMap.TryGetValue(result.Id, out var existingDate))
                     {
-                        dbContext.EodDaily.Update(dailyEntity);
+                        // Only update EodDaily if the incoming record is newer or same date
+                        if (result.Date >= existingDate)
+                        {
+                            var existingEntity = dbContext.EodDaily.Local.FirstOrDefault(e => e.Id == dailyEntity.Id);
+                            if (existingEntity == null)
+                            {
+                                existingEntity = new EODService.DTOs.EOD.EodDataDaily { Id = dailyEntity.Id };
+                                dbContext.EodDaily.Attach(existingEntity);
+                            }
+
+                            // Selective property updates: preserve existing non-null DB values if incoming field is null
+                            existingEntity.Name = dailyEntity.Name;
+                            existingEntity.Date = dailyEntity.Date;
+                            if (dailyEntity.Open.HasValue) existingEntity.Open = dailyEntity.Open;
+                            if (dailyEntity.High.HasValue) existingEntity.High = dailyEntity.High;
+                            if (dailyEntity.Low.HasValue) existingEntity.Low = dailyEntity.Low;
+                            if (dailyEntity.Close.HasValue) existingEntity.Close = dailyEntity.Close;
+                            if (dailyEntity.AdjustedClose.HasValue) existingEntity.AdjustedClose = dailyEntity.AdjustedClose;
+                            if (dailyEntity.Volume.HasValue) existingEntity.Volume = dailyEntity.Volume;
+
+                            existingDailyMap[result.Id] = result.Date;
+                        }
                     }
                     else
                     {
                         dbContext.EodDaily.Add(dailyEntity);
+                        existingDailyMap[result.Id] = result.Date;
                     }
                 }
 
@@ -111,6 +140,7 @@ namespace EODService.Services
             catch
             {
                 await tx.RollbackAsync(ct);
+                dbContext.ChangeTracker.Clear();
                 throw;
             }
         }

@@ -29,6 +29,11 @@ namespace EODSettingsApp.AppSettingsConfig
         public static AppSettingsModel Load()
         {
             var path = AppSettingsPath.Resolve();
+            if (!File.Exists(path))
+            {
+                return new AppSettingsModel();
+            }
+
             var json = File.ReadAllText(path);
 
             using var document = JsonDocument.Parse(json);

@@ -32,10 +32,9 @@ namespace EODSettingsApp.Forms
 
             try
             {
-                var appSettings = AppSettingsService.Load();
-                var connectionString = appSettings.ConnectionStrings?.DefaultConnection;
+                var connectionString = ConnectionStringResolver.Get();
 
-                if (string.IsNullOrWhiteSpace(connectionString))
+                if (string.IsNullOrWhiteSpace(connectionString) || connectionString.Contains("YOUR_DB_USER"))
                 {
                     SetStatus(success: false, "✘ DB connection not configured. Go to Settings → Database.");
                     return;
@@ -56,7 +55,7 @@ namespace EODSettingsApp.Forms
                     TwelveDataID = string.IsNullOrWhiteSpace(txtTdSymbol.Text) ? null : txtTdSymbol.Text.Trim(),
                     YahooFinanceID = string.IsNullOrWhiteSpace(txtYfSymbol.Text) ? null : txtYfSymbol.Text.Trim(),
                     ReuterID = string.IsNullOrWhiteSpace(txtLsegSymbol.Text) ? null : txtLsegSymbol.Text.Trim(),
-                    ISIN = string.IsNullOrWhiteSpace(txtIsin.Text) ? string.Empty : txtIsin.Text.Trim()
+                    ISIN = string.IsNullOrWhiteSpace(txtIsin.Text) ? null : txtIsin.Text.Trim()
                 };
 
                 dbContext.Stock.Add(newStock);
