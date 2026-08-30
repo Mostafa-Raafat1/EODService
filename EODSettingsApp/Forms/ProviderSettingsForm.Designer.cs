@@ -156,14 +156,14 @@ namespace EODSettingsApp.Forms
             tabPageYahoo.Padding = new Padding(3);
             tabPageYahoo.Text    = "  Yahoo Finance  ";
 
-            ConfigureFieldLabel(lblYahooBaseUrl,    "lblYahooBaseUrl",    "Base URL",          14,  14);
-            ConfigureFieldBox  (txtYahooBaseUrl,     "txtYahooBaseUrl",                         14,  34);
-            ConfigureFieldLabel(lblYahooEndpoint,   "lblYahooEndpoint",   "Endpoint",          14,  64);
-            ConfigureFieldBox  (txtYahooEndpoint,   "txtYahooEndpoint",                        14,  84);
-            ConfigureFieldLabel(lblYahooApiKey,     "lblYahooApiKey",     "API Key (Optional)", 14, 114, 140);
-            ConfigureFieldBox  (txtYahooApiKey,     "txtYahooApiKey",                          14, 134);
-            ConfigureFieldLabel(lblYahooParameters, "lblYahooParameters", "Parameters (JSON)", 14, 164, 200);
-            ConfigureJsonBox   (txtYahooParameters, "txtYahooParameters",                      14, 186);
+            ConfigureFieldLabel(lblYahooBaseUrl,    "lblYahooBaseUrl",    "Base URL",          16,  14);
+            ConfigureFieldBox  (txtYahooBaseUrl,     "txtYahooBaseUrl",                         16,  34);
+            ConfigureFieldLabel(lblYahooEndpoint,   "lblYahooEndpoint",   "Endpoint",          16,  64);
+            ConfigureFieldBox  (txtYahooEndpoint,   "txtYahooEndpoint",                        16,  84);
+            ConfigureFieldLabel(lblYahooApiKey,     "lblYahooApiKey",     "API Key (Optional)", 16, 114, 140);
+            ConfigureFieldBox  (txtYahooApiKey,     "txtYahooApiKey",                          16, 134);
+            ConfigureFieldLabel(lblYahooParameters, "lblYahooParameters", "Parameters (JSON)", 16, 164, 200);
+            ConfigureJsonBox   (txtYahooParameters, "txtYahooParameters",                      16, 186);
 
             // ── tabPageTwelveData ─────────────────────────────────────────────────
             tabPageTwelveData.BackColor = Color.FromArgb(248, 250, 252);
@@ -179,14 +179,14 @@ namespace EODSettingsApp.Forms
             tabPageTwelveData.Padding = new Padding(3);
             tabPageTwelveData.Text    = "  TwelveData  ";
 
-            ConfigureFieldLabel(lblTwelveBaseUrl,    "lblTwelveBaseUrl",    "Base URL",          14,  14);
-            ConfigureFieldBox  (txtTwelveBaseUrl,    "txtTwelveBaseUrl",                         14,  34);
-            ConfigureFieldLabel(lblTwelveEndpoint,   "lblTwelveEndpoint",   "Endpoint",          14,  64);
-            ConfigureFieldBox  (txtTwelveEndpoint,   "txtTwelveEndpoint",                        14,  84);
-            ConfigureFieldLabel(lblTwelveApiKey,     "lblTwelveApiKey",     "API Key",           14, 114);
-            ConfigureFieldBox  (txtTwelveApiKey,     "txtTwelveApiKey",                          14, 134);
-            ConfigureFieldLabel(lblTwelveParameters, "lblTwelveParameters", "Parameters (JSON)", 14, 164, 200);
-            ConfigureJsonBox   (txtTwelveParameters, "txtTwelveParameters",                      14, 186);
+            ConfigureFieldLabel(lblTwelveBaseUrl,    "lblTwelveBaseUrl",    "Base URL",          16,  14);
+            ConfigureFieldBox  (txtTwelveBaseUrl,    "txtTwelveBaseUrl",                         16,  34);
+            ConfigureFieldLabel(lblTwelveEndpoint,   "lblTwelveEndpoint",   "Endpoint",          16,  64);
+            ConfigureFieldBox  (txtTwelveEndpoint,   "txtTwelveEndpoint",                        16,  84);
+            ConfigureFieldLabel(lblTwelveApiKey,     "lblTwelveApiKey",     "API Key",           16, 114);
+            ConfigureFieldBox  (txtTwelveApiKey,     "txtTwelveApiKey",                          16, 134);
+            ConfigureFieldLabel(lblTwelveParameters, "lblTwelveParameters", "Parameters (JSON)", 16, 164, 200);
+            ConfigureJsonBox   (txtTwelveParameters, "txtTwelveParameters",                      16, 186);
 
             // ── tabPageReuters ───────────────────────────────────────────────────
             tabPageReuters.BackColor = Color.FromArgb(248, 250, 252);
@@ -202,14 +202,14 @@ namespace EODSettingsApp.Forms
             tabPageReuters.Padding = new Padding(3);
             tabPageReuters.Text    = "  Reuters (LSEG)  ";
 
-            ConfigureFieldLabel(lblReutersBaseUrl,    "lblReutersBaseUrl",    "Base URL (ws://...)", 14,  14, 150);
-            ConfigureFieldBox  (txtReutersBaseUrl,    "txtReutersBaseUrl",                           14,  34);
-            ConfigureFieldLabel(lblReutersEndpoint,   "lblReutersEndpoint",   "Endpoint",            14,  64);
-            ConfigureFieldBox  (txtReutersEndpoint,   "txtReutersEndpoint",                          14,  84);
-            ConfigureFieldLabel(lblReutersApiKey,     "lblReutersApiKey",     "API Key (Optional)",   14, 114, 140);
-            ConfigureFieldBox  (txtReutersApiKey,     "txtReutersApiKey",                            14, 134);
-            ConfigureFieldLabel(lblReutersParameters, "lblReutersParameters", "Parameters (JSON)",   14, 164, 200);
-            ConfigureJsonBox   (txtReutersParameters, "txtReutersParameters",                        14, 186);
+            ConfigureFieldLabel(lblReutersBaseUrl,    "lblReutersBaseUrl",    "Base URL (ws://...)", 16,  14, 150);
+            ConfigureFieldBox  (txtReutersBaseUrl,    "txtReutersBaseUrl",                           16,  34);
+            ConfigureFieldLabel(lblReutersEndpoint,   "lblReutersEndpoint",   "Endpoint",            16,  64);
+            ConfigureFieldBox  (txtReutersEndpoint,   "txtReutersEndpoint",                          16,  84);
+            ConfigureFieldLabel(lblReutersApiKey,     "lblReutersApiKey",     "API Key (Optional)",   16, 114, 140);
+            ConfigureFieldBox  (txtReutersApiKey,     "txtReutersApiKey",                            16, 134);
+            ConfigureFieldLabel(lblReutersParameters, "lblReutersParameters", "Parameters (JSON)",   16, 164, 200);
+            ConfigureJsonBox   (txtReutersParameters, "txtReutersParameters",                        16, 186);
 
             // ── pnlFooter ─────────────────────────────────────────────────────────
             pnlFooter.BackColor = Color.FromArgb(226, 232, 240);
@@ -229,6 +229,7 @@ namespace EODSettingsApp.Forms
             btnSaveProviderSettings.Location                  = new Point(268, 12);
             btnSaveProviderSettings.Name                      = "btnSaveProviderSettings";
             btnSaveProviderSettings.Size                      = new Size(178, 36);
+            btnSaveProviderSettings.Anchor                    = AnchorStyles.Top | AnchorStyles.Right;
             btnSaveProviderSettings.TabIndex                  = 0;
             btnSaveProviderSettings.Text                      = "Save Provider Settings";
             btnSaveProviderSettings.UseVisualStyleBackColor   = false;
@@ -239,6 +240,7 @@ namespace EODSettingsApp.Forms
             lblProviderSettingsStatus.Location  = new Point(14, 20);
             lblProviderSettingsStatus.Name      = "lblProviderSettingsStatus";
             lblProviderSettingsStatus.Size      = new Size(248, 22);
+            lblProviderSettingsStatus.Anchor    = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblProviderSettingsStatus.TabIndex  = 1;
 
             // ── ProviderSettingsForm ──────────────────────────────────────────────
@@ -291,6 +293,7 @@ namespace EODSettingsApp.Forms
             box.Location    = new Point(x, y);
             box.Name        = name;
             box.Size        = new Size(424, 24);
+            box.Anchor      = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         }
 
         /// <summary>Applies the code-editor text-box style to multiline JSON fields.</summary>
@@ -304,6 +307,7 @@ namespace EODSettingsApp.Forms
             box.Name        = name;
             box.ScrollBars  = ScrollBars.Vertical;
             box.Size        = new Size(width, height);
+            box.Anchor      = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
         }
     }
 }

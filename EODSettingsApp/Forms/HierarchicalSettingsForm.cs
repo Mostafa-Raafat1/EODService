@@ -133,23 +133,27 @@ namespace EODSettingsApp.Forms
             childForm.MaximumSize       = Size.Empty;   // clear any fixed MaximumSize
             childForm.MinimumSize       = Size.Empty;   // clear any fixed MinimumSize
 
-            pnlContent.Padding   = new Padding(8);
-            pnlContent.BackColor = Color.FromArgb(241, 245, 249);
+            pnlContent.Padding   = Padding.Empty;
+            pnlContent.BackColor = Color.FromArgb(248, 250, 252);
 
-            // --- Fixed window: child fills the stable content panel ---
-            // The window size never changes between navigations.
-            // If the child is smaller than the panel it is centred; if larger it scrolls.
-            childForm.Dock = DockStyle.None;
+            // Adapt window ClientSize to fit each child form view without wasted empty space
+            int targetContentWidth = childForm switch
+            {
+                SymbolSettingsForm => 860,
+                DatabaseSettingsForm => 544,
+                _ => 460
+            };
 
-            // Size the child to fill the available content area (minus padding)
-            int availW = pnlContent.ClientSize.Width  - pnlContent.Padding.Horizontal;
-            int availH = pnlContent.ClientSize.Height - pnlContent.Padding.Vertical;
-            childForm.Size     = new Size(Math.Max(availW, childForm.MinimumSize.Width),
-                                          Math.Max(availH, childForm.MinimumSize.Height));
-            childForm.Location = new Point(pnlContent.Padding.Left, pnlContent.Padding.Top);
-            childForm.Anchor   = AnchorStyles.Top | AnchorStyles.Left
-                                 | AnchorStyles.Right | AnchorStyles.Bottom;
+            int targetContentHeight = childForm switch
+            {
+                SymbolSettingsForm => 610,
+                DatabaseSettingsForm => 540,
+                _ => 480
+            };
 
+            this.ClientSize = new Size(pnlSidebar.Width + targetContentWidth, targetContentHeight);
+
+            childForm.Dock = DockStyle.Fill;
             pnlContent.Controls.Clear();
             pnlContent.Controls.Add(childForm);
             childForm.Show();

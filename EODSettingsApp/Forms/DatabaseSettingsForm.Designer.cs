@@ -301,6 +301,7 @@ namespace EODSettingsApp.Forms
             btnSaveDatabaseSettings.Location = new Point(330, 12);
             btnSaveDatabaseSettings.Name = "btnSaveDatabaseSettings";
             btnSaveDatabaseSettings.Size = new Size(191, 36);
+            btnSaveDatabaseSettings.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnSaveDatabaseSettings.TabIndex = 0;
             btnSaveDatabaseSettings.Text = "Save Connection Settings";
             btnSaveDatabaseSettings.UseVisualStyleBackColor = false;
@@ -313,6 +314,7 @@ namespace EODSettingsApp.Forms
             lblDatabaseSettingsStatus.Location = new Point(16, 16);
             lblDatabaseSettingsStatus.Name = "lblDatabaseSettingsStatus";
             lblDatabaseSettingsStatus.Size = new Size(308, 30);
+            lblDatabaseSettingsStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblDatabaseSettingsStatus.TabIndex = 1;
             // 
             // DatabaseSettingsForm

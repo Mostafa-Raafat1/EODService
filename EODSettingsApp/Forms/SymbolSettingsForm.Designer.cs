@@ -181,6 +181,7 @@ namespace EODSettingsApp.Forms
             dgvStocks.RowHeadersVisible = false;
             dgvStocks.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvStocks.Size = new Size(826, 210);
+            dgvStocks.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             dgvStocks.TabIndex = 1;
             dgvStocks.SelectionChanged += DgvStocks_SelectionChanged;
 
@@ -211,6 +212,7 @@ namespace EODSettingsApp.Forms
             grpEditStock.Location = new Point(16, 252);
             grpEditStock.Name = "grpEditStock";
             grpEditStock.Size = new Size(826, 215);
+            grpEditStock.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             grpEditStock.TabIndex = 2;
             grpEditStock.TabStop = false;
             grpEditStock.Text = "Edit Selected Stock Details";
@@ -407,6 +409,7 @@ namespace EODSettingsApp.Forms
             btnSaveSymbolSettings.Location = new Point(610, 12);
             btnSaveSymbolSettings.Name = "btnSaveSymbolSettings";
             btnSaveSymbolSettings.Size = new Size(232, 36);
+            btnSaveSymbolSettings.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnSaveSymbolSettings.TabIndex = 0;
             btnSaveSymbolSettings.Text = "💾 Save Database Changes";
             btnSaveSymbolSettings.UseVisualStyleBackColor = false;
@@ -417,6 +420,7 @@ namespace EODSettingsApp.Forms
             lblSymbolSettingsStatus.Location = new Point(14, 20);
             lblSymbolSettingsStatus.Name = "lblSymbolSettingsStatus";
             lblSymbolSettingsStatus.Size = new Size(580, 22);
+            lblSymbolSettingsStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblSymbolSettingsStatus.TabIndex = 1;
 
             // ── SymbolSettingsForm ────────────────────────────────────────────────

@@ -446,6 +446,7 @@ namespace EODSettingsApp.Forms
             btnAdd.Location = new Point(270, 12);
             btnAdd.Name = "btnAdd";
             btnAdd.Size = new Size(100, 36);
+            btnAdd.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnAdd.TabIndex = 0;
             btnAdd.Text = "Add Stock";
             btnAdd.UseVisualStyleBackColor = false;
@@ -463,6 +464,7 @@ namespace EODSettingsApp.Forms
             btnClear.Location = new Point(380, 12);
             btnClear.Name = "btnClear";
             btnClear.Size = new Size(70, 36);
+            btnClear.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClear.TabIndex = 1;
             btnClear.Text = "Clear";
             btnClear.UseVisualStyleBackColor = false;
@@ -476,6 +478,7 @@ namespace EODSettingsApp.Forms
             lblStatus.Location = new Point(14, 10);
             lblStatus.Name = "lblStatus";
             lblStatus.Size = new Size(248, 40);
+            lblStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             lblStatus.AutoEllipsis = true;
             lblStatus.TabIndex = 2;
 
