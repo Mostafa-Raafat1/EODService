@@ -661,7 +661,7 @@ namespace EODSettingsApp.Forms
             var now =
                 DateTime.Now;
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 8; i++)
             {
                 var candidateDate =
                     now.Date.AddDays(i);

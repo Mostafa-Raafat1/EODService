@@ -24,20 +24,21 @@ namespace EODSettingsApp.Forms
         private RichTextBox  rtbLogs;
 
         // Automated Schedule Controls
-        private CheckBox     chkEnableSchedule;
-        private Label        lblWorkingDaysLabel;
-        private CheckBox     chkMon;
-        private CheckBox     chkTue;
-        private CheckBox     chkWed;
-        private CheckBox     chkThu;
-        private CheckBox     chkFri;
-        private CheckBox     chkSat;
-        private CheckBox     chkSun;
-        private Label        lblTimeLabel;
-        private DateTimePicker dtpRunTime;
-        private Button       btnSaveSchedule;
-        private Button       btnRunNow;
-        private Label        lblNextRunStatus;
+        private CheckBox        chkEnableSchedule;
+        private Label           lblWorkingDaysLabel;
+        private FlowLayoutPanel flpWorkingDays;
+        private CheckBox        chkMon;
+        private CheckBox        chkTue;
+        private CheckBox        chkWed;
+        private CheckBox        chkThu;
+        private CheckBox        chkFri;
+        private CheckBox        chkSat;
+        private CheckBox        chkSun;
+        private Label           lblTimeLabel;
+        private DateTimePicker  dtpRunTime;
+        private Button          btnSaveSchedule;
+        private Button          btnRunNow;
+        private Label           lblNextRunStatus;
 
         // Menu bar
         private MenuStrip         mnuMain;
@@ -66,6 +67,7 @@ namespace EODSettingsApp.Forms
             lblProviderHint = new Label();
             chkEnableSchedule = new CheckBox();
             lblWorkingDaysLabel = new Label();
+            flpWorkingDays = new FlowLayoutPanel();
             chkMon = new CheckBox();
             chkTue = new CheckBox();
             chkWed = new CheckBox();
@@ -91,6 +93,7 @@ namespace EODSettingsApp.Forms
             mnuItemUserGuide = new ToolStripMenuItem();
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
+            flpWorkingDays.SuspendLayout();
             pnlGrid.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
             pnlGridHeader.SuspendLayout();
@@ -137,13 +140,7 @@ namespace EODSettingsApp.Forms
             pnlControls.Controls.Add(lblProviderHint);
             pnlControls.Controls.Add(chkEnableSchedule);
             pnlControls.Controls.Add(lblWorkingDaysLabel);
-            pnlControls.Controls.Add(chkMon);
-            pnlControls.Controls.Add(chkTue);
-            pnlControls.Controls.Add(chkWed);
-            pnlControls.Controls.Add(chkThu);
-            pnlControls.Controls.Add(chkFri);
-            pnlControls.Controls.Add(chkSat);
-            pnlControls.Controls.Add(chkSun);
+            pnlControls.Controls.Add(flpWorkingDays);
             pnlControls.Controls.Add(lblTimeLabel);
             pnlControls.Controls.Add(dtpRunTime);
             pnlControls.Controls.Add(btnRunNow);
@@ -215,15 +212,36 @@ namespace EODSettingsApp.Forms
             lblWorkingDaysLabel.TabIndex = 3;
             lblWorkingDaysLabel.Text = "Working Days:";
             // 
+            // flpWorkingDays
+            // 
+            flpWorkingDays.AutoSize = true;
+            flpWorkingDays.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flpWorkingDays.BackColor = Color.Transparent;
+            flpWorkingDays.Controls.Add(chkMon);
+            flpWorkingDays.Controls.Add(chkTue);
+            flpWorkingDays.Controls.Add(chkWed);
+            flpWorkingDays.Controls.Add(chkThu);
+            flpWorkingDays.Controls.Add(chkFri);
+            flpWorkingDays.Controls.Add(chkSat);
+            flpWorkingDays.Controls.Add(chkSun);
+            flpWorkingDays.FlowDirection = FlowDirection.LeftToRight;
+            flpWorkingDays.Location = new Point(350, 42);
+            flpWorkingDays.Margin = new Padding(0);
+            flpWorkingDays.Name = "flpWorkingDays";
+            flpWorkingDays.Padding = new Padding(0);
+            flpWorkingDays.Size = new Size(350, 21);
+            flpWorkingDays.TabIndex = 4;
+            flpWorkingDays.WrapContents = false;
+            // 
             // chkMon
             // 
             chkMon.AutoSize = true;
             chkMon.Checked = true;
             chkMon.CheckState = CheckState.Checked;
-            chkMon.Location = new Point(350, 42);
+            chkMon.Margin = new Padding(0, 0, 6, 0);
             chkMon.Name = "chkMon";
             chkMon.Size = new Size(46, 21);
-            chkMon.TabIndex = 4;
+            chkMon.TabIndex = 0;
             chkMon.Text = "Mon";
             chkMon.UseVisualStyleBackColor = true;
             // 
@@ -232,10 +250,10 @@ namespace EODSettingsApp.Forms
             chkTue.AutoSize = true;
             chkTue.Checked = true;
             chkTue.CheckState = CheckState.Checked;
-            chkTue.Location = new Point(398, 42);
+            chkTue.Margin = new Padding(0, 0, 6, 0);
             chkTue.Name = "chkTue";
             chkTue.Size = new Size(44, 21);
-            chkTue.TabIndex = 5;
+            chkTue.TabIndex = 1;
             chkTue.Text = "Tue";
             chkTue.UseVisualStyleBackColor = true;
             // 
@@ -244,10 +262,10 @@ namespace EODSettingsApp.Forms
             chkWed.AutoSize = true;
             chkWed.Checked = true;
             chkWed.CheckState = CheckState.Checked;
-            chkWed.Location = new Point(444, 42);
+            chkWed.Margin = new Padding(0, 0, 6, 0);
             chkWed.Name = "chkWed";
             chkWed.Size = new Size(48, 21);
-            chkWed.TabIndex = 6;
+            chkWed.TabIndex = 2;
             chkWed.Text = "Wed";
             chkWed.UseVisualStyleBackColor = true;
             // 
@@ -256,10 +274,10 @@ namespace EODSettingsApp.Forms
             chkThu.AutoSize = true;
             chkThu.Checked = true;
             chkThu.CheckState = CheckState.Checked;
-            chkThu.Location = new Point(494, 42);
+            chkThu.Margin = new Padding(0, 0, 6, 0);
             chkThu.Name = "chkThu";
             chkThu.Size = new Size(44, 21);
-            chkThu.TabIndex = 7;
+            chkThu.TabIndex = 3;
             chkThu.Text = "Thu";
             chkThu.UseVisualStyleBackColor = true;
             // 
@@ -268,30 +286,30 @@ namespace EODSettingsApp.Forms
             chkFri.AutoSize = true;
             chkFri.Checked = true;
             chkFri.CheckState = CheckState.Checked;
-            chkFri.Location = new Point(540, 42);
+            chkFri.Margin = new Padding(0, 0, 6, 0);
             chkFri.Name = "chkFri";
             chkFri.Size = new Size(41, 21);
-            chkFri.TabIndex = 8;
+            chkFri.TabIndex = 4;
             chkFri.Text = "Fri";
             chkFri.UseVisualStyleBackColor = true;
             // 
             // chkSat
             // 
             chkSat.AutoSize = true;
-            chkSat.Location = new Point(584, 42);
+            chkSat.Margin = new Padding(0, 0, 6, 0);
             chkSat.Name = "chkSat";
             chkSat.Size = new Size(44, 21);
-            chkSat.TabIndex = 9;
+            chkSat.TabIndex = 5;
             chkSat.Text = "Sat";
             chkSat.UseVisualStyleBackColor = true;
             // 
             // chkSun
             // 
             chkSun.AutoSize = true;
-            chkSun.Location = new Point(630, 42);
+            chkSun.Margin = new Padding(0, 0, 0, 0);
             chkSun.Name = "chkSun";
             chkSun.Size = new Size(46, 21);
-            chkSun.TabIndex = 10;
+            chkSun.TabIndex = 6;
             chkSun.Text = "Sun";
             chkSun.UseVisualStyleBackColor = true;
             // 
@@ -299,7 +317,7 @@ namespace EODSettingsApp.Forms
             // 
             lblTimeLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblTimeLabel.ForeColor = Color.FromArgb(51, 65, 85);
-            lblTimeLabel.Location = new Point(440, 14);
+            lblTimeLabel.Location = new Point(446, 14);
             lblTimeLabel.Name = "lblTimeLabel";
             lblTimeLabel.Size = new Size(65, 20);
             lblTimeLabel.TabIndex = 11;
@@ -309,7 +327,7 @@ namespace EODSettingsApp.Forms
             // 
             dtpRunTime.CustomFormat = "HH:mm";
             dtpRunTime.Format = DateTimePickerFormat.Custom;
-            dtpRunTime.Location = new Point(508, 11);
+            dtpRunTime.Location = new Point(514, 11);
             dtpRunTime.Name = "dtpRunTime";
             dtpRunTime.ShowUpDown = true;
             dtpRunTime.Size = new Size(68, 24);
@@ -528,6 +546,8 @@ namespace EODSettingsApp.Forms
             pnlHeader.ResumeLayout(false);
             pnlControls.ResumeLayout(false);
             pnlControls.PerformLayout();
+            flpWorkingDays.ResumeLayout(false);
+            flpWorkingDays.PerformLayout();
             pnlGrid.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
             pnlGridHeader.ResumeLayout(false);
