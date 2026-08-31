@@ -52,7 +52,8 @@ AppDbContext dbContext;
 try
 {
     dbContext = AppDbContextFactory.Create(connectionString);
-}
+
+}   
 catch (Exception ex)
 {
     logger.LogError(ex, "Error occurred while connecting to the database.");

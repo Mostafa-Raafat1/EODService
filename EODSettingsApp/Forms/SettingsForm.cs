@@ -1,15 +1,12 @@
-using EODService.Config;
 using EODService.DTOs.EOD;
 using EODService.Logging;
 using EODService.Models.Provider;
 using EODService.Persistance;
 using EODService.Persistance.Repo;
-using EODService.Services;
 using EODSettingsApp.AppSettingsConfig;
 using EODSettingsApp.ExternalConfig;
 using EODSettingsApp.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Oracle.ManagedDataAccess.Client;
 
 namespace EODSettingsApp.Forms
 {
@@ -28,6 +26,8 @@ namespace EODSettingsApp.Forms
         private long _lastLogFilePosition = 0;
         private bool _isPollingLog = false;
 
+
+        private bool _isSplitterInitialized = false;
 
         // ── Constructor ─────────────────────────────────────────────────────────
 
@@ -41,6 +41,33 @@ namespace EODSettingsApp.Forms
             Load += async (_, _) => await SettingsForm_LoadAsync();
 
             InitializeBackgroundLogAndGridMonitoring();
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            InitializeSplitterDistance();
+        }
+
+        private void InitializeSplitterDistance()
+        {
+            if (_isSplitterInitialized) return;
+
+            if (splitMain != null && splitMain.Width > (splitMain.Panel1MinSize + splitMain.Panel2MinSize + splitMain.SplitterWidth))
+            {
+                int availableWidth = splitMain.Width;
+                int minimum = splitMain.Panel1MinSize;
+                int maximum = availableWidth - splitMain.Panel2MinSize - splitMain.SplitterWidth;
+                int desired = (int)(availableWidth * 0.29); // ~29% for Left Execution Logs panel
+
+                int targetDistance = Math.Max(minimum, Math.Min(desired, maximum));
+
+                if (targetDistance >= minimum && targetDistance <= maximum)
+                {
+                    splitMain.SplitterDistance = targetDistance;
+                    _isSplitterInitialized = true;
+                }
+            }
         }
 
 
@@ -1042,9 +1069,65 @@ namespace EODSettingsApp.Forms
                     "Database connection string is not configured.");
             }
 
+            AppendLog("[Database] Creating DbContext...");
+
             using var dbContext = AppDbContextFactory.Create(connectionString);
-            await dbContext.Database.EnsureCreatedAsync();
-            await DatabaseSeeder.SeedAsync(dbContext);
+
+            try
+            {
+                // Get the actual Oracle user/schema
+                AppendLog("[Database] Checking Oracle user/schema...");
+
+                var connection = dbContext.Database.GetDbConnection();
+
+                await connection.OpenAsync();
+
+                try
+                {
+                    using var command = connection.CreateCommand();
+                    command.CommandText = "SELECT USER FROM DUAL";
+
+                    var currentUser = await command.ExecuteScalarAsync();
+
+                    AppendLog(
+                        $"[Database] Connected Oracle user/schema: {currentUser}");
+                }
+                finally
+                {
+                    await connection.CloseAsync();
+                }
+
+                // Ensure tables exist
+                AppendLog("[Database] Ensuring database schema exists...");
+
+                var created = await dbContext.Database.EnsureCreatedAsync();
+
+                if (created)
+                {
+                    AppendLog(
+                        "[Database] Database schema was created successfully.");
+                }
+                else
+                {
+                    AppendLog(
+                        "[Database] Database schema already exists.");
+                }
+
+                // Seed required data
+                AppendLog("[Database] Running database seeder...");
+
+                await DatabaseSeeder.SeedAsync(dbContext);
+
+                AppendLog(
+                    "[Database] Database initialization completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                AppendLogError(
+                    $"[Database] Initialization failed: {ex.Message}");
+
+                throw;
+            }
         }
 
         // ── Provider ComboBox ───────────────────────────────────────────────────

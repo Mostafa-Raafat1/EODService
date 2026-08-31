@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -7,21 +8,29 @@ namespace EODSettingsApp.Forms
     {
         private System.ComponentModel.IContainer components = null;
 
-        private Panel        pnlHeader;
-        private Label        lblTitle;
-        private Label        lblSubtitle;
-        private Panel        pnlControls;
-        private Label        lblProviderLabel;
-        private ComboBox     cmbProvider;
-        private Label        lblProviderHint;
-        private Label        lblStatus;
-        private Panel        pnlGrid;       // outer wrapper (DockStyle.Fill)
-        private Panel        pnlGridHeader; // top strip inside pnlGrid
-        private Label        lblGridTitle;
-        private DataGridView dgvResults;    // fills the rest of pnlGrid
-        
-        private Panel        pnlLogs;
-        private RichTextBox  rtbLogs;
+        private Panel pnlHeader;
+        private Label lblTitle;
+        private Label lblSubtitle;
+
+        private Panel pnlControls;
+        private Label lblProviderLabel;
+        private ComboBox cmbProvider;
+        private Label lblProviderHint;
+        private Label lblStatus;
+
+        // Main workspace
+        private SplitContainer splitMain;
+
+        // Results
+        private Panel pnlGrid;
+        private Panel pnlGridHeader;
+        private Label lblGridTitle;
+        private DataGridView dgvResults;
+
+        // Logs
+        private Panel pnlLogs;
+        private Label lblLogsTitle;
+        private RichTextBox rtbLogs;
 
         // Automated Schedule Controls
         private CheckBox        chkEnableSchedule;
@@ -41,7 +50,7 @@ namespace EODSettingsApp.Forms
         private Label           lblNextRunStatus;
 
         // Menu bar
-        private MenuStrip         mnuMain;
+        private MenuStrip mnuMain;
         private ToolStripMenuItem mnuItemSettings;
         private ToolStripMenuItem mnuItemHistory;
         private ToolStripMenuItem mnuItemUserGuide;
@@ -50,6 +59,7 @@ namespace EODSettingsApp.Forms
         {
             if (disposing && (components != null))
                 components.Dispose();
+
             base.Dispose(disposing);
         }
 
@@ -77,16 +87,18 @@ namespace EODSettingsApp.Forms
             chkSun = new CheckBox();
             lblTimeLabel = new Label();
             dtpRunTime = new DateTimePicker();
-            btnSaveSchedule = new Button();
             btnRunNow = new Button();
+            btnSaveSchedule = new Button();
             lblNextRunStatus = new Label();
             lblStatus = new Label();
+            splitMain = new SplitContainer();
+            pnlLogs = new Panel();
+            rtbLogs = new RichTextBox();
+            lblLogsTitle = new Label();
             pnlGrid = new Panel();
             dgvResults = new DataGridView();
             pnlGridHeader = new Panel();
             lblGridTitle = new Label();
-            pnlLogs = new Panel();
-            rtbLogs = new RichTextBox();
             mnuMain = new MenuStrip();
             mnuItemSettings = new ToolStripMenuItem();
             mnuItemHistory = new ToolStripMenuItem();
@@ -97,7 +109,6 @@ namespace EODSettingsApp.Forms
             pnlGrid.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
             pnlGridHeader.SuspendLayout();
-            pnlLogs.SuspendLayout();
             mnuMain.SuspendLayout();
             SuspendLayout();
             // 
@@ -109,8 +120,8 @@ namespace EODSettingsApp.Forms
             pnlHeader.Dock = DockStyle.Top;
             pnlHeader.Location = new Point(0, 24);
             pnlHeader.Name = "pnlHeader";
-            pnlHeader.Size = new Size(1034, 75);
-            pnlHeader.TabIndex = 2;
+            pnlHeader.Size = new Size(1100, 75);
+            pnlHeader.TabIndex = 1;
             // 
             // lblTitle
             // 
@@ -150,8 +161,8 @@ namespace EODSettingsApp.Forms
             pnlControls.Dock = DockStyle.Top;
             pnlControls.Location = new Point(0, 99);
             pnlControls.Name = "pnlControls";
-            pnlControls.Size = new Size(1034, 115);
-            pnlControls.TabIndex = 1;
+            pnlControls.Size = new Size(1100, 115);
+            pnlControls.TabIndex = 2;
             // 
             // lblProviderLabel
             // 
@@ -196,7 +207,7 @@ namespace EODSettingsApp.Forms
             chkEnableSchedule.ForeColor = Color.FromArgb(30, 58, 138);
             chkEnableSchedule.Location = new Point(260, 14);
             chkEnableSchedule.Name = "chkEnableSchedule";
-            chkEnableSchedule.Size = new Size(175, 19);
+            chkEnableSchedule.Size = new Size(182, 19);
             chkEnableSchedule.TabIndex = 2;
             chkEnableSchedule.Text = "Enable Automated Schedule";
             chkEnableSchedule.UseVisualStyleBackColor = true;
@@ -388,26 +399,85 @@ namespace EODSettingsApp.Forms
             lblStatus.TabIndex = 16;
             lblStatus.TextAlign = ContentAlignment.MiddleLeft;
             // 
+            // splitMain
+            // 
+            splitMain.Dock = DockStyle.Fill;
+            splitMain.Location = new Point(0, 214);
+            splitMain.Name = "splitMain";
+            // 
+            // splitMain.Panel1
+            // 
+            splitMain.Panel1.Controls.Add(pnlLogs);
+            splitMain.Panel1MinSize = 220;
+            // 
+            // splitMain.Panel2
+            // 
+            splitMain.Panel2.Controls.Add(pnlGrid);
+            splitMain.Panel2MinSize = 450;
+            splitMain.Size = new Size(1100, 566);
+            splitMain.SplitterDistance = 646;
+            splitMain.TabIndex = 3;
+            // 
+            // pnlLogs
+            // 
+            pnlLogs.BackColor = Color.FromArgb(15, 23, 42);
+            pnlLogs.Controls.Add(rtbLogs);
+            pnlLogs.Controls.Add(lblLogsTitle);
+            pnlLogs.Dock = DockStyle.Fill;
+            pnlLogs.Location = new Point(0, 0);
+            pnlLogs.Name = "pnlLogs";
+            pnlLogs.Padding = new Padding(12);
+            pnlLogs.Size = new Size(646, 566);
+            pnlLogs.TabIndex = 0;
+            // 
+            // rtbLogs
+            // 
+            rtbLogs.BackColor = Color.FromArgb(15, 23, 42);
+            rtbLogs.BorderStyle = BorderStyle.None;
+            rtbLogs.Dock = DockStyle.Fill;
+            rtbLogs.Font = new Font("Consolas", 9F);
+            rtbLogs.ForeColor = Color.FromArgb(200, 210, 220);
+            rtbLogs.Location = new Point(12, 44);
+            rtbLogs.Name = "rtbLogs";
+            rtbLogs.ReadOnly = true;
+            rtbLogs.ScrollBars = RichTextBoxScrollBars.Both;
+            rtbLogs.WordWrap = false;
+            rtbLogs.Size = new Size(622, 510);
+            rtbLogs.TabIndex = 1;
+            rtbLogs.Text = "Ready.\n";
+            // 
+            // lblLogsTitle
+            // 
+            lblLogsTitle.Dock = DockStyle.Top;
+            lblLogsTitle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLogsTitle.ForeColor = Color.White;
+            lblLogsTitle.Location = new Point(12, 12);
+            lblLogsTitle.Name = "lblLogsTitle";
+            lblLogsTitle.Size = new Size(622, 32);
+            lblLogsTitle.TabIndex = 0;
+            lblLogsTitle.Text = "Execution Logs";
+            lblLogsTitle.TextAlign = ContentAlignment.MiddleLeft;
+            // 
             // pnlGrid
             // 
             pnlGrid.BackColor = Color.White;
             pnlGrid.Controls.Add(dgvResults);
             pnlGrid.Controls.Add(pnlGridHeader);
             pnlGrid.Dock = DockStyle.Fill;
-            pnlGrid.Location = new Point(0, 214);
+            pnlGrid.Location = new Point(0, 0);
             pnlGrid.Name = "pnlGrid";
-            pnlGrid.Padding = new Padding(12, 0, 12, 8);
-            pnlGrid.Size = new Size(1034, 427);
-            pnlGrid.TabIndex = 2;
+            pnlGrid.Padding = new Padding(12, 0, 12, 12);
+            pnlGrid.Size = new Size(450, 566);
+            pnlGrid.TabIndex = 0;
             // 
             // dgvResults
             // 
             dgvResults.AllowUserToAddRows = false;
             dgvResults.AllowUserToDeleteRows = false;
             dgvResults.AllowUserToResizeRows = false;
-            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewCellStyle1.BackColor = Color.FromArgb(248, 250, 252);
             dgvResults.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvResults.BackgroundColor = Color.White;
             dgvResults.BorderStyle = BorderStyle.None;
             dgvResults.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
@@ -435,14 +505,14 @@ namespace EODSettingsApp.Forms
             dgvResults.EnableHeadersVisualStyles = false;
             dgvResults.Font = new Font("Segoe UI", 9.5F);
             dgvResults.GridColor = Color.FromArgb(226, 232, 240);
-            dgvResults.Location = new Point(12, 36);
+            dgvResults.Location = new Point(12, 40);
             dgvResults.MultiSelect = false;
             dgvResults.Name = "dgvResults";
             dgvResults.ReadOnly = true;
             dgvResults.RowHeadersVisible = false;
             dgvResults.RowTemplate.Height = 30;
             dgvResults.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvResults.Size = new Size(1010, 379);
+            dgvResults.Size = new Size(426, 514);
             dgvResults.TabIndex = 0;
             // 
             // pnlGridHeader
@@ -452,7 +522,7 @@ namespace EODSettingsApp.Forms
             pnlGridHeader.Dock = DockStyle.Top;
             pnlGridHeader.Location = new Point(12, 0);
             pnlGridHeader.Name = "pnlGridHeader";
-            pnlGridHeader.Size = new Size(1010, 36);
+            pnlGridHeader.Size = new Size(426, 40);
             pnlGridHeader.TabIndex = 1;
             // 
             // lblGridTitle
@@ -462,36 +532,10 @@ namespace EODSettingsApp.Forms
             lblGridTitle.ForeColor = Color.FromArgb(30, 58, 138);
             lblGridTitle.Location = new Point(0, 0);
             lblGridTitle.Name = "lblGridTitle";
-            lblGridTitle.Size = new Size(1010, 36);
+            lblGridTitle.Size = new Size(426, 40);
             lblGridTitle.TabIndex = 0;
             lblGridTitle.Text = "EOD Results (Automated Service Operations)";
             lblGridTitle.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // pnlLogs
-            // 
-            pnlLogs.BackColor = Color.FromArgb(15, 23, 42);
-            pnlLogs.Controls.Add(rtbLogs);
-            pnlLogs.Dock = DockStyle.Bottom;
-            pnlLogs.Location = new Point(0, 641);
-            pnlLogs.Name = "pnlLogs";
-            pnlLogs.Padding = new Padding(12);
-            pnlLogs.Size = new Size(1034, 140);
-            pnlLogs.TabIndex = 3;
-            // 
-            // rtbLogs
-            // 
-            rtbLogs.BackColor = Color.FromArgb(15, 23, 42);
-            rtbLogs.BorderStyle = BorderStyle.None;
-            rtbLogs.Dock = DockStyle.Fill;
-            rtbLogs.Font = new Font("Consolas", 9F);
-            rtbLogs.ForeColor = Color.FromArgb(200, 210, 220);
-            rtbLogs.Location = new Point(12, 12);
-            rtbLogs.Name = "rtbLogs";
-            rtbLogs.ReadOnly = true;
-            rtbLogs.ScrollBars = RichTextBoxScrollBars.Vertical;
-            rtbLogs.Size = new Size(1010, 116);
-            rtbLogs.TabIndex = 0;
-            rtbLogs.Text = "Ready.\n";
             // 
             // mnuMain
             // 
@@ -500,7 +544,7 @@ namespace EODSettingsApp.Forms
             mnuMain.Items.AddRange(new ToolStripItem[] { mnuItemSettings, mnuItemHistory, mnuItemUserGuide });
             mnuMain.Location = new Point(0, 0);
             mnuMain.Name = "mnuMain";
-            mnuMain.Size = new Size(1034, 24);
+            mnuMain.Size = new Size(1100, 24);
             mnuMain.TabIndex = 4;
             // 
             // mnuItemSettings
@@ -523,7 +567,7 @@ namespace EODSettingsApp.Forms
             // 
             mnuItemUserGuide.ForeColor = Color.White;
             mnuItemUserGuide.Name = "mnuItemUserGuide";
-            mnuItemUserGuide.Size = new Size(95, 20);
+            mnuItemUserGuide.Size = new Size(91, 20);
             mnuItemUserGuide.Text = "📖 User Guide";
             mnuItemUserGuide.Click += MnuItemUserGuide_Click;
             // 
@@ -531,8 +575,7 @@ namespace EODSettingsApp.Forms
             // 
             BackColor = Color.FromArgb(245, 247, 250);
             ClientSize = new Size(1100, 780);
-            Controls.Add(pnlGrid);
-            Controls.Add(pnlLogs);
+            Controls.Add(splitMain);
             Controls.Add(pnlControls);
             Controls.Add(pnlHeader);
             Controls.Add(mnuMain);
@@ -551,7 +594,6 @@ namespace EODSettingsApp.Forms
             pnlGrid.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
             pnlGridHeader.ResumeLayout(false);
-            pnlLogs.ResumeLayout(false);
             mnuMain.ResumeLayout(false);
             mnuMain.PerformLayout();
             ResumeLayout(false);
