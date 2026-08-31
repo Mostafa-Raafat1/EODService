@@ -156,9 +156,9 @@ namespace EODSettingsApp.Forms
             tabPageYahoo.Padding = new Padding(3);
             tabPageYahoo.Text    = "  Yahoo Finance  ";
 
-            ConfigureFieldLabel(lblYahooBaseUrl,    "lblYahooBaseUrl",    "Base URL",          16,  14);
+            ConfigureFieldLabel(lblYahooBaseUrl,    "lblYahooBaseUrl",    "Base URL (https://...)", 16,  14, 150);
             ConfigureFieldBox  (txtYahooBaseUrl,     "txtYahooBaseUrl",                         16,  34);
-            ConfigureFieldLabel(lblYahooEndpoint,   "lblYahooEndpoint",   "Endpoint",          16,  64);
+            ConfigureFieldLabel(lblYahooEndpoint,   "lblYahooEndpoint",   "Endpoint",          16,  64, 150);
             ConfigureFieldBox  (txtYahooEndpoint,   "txtYahooEndpoint",                        16,  84);
             ConfigureFieldLabel(lblYahooApiKey,     "lblYahooApiKey",     "API Key (Optional)", 16, 114, 140);
             ConfigureFieldBox  (txtYahooApiKey,     "txtYahooApiKey",                          16, 134);
@@ -179,11 +179,11 @@ namespace EODSettingsApp.Forms
             tabPageTwelveData.Padding = new Padding(3);
             tabPageTwelveData.Text    = "  TwelveData  ";
 
-            ConfigureFieldLabel(lblTwelveBaseUrl,    "lblTwelveBaseUrl",    "Base URL",          16,  14);
+            ConfigureFieldLabel(lblTwelveBaseUrl,    "lblTwelveBaseUrl",    "Base URL (https://...)", 16,  14, 150);
             ConfigureFieldBox  (txtTwelveBaseUrl,    "txtTwelveBaseUrl",                         16,  34);
-            ConfigureFieldLabel(lblTwelveEndpoint,   "lblTwelveEndpoint",   "Endpoint",          16,  64);
+            ConfigureFieldLabel(lblTwelveEndpoint,   "lblTwelveEndpoint",   "Endpoint",          16,  64, 150);
             ConfigureFieldBox  (txtTwelveEndpoint,   "txtTwelveEndpoint",                        16,  84);
-            ConfigureFieldLabel(lblTwelveApiKey,     "lblTwelveApiKey",     "API Key",           16, 114);
+            ConfigureFieldLabel(lblTwelveApiKey,     "lblTwelveApiKey",     "API Key (Optional)", 16, 114, 140);
             ConfigureFieldBox  (txtTwelveApiKey,     "txtTwelveApiKey",                          16, 134);
             ConfigureFieldLabel(lblTwelveParameters, "lblTwelveParameters", "Parameters (JSON)", 16, 164, 200);
             ConfigureJsonBox   (txtTwelveParameters, "txtTwelveParameters",                      16, 186);
@@ -286,28 +286,28 @@ namespace EODSettingsApp.Forms
 
         /// <summary>Applies the uniform text-box style to single-line editable fields.</summary>
         private static void ConfigureFieldBox(
-            TextBox box, string name, int x, int y)
+            TextBox box, string name, int x, int y, int width = 380)
         {
             box.BorderStyle = BorderStyle.FixedSingle;
-            box.Font        = new Font("Segoe UI", 9.5F);
+            box.Font        = new Font("Segoe UI", 9F);
             box.Location    = new Point(x, y);
             box.Name        = name;
-            box.Size        = new Size(424, 24);
-            box.Anchor      = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            box.Size        = new Size(width, 23);
+            box.Anchor      = AnchorStyles.Top | AnchorStyles.Left;
         }
 
         /// <summary>Applies the code-editor text-box style to multiline JSON fields.</summary>
         private static void ConfigureJsonBox(
-            TextBox box, string name, int x, int y, int width = 424, int height = 135)
+            TextBox box, string name, int x, int y, int width = 380, int height = 90)
         {
             box.BorderStyle = BorderStyle.FixedSingle;
-            box.Font        = new Font("Consolas", 9.5F);
+            box.Font        = new Font("Consolas", 9F);
             box.Location    = new Point(x, y);
             box.Multiline   = true;
             box.Name        = name;
             box.ScrollBars  = ScrollBars.Vertical;
             box.Size        = new Size(width, height);
-            box.Anchor      = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+            box.Anchor      = AnchorStyles.Top | AnchorStyles.Left;
         }
     }
 }

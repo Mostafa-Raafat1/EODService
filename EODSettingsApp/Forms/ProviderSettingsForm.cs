@@ -39,13 +39,13 @@ namespace EODSettingsApp.Forms
             {
                 tabProviders.SelectedIndex = 0;
                 lblTitle.Text = "Yahoo Finance Settings";
-                lblSubtitle.Text = "Configure Yahoo Finance connection parameters and JSON";
+                lblSubtitle.Text = "Configure Yahoo Finance Base URL, Endpoint, and JSON parameters";
             }
             else if (activeTab == 1)
             {
                 tabProviders.SelectedIndex = 1;
                 lblTitle.Text = "TwelveData Settings";
-                lblSubtitle.Text = "Configure TwelveData API key and JSON parameters";
+                lblSubtitle.Text = "Configure TwelveData Base URL, Endpoint, API Key, and JSON parameters";
             }
             else if (activeTab == 2)
             {
@@ -88,19 +88,49 @@ namespace EODSettingsApp.Forms
                 var yahooProvider = providers.FirstOrDefault(p => p.Id == (int)ProviderIds.Yahoo || p.Name.Contains("Yahoo", StringComparison.OrdinalIgnoreCase));
                 if (yahooProvider != null)
                 {
-                    txtYahooBaseUrl.Text    = yahooProvider.BaseUrl ?? string.Empty;
-                    txtYahooEndpoint.Text   = yahooProvider.EndPoint ?? string.Empty;
+                    txtYahooBaseUrl.Text    = yahooProvider.BaseUrl ?? "https://query1.finance.yahoo.com";
+                    txtYahooEndpoint.Text   = yahooProvider.EndPoint ?? "/v8/finance/chart/";
                     txtYahooApiKey.Text     = yahooProvider.ApiKey ?? string.Empty;
-                    txtYahooParameters.Text = FormatJsonString(yahooProvider.Parameters);
+                    txtYahooParameters.Text = FormatJsonString(yahooProvider.Parameters ?? JsonSerializer.Serialize(new
+                    {
+                        interval = "1d",
+                        range = "1d"
+                    }));
+                }
+                else
+                {
+                    txtYahooBaseUrl.Text    = "https://query1.finance.yahoo.com";
+                    txtYahooEndpoint.Text   = "/v8/finance/chart/";
+                    txtYahooApiKey.Text     = string.Empty;
+                    txtYahooParameters.Text = FormatJsonString(JsonSerializer.Serialize(new
+                    {
+                        interval = "1d",
+                        range = "1d"
+                    }));
                 }
 
                 var twelveProvider = providers.FirstOrDefault(p => p.Id == (int)ProviderIds.TwelveData || p.Name.Contains("Twelve", StringComparison.OrdinalIgnoreCase));
                 if (twelveProvider != null)
                 {
-                    txtTwelveBaseUrl.Text    = twelveProvider.BaseUrl ?? string.Empty;
-                    txtTwelveEndpoint.Text   = twelveProvider.EndPoint ?? string.Empty;
+                    txtTwelveBaseUrl.Text    = twelveProvider.BaseUrl ?? "https://api.twelvedata.com";
+                    txtTwelveEndpoint.Text   = twelveProvider.EndPoint ?? "/time_series";
                     txtTwelveApiKey.Text     = twelveProvider.ApiKey ?? string.Empty;
-                    txtTwelveParameters.Text = FormatJsonString(twelveProvider.Parameters);
+                    txtTwelveParameters.Text = FormatJsonString(twelveProvider.Parameters ?? JsonSerializer.Serialize(new
+                    {
+                        interval = "1day",
+                        outputsize = "1"
+                    }));
+                }
+                else
+                {
+                    txtTwelveBaseUrl.Text    = "https://api.twelvedata.com";
+                    txtTwelveEndpoint.Text   = "/time_series";
+                    txtTwelveApiKey.Text     = string.Empty;
+                    txtTwelveParameters.Text = FormatJsonString(JsonSerializer.Serialize(new
+                    {
+                        interval = "1day",
+                        outputsize = "1"
+                    }));
                 }
 
                 var reutersProvider = providers.FirstOrDefault(p => p.Id == (int)ProviderIds.Reuters || p.Name.Contains("Reuter", StringComparison.OrdinalIgnoreCase));

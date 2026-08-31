@@ -3,34 +3,35 @@
 AppName=EOD Service Manager
 AppVersion=1.0
 AppPublisher=Youssef Azzab
-; Install to user's AppData - NO admin/UAC prompt required
+; Install to user's AppData - NO admin/UAC elevation required (works seamlessly on any PC)
 DefaultDirName={localappdata}\EODServiceManager
-; Start menu group name
 DefaultGroupName=EOD Service Manager
-; Never ask for admin/UAC elevation
 PrivilegesRequired=lowest
+ArchitecturesInstallIn64BitMode=x64
 ; Output settings for the generated setup.exe
 OutputDir=Output
 OutputBaseFilename=EODServiceManager_Setup
-Compression=lzma
+SetupIconFile=EODSettingsApp\TICKR.ico
+UninstallDisplayIcon={app}\EODServiceManager.exe
+Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 CloseApplications=yes
 RestartApplications=no
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-; Package the Windows Forms app (EODServiceManager) + EODService console app
+; Package the self-contained Windows Forms app (EODServiceManager) + EODService engine + dependencies
 Source: "publish_forms\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-; Start Menu Icon
-Name: "{group}\EOD Service Manager"; Filename: "{app}\EODServiceManager.exe"
-; Desktop Icon
-Name: "{autodesktop}\EOD Service Manager"; Filename: "{app}\EODServiceManager.exe"; Tasks: desktopicon
+; Start Menu Shortcut
+Name: "{group}\EOD Service Manager"; Filename: "{app}\EODServiceManager.exe"; IconFilename: "{app}\EODServiceManager.exe"
+; Desktop Shortcut
+Name: "{autodesktop}\EOD Service Manager"; Filename: "{app}\EODServiceManager.exe"; IconFilename: "{app}\EODServiceManager.exe"; Tasks: desktopicon
 
 [Run]
-; Launch the app after installation finishes
+; Launch the application after installation finishes
 Filename: "{app}\EODServiceManager.exe"; Description: "{cm:LaunchProgram,EOD Service Manager}"; Flags: nowait postinstall skipifsilent
