@@ -85,7 +85,9 @@ namespace EODService.Logging
                     if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                         Directory.CreateDirectory(dir);
 
-                    File.AppendAllText(filePath, content);
+                    using var fs = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+                    using var writer = new StreamWriter(fs);
+                    writer.Write(content);
                 }
                 catch (Exception ex)
                 {

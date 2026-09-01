@@ -106,6 +106,10 @@ namespace EODSettingsApp.Forms
             pnlHeader.SuspendLayout();
             pnlControls.SuspendLayout();
             flpWorkingDays.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitMain).BeginInit();
+            splitMain.Panel1.SuspendLayout();
+            splitMain.Panel2.SuspendLayout();
+            splitMain.SuspendLayout();
             pnlGrid.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
             pnlGridHeader.SuspendLayout();
@@ -408,14 +412,14 @@ namespace EODSettingsApp.Forms
             // splitMain.Panel1
             // 
             splitMain.Panel1.Controls.Add(pnlLogs);
-            splitMain.Panel1MinSize = 220;
+            splitMain.Panel1MinSize = 100;
             // 
             // splitMain.Panel2
             // 
             splitMain.Panel2.Controls.Add(pnlGrid);
-            splitMain.Panel2MinSize = 450;
+            splitMain.Panel2MinSize = 100;
             splitMain.Size = new Size(1100, 566);
-            splitMain.SplitterDistance = 646;
+            splitMain.SplitterDistance = 450;
             splitMain.TabIndex = 3;
             // 
             // pnlLogs
@@ -594,6 +598,10 @@ namespace EODSettingsApp.Forms
             pnlGrid.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
             pnlGridHeader.ResumeLayout(false);
+            splitMain.Panel1.ResumeLayout(false);
+            splitMain.Panel2.ResumeLayout(false);
+            splitMain.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
             mnuMain.ResumeLayout(false);
             mnuMain.PerformLayout();
             ResumeLayout(false);

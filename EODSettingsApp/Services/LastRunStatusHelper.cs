@@ -21,8 +21,8 @@ namespace EODSettingsApp.Services
     /// </summary>
     public static class LastRunStatusHelper
     {
-        private static readonly Regex RunBannerRegex = new(@"RUN STARTED\s*│\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})", RegexOptions.Compiled);
-        private static readonly Regex RecordCountRegex = new(@"Total records collected:\s*(\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex RunBannerRegex = new(@"(?:RUN STARTED|EOD SERVICE EXECUTION RUN)\s*│\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex RecordCountRegex = new(@"(?:Total records collected|transaction for)\s*[:\s]*(\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex SavedRecordsRegex = new(@"transaction for\s*(\d+)\s*record", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static LastRunInfo GetLastRunInfo()
@@ -96,14 +96,18 @@ namespace EODSettingsApp.Services
                         hasCompleted = true;
                     }
 
-                    if (line.Contains("ERROR  ", StringComparison.OrdinalIgnoreCase) ||
+                    if (line.Contains("[ERROR]", StringComparison.OrdinalIgnoreCase) ||
+                        line.Contains("ERROR  ", StringComparison.OrdinalIgnoreCase) ||
+                        line.Contains("[FATAL]", StringComparison.OrdinalIgnoreCase) ||
                         line.Contains("FATAL  ", StringComparison.OrdinalIgnoreCase) ||
                         line.Contains("Exception", StringComparison.OrdinalIgnoreCase))
                     {
                         hasError = true;
                     }
 
-                    if (line.Contains("WARN  ", StringComparison.OrdinalIgnoreCase) ||
+                    if (line.Contains("[WARN ]", StringComparison.OrdinalIgnoreCase) ||
+                        line.Contains("[WARN]", StringComparison.OrdinalIgnoreCase) ||
+                        line.Contains("WARN  ", StringComparison.OrdinalIgnoreCase) ||
                         line.Contains("WARNING", StringComparison.OrdinalIgnoreCase))
                     {
                         hasWarning = true;

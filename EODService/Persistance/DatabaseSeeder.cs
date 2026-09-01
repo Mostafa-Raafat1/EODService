@@ -1,4 +1,4 @@
-﻿using EODService.Models;
+using EODService.Models;
 using EODService.Models.Provider;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -30,10 +30,10 @@ namespace EODService.Persistance
                 if (!await TableExistsAsync(connection, "EOD_STOCKS"))
                     await CreateStockTableAsync(connection);
 
-                if (!await TableExistsAsync(connection, "EodDaily"))
+                if (!await TableExistsAsync(connection, "EODDAILY"))
                     await CreateEodDailyTableAsync(connection);
 
-                if (!await TableExistsAsync(connection, "EodHistory"))
+                if (!await TableExistsAsync(connection, "EODHISTORY"))
                     await CreateEodHistoryTableAsync(connection);
 
                 if (!await SequenceExistsAsync(connection, "SEQ_EOD_STOCKS_ID"))

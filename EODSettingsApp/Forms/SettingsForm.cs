@@ -53,20 +53,27 @@ namespace EODSettingsApp.Forms
         {
             if (_isSplitterInitialized) return;
 
-            if (splitMain != null && splitMain.Width > (splitMain.Panel1MinSize + splitMain.Panel2MinSize + splitMain.SplitterWidth))
+            try
             {
-                int availableWidth = splitMain.Width;
-                int minimum = splitMain.Panel1MinSize;
-                int maximum = availableWidth - splitMain.Panel2MinSize - splitMain.SplitterWidth;
-                int desired = (int)(availableWidth * 0.29); // ~29% for Left Execution Logs panel
-
-                int targetDistance = Math.Max(minimum, Math.Min(desired, maximum));
-
-                if (targetDistance >= minimum && targetDistance <= maximum)
+                if (splitMain != null && splitMain.Width > (splitMain.Panel1MinSize + splitMain.Panel2MinSize + splitMain.SplitterWidth))
                 {
-                    splitMain.SplitterDistance = targetDistance;
-                    _isSplitterInitialized = true;
+                    int availableWidth = splitMain.Width;
+                    int minimum = splitMain.Panel1MinSize;
+                    int maximum = availableWidth - splitMain.Panel2MinSize - splitMain.SplitterWidth;
+                    int desired = (int)(availableWidth * 0.29); // ~29% for Left Execution Logs panel
+
+                    int targetDistance = Math.Max(minimum, Math.Min(desired, maximum));
+
+                    if (targetDistance >= minimum && targetDistance <= maximum)
+                    {
+                        splitMain.SplitterDistance = targetDistance;
+                        _isSplitterInitialized = true;
+                    }
                 }
+            }
+            catch
+            {
+                // Ignore any layout or splitter boundary exceptions during initialization
             }
         }
 
@@ -837,10 +844,10 @@ namespace EODSettingsApp.Forms
                             newContent.TrimEnd());
 
 
-                        if (newContent.Contains(
-                                "completed successfully") ||
-                            newContent.Contains(
-                                "EOD import complete"))
+                        if (newContent.Contains("completed successfully", StringComparison.OrdinalIgnoreCase) ||
+                            newContent.Contains("EOD import complete", StringComparison.OrdinalIgnoreCase) ||
+                            newContent.Contains("Database save completed successfully", StringComparison.OrdinalIgnoreCase) ||
+                            newContent.Contains("EXECUTION RUN", StringComparison.OrdinalIgnoreCase))
                         {
                             await RefreshGridFromDatabaseAsync();
 

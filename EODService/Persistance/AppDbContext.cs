@@ -27,7 +27,7 @@ namespace EODService.Persistance
             //For Daily Table
             modelBuilder.Entity<EodDataDaily>(entity =>
             {
-                entity.ToTable("EodDaily");
+                entity.ToTable("EODDAILY");
 
                 // Only one latest record per symbol
                 entity.HasKey(e => e.Id);
@@ -69,7 +69,7 @@ namespace EODService.Persistance
             // For History Table
             modelBuilder.Entity<EodDataHistory>(entity =>
             {
-                entity.ToTable("EodHistory");
+                entity.ToTable("EODHISTORY");
 
                 entity.HasKey(e => new
                 {
