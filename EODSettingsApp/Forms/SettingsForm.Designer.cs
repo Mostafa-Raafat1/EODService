@@ -585,7 +585,7 @@ namespace EODSettingsApp.Forms
             Controls.Add(mnuMain);
             Font = new Font("Segoe UI", 9.5F);
             MainMenuStrip = mnuMain;
-            MinimumSize = new Size(1024, 680);
+            MinimumSize = new Size(1100, 680);
             Name = "SettingsForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "TICKR";

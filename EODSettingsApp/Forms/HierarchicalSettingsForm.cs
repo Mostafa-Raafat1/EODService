@@ -20,7 +20,11 @@ namespace EODSettingsApp.Forms
                 if (_activeForm == null) return;
                 int availW = pnlContent.ClientSize.Width  - pnlContent.Padding.Horizontal;
                 int availH = pnlContent.ClientSize.Height - pnlContent.Padding.Vertical;
-                _activeForm.Size = new Size(Math.Max(availW, 1), Math.Max(availH, 1));
+                // Use the larger of available space vs the form's natural (design) size
+                // so AutoScroll on pnlContent shows scrollbars when the window is too small
+                int naturalW = _activeForm.Tag is Size nat ? nat.Width  : availW;
+                int naturalH = _activeForm.Tag is Size nat2 ? nat2.Height : availH;
+                _activeForm.Size = new Size(Math.Max(availW, naturalW), Math.Max(availH, naturalH));
             };
         }
 
@@ -148,8 +152,12 @@ namespace EODSettingsApp.Forms
             {
                 SymbolSettingsForm => 610,
                 DatabaseSettingsForm => 540,
-                _ => 480
+                AddStockForm => 520,
+                _ => 520
             };
+
+            // Store the natural (design) size so the resize handler can prevent clipping
+            childForm.Tag = new Size(targetContentWidth, targetContentHeight);
 
             this.ClientSize = new Size(pnlSidebar.Width + targetContentWidth, targetContentHeight);
 
